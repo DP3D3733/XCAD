@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Consultas_Integradas_Peganome
 // @namespace    http://tampermonkey.net/
-// @version      1.3.0
+// @version      1.3.1
 // @updateURL    https://raw.githubusercontent.com/DP3D3733/XCAD/main/Consultas_Integradas_Peganome.js
 // @downloadURL  https://raw.githubusercontent.com/DP3D3733/XCAD/main/Consultas_Integradas_Peganome.js
 // @description  Módulo de Consultas Integradas do XCAD
