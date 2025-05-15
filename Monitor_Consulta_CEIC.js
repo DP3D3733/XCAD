@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Monitor_Consulta_CEIC
 // @namespace    http://tampermonkey.net/
-// @version      1.3.0
+// @version      1.3.1
 // @updateURL    https://raw.githubusercontent.com/DP3D3733/XCAD/main/Monitor_Consulta_CEIC.js
 // @downloadURL  https://raw.githubusercontent.com/DP3D3733/XCAD/main/Monitor_Consulta_CEIC.js
 // @description  Módulo de Consulta Integradas do XCAD
