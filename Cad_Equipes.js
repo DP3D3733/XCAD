@@ -2,8 +2,8 @@
 // @name         Cad_Equipes
 // @namespace    http://tampermonkey.net/
 // @version      1.3.0
-// @updateURL    https://raw.githubusercontent.com/XCAD/meurepo/main/Cad_Equipes.js
-// @downloadURL  https://raw.githubusercontent.com/XCAD/meurepo/main/Cad_Equipes.js
+// @updateURL    https://raw.githubusercontent.com/DP3D3733/XCAD/main/Cad_Equipes.js
+// @downloadURL  https://raw.githubusercontent.com/DP3D3733/XCAD/main/Cad_Equipes.js
 // @description  Automatizar processos dentro do CAD Equipes
 // @author       GM 842 Calebe
 // @match        https://cadweb.sinesp.gov.br/cad-equipe-web/*
