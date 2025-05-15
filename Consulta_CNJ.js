@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Consulta_CNJ
 // @namespace    http://tampermonkey.net/
-// @version      1.3.0
+// @version      1.3.1
 // @updateURL    https://raw.githubusercontent.com/DP3D3733/XCAD/main/Consulta_CNJ.js
 // @downloadURL  https://raw.githubusercontent.com/DP3D3733/XCAD/main/Consulta_CNJ.js
 // @description  Automações para a Consulta de mandados no CNJ
