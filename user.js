@@ -5,8 +5,8 @@
 // @description  Script hospedado no GitHub
 // @author       Você
 // @match        *://*/*
-// @updateURL    https://raw.githubusercontent.com/SEUUSUARIO/REPO/main/script.user.js
-// @downloadURL  https://raw.githubusercontent.com/SEUUSUARIO/REPO/main/script.user.js
+// @updateURL    https://raw.githubusercontent.com/DP3D3733/XCAD/main/script.user.js
+// @downloadURL  https://raw.githubusercontent.com/DP3D3733/XCAD/main/script.user.js
 // @grant        none
 // ==/UserScript==
 
