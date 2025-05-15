@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CAD_Discover
 // @namespace    http://tampermonkey.net/
-// @version      1.3.0
+// @version      1.3.1
 // @updateURL    https://raw.githubusercontent.com/DP3D3733/XCAD/main/CAD_Discover.js
 // @downloadURL  https://raw.githubusercontent.com/DP3D3733/XCAD/main/CAD_Discover.js
 // @description  Automações para o CAD Discover
