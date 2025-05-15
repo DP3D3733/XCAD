@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Infoseg
 // @namespace    http://tampermonkey.net/
-// @version      1.3.1
+// @version      1.3.2
 // @updateURL    https://raw.githubusercontent.com/DP3D3733/XCAD/main/Infoseg.js
 // @downloadURL  https://raw.githubusercontent.com/DP3D3733/XCAD/main/Infoseg.js
 // @description  Módulo de automações para o Infoseg
