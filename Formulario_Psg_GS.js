@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Formulario_Psg_GS
 // @namespace    http://tampermonkey.net/
-// @version      1.3.0
+// @version      1.3.1
 // @description  Melhorar a inserção do dados no Formulário de Passagem de Serviço do GS
 // @updateURL    https://raw.githubusercontent.com/DP3D3733/XCAD/main/Formulario_Psg_GS.js
 // @downloadURL  https://raw.githubusercontent.com/DP3D3733/XCAD/main/Formulario_Psg_GS.js
