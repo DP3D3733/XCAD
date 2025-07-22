@@ -1,0 +1,169 @@
+{
+  "manifest_version": 3,
+  "name": "XCAD",
+  "version": "1.4.5.5",
+  "description": "Conjunto de módulos de automação para o serviço na COGM-GM POA",
+  "icons": {
+    "128": "icon.png"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "consultas_integradas_tjrs_menu_lateral.js",
+        "consultas_integradas_tjrs_veiculos.js",
+        "consultas_integradas_tjrs_inicio.js",
+        "consultas_integradas_tjrs_img.js",
+        "consultas_integradas_tjrs_abas_acoes.js",
+        "consultas_integradas_tjrs_copiar_dados_basicos.js",
+        "consultas_integradas_tjrs_pesquisanome.js",
+        "consultas_integradas_tjrs_copiar_resultados_ocorrencias.js",
+        "consultas_integradas_tjrs_individuo_lista_nomes.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content_script.js"
+      ],
+      "all_frames": true
+    },
+    {
+      "matches": [
+        "https://cadweb.sinesp.gov.br/paineis-estatisticos/app/discover*"
+      ],
+      "js": [
+        "cad_discover.js"
+      ]
+    },
+    {
+      "matches": [
+        "https://cadweb.sinesp.gov.br/cad-equipe-web/*"
+      ],
+      "js": [
+        "cad_equipes.js"
+      ]
+    },
+    {
+      "matches": [
+        "https://cadweb.sinesp.gov.br/cad-ocorrencia-web/*"
+      ],
+      "js": [
+        "cad_ocorrencias.js"
+      ]
+    },
+    {
+      "matches": [
+        "https://portalbnmp.cnj.jus.br/*"
+      ],
+      "js": [
+        "consulta_cnj.js"
+      ]
+    },
+    {
+      "matches": [
+        "https://www.consultasintegradas.rs.gov.br/csi/csi/INTERFACE/jsp/Individuo_Lista_Nomes_NEW.jsp?*",
+        "https://secweb.intra.rs.gov.br/csi/csi/INTERFACE/jsp/Individuo_Lista_Nomes_NEW.jsp?*"
+      ],
+      "js": [
+        "consultas_integradas_tjrs_pega_nome.js"
+      ],
+      "all_frames": true
+    },
+    {
+      "matches": [
+        "https://www.consultasintegradas.rs.gov.br/csi/csi/INTERFACE/jsp/Individuo_Consulta_DadosBasicos_NEW.jsp?",
+        "https://secweb.intra.rs.gov.br/csi/csi/INTERFACE/jsp/Individuo_Consulta_DadosBasicos_NEW.jsp?*"
+      ],
+      "js": [
+        "consultas_integradas_tjrs_copiar_dados_basicos.js"
+      ],
+      "all_frames": true
+    },
+    {
+      "matches": [
+        "https://secweb.intra.rs.gov.br/csi/csi/INTERFACE/jsp/Individuo_Consulta_Ocorrencia_NEW.jsp?*",
+        "https://www.consultasintegradas.rs.gov.br/csi/csi/INTERFACE/jsp/Individuo_Consulta_Ocorrencia_NEW.jsp?*"
+      ],
+      "js": [
+        "consultas_integradas_tjrs_copiar_resultados_ocorrencias.js"
+      ],
+      "all_frames": true
+    },
+    {
+      "matches": [
+        "https://secweb.intra.rs.gov.br/csi/csi/INTERFACE/jsp/Dados.jsp?*",
+        "https://www.consultasintegradas.rs.gov.br/csi/csi/INTERFACE/jsp/Dados.jsp?*"
+      ],
+      "js": [
+        "consultas_integradas_tjrs_inicio.js"
+      ],
+      "all_frames": true
+    },
+    {
+      "matches": [
+        "https://secweb.intra.rs.gov.br/csi/csi/INTERFACE/Html/MenuNovo.jsp",
+        "https://www.consultasintegradas.rs.gov.br/csi/csi/INTERFACE/Html/MenuNovo.jsp"
+      ],
+      "js": [
+        "consultas_integradas_tjrs_menu_lateral.js"
+      ],
+      "all_frames": true
+    },
+    {
+      "matches": [
+        "https://secweb.intra.rs.gov.br/csi/mod-veiculo/*",
+        "https://www.consultasintegradas.rs.gov.br/csi/mod-veiculo/*"
+      ],
+      "js": [
+        "consultas_integradas_tjrs_veiculos.js"
+      ],
+      "all_frames": true
+    },
+    {
+      "matches": [
+        "https://docs.google.com/forms*"
+      ],
+      "js": [
+        "formulario_psg_gs.js"
+      ]
+    },
+    {
+      "matches": [
+        "https://infoseg.sinesp.gov.br/infoseg2/*"
+      ],
+      "js": [
+        "infoseg.js"
+      ]
+    },
+    {
+      "matches": [
+        "https://web.whatsapp.com/"
+      ],
+      "js": [
+        "monitor_consulta_ceic.js"
+      ]
+    }
+  ],
+  "permissions": [
+    "storage",
+    "tabs",
+    "scripting",
+    "webNavigation"
+  ]
+}

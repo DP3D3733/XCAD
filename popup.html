@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 10px;
+        }
+
+        button {
+            padding: 6px 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <h3>XCAD 1.4.5</h3>
+    <div style="display: flex; align-items: center">
+        <span>Ativar extensão</span>
+
+        <div style="width:60px">
+            <button id="botao_ativa_extensao" style="position: relative; width: 40px; height: 24px; background-color: rgb(76, 175, 80); border: none; border-radius: 34px; cursor: pointer; padding: 0px;">
+            <span id="slider" style="position: absolute; top: 4px; left: 4px; width: 16px; height: 16px; background-color: white; border-radius: 50%; transition: transform 0.4s; transform: translateX(16px);">
+            </span>
+        </button>
+    </div>
+    </div>
+    <div id="script_atual"></div>
+    <button id="verificarBtn" style="margin-top: 15px; padding: 8px 12px; font-size: 09px;">Verificar atualizações</button>
+
+    <button id="atualizarBtn" style="display: none; margin-left: 5px; padding: 8px 12px; font-size: 9px;">Aplicar atualização</button>
+
+    <p id="resultado" style="margin-top: 10px; color: #555;"></p>
+    <script src="popup.js"></script>
+</body>
+
+</html>
