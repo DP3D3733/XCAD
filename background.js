@@ -99,12 +99,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === "imagem_consulta") {
         chrome.storage.local.get('imagem_consulta', (data) => {
             sendResponse(data['imagem_consulta']);
+            chrome.storage.local.remove('imagem_consulta', (data) => {
+        });
         });
         return true; // necessário para resposta assíncrona
     }
     if (message.action === "dados_consulta") {
         chrome.storage.local.get('dados_consulta', (data) => {
             sendResponse(data['dados_consulta']);
+            chrome.storage.local.remove('dados_consulta', (data) => {
+            });
         });
         return true; // necessário para resposta assíncrona
     }

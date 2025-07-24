@@ -14,32 +14,43 @@ if (location.href.includes("web.whatsapp.com")) {
             var mensagens_antigas = [];
 
             const whats_interval = setInterval(function () {
-                if (Array.from(document.querySelectorAll('li')).filter((li) => li.innerText.includes('Responder em particular')).length > 0 && !document.querySelector('div[aria-label="qap"]')) {
-                    let mensagem = document.querySelector('div[aria-label="Menu de contexto"]').parentNode.parentNode.parentNode.querySelector('span[class="_ao3e selectable-text copyable-text"]').innerText;
+                if (Array.from(document.querySelectorAll('li')).filter((li) => li.innerText.includes('Responder em particular')).length > 0 && !document.querySelector('div[aria-label="qap"]') && document.querySelector('div[aria-label="Menu de contexto"]')) {
+                    let mensagem = document.querySelector('div[aria-label="Menu de contexto"]').parentNode.parentNode.parentNode.parentNode.innerText;
                     let gus_extenso = ['CRUZEIRO', 'PARTENON', 'LESTE', 'RESTINGA', 'NORTE', 'BALTAZAR', 'PINHEIRO', 'SUL', 'CENTRO', 'ROMU'];
                     let gus_numero = ['21', '31', '41', '51', '61', '71', '81', '91', 'C1', 'R1', 'PATAM'];
                     let possiveis_gus = [];
-                    gus_numero.forEach(function (item) {
-                        if (mensagem.toUpperCase().includes(item)) {
-                            possiveis_gus.push(item);
+                    if (mensagem) {
+                        gus_numero.forEach(function (item) {
+                            if (mensagem.toUpperCase().includes(item)) {
+                                possiveis_gus.push(item);
+                            }
+                        });
+                        gus_extenso.forEach(function (item) {
+                            if (mensagem.toUpperCase().includes(item)) {
+                                possiveis_gus.push(gus_numero[gus_extenso.indexOf(item)]);
+                            }
+                        });
+                        if(possiveis_gus.length == 0) {
+                            possiveis_gus.push('Definir Gu')
                         }
-                    });
-                    gus_extenso.forEach(function (item) {
-                        if (mensagem.toUpperCase().includes(item)) {
-                            possiveis_gus.push(gus_numero[gus_extenso.indexOf(item)]);
-                        }
-                    });
-                    possiveis_gus.forEach(function (item) {
-                        let but_qap = '<li tabindex="0" class="_aj-r _aj-q _aj-_ false false" data-animate-dropdown-item="true" role="button" style="opacity: 1;"><div class="_aj-z _aj-t _alxo" aria-label="qap" style="">QAP ' + item + '</div></li>';
-                        Array.from(document.querySelectorAll('li')).filter((li) => li.innerText.includes('Responder em particular'))[0].parentNode.insertAdjacentHTML("beforebegin", but_qap);
-                    });
+                        possiveis_gus.forEach(function (item) {
+                            let but_qap = '<li tabindex="0" class="_aj-r _aj-q _aj-_ false false" data-animate-dropdown-item="true" role="button" style="opacity: 1;"><div class="_aj-z _aj-t _alxo" aria-label="qap" style="">QAP ' + item + '</div></li>';
+                            Array.from(document.querySelectorAll('li')).filter((li) => li.innerText.includes('Responder em particular'))[0].parentNode.insertAdjacentHTML("beforebegin", but_qap);
+                        });
+                    }
+
                 }
                 if (document.querySelector('div[aria-label="qap"]:not([com_event_listener])')) {
                     let but_qap = document.querySelector('div[aria-label="qap"]:not([com_event_listener])')
                     but_qap.setAttribute('com_event_listener', '');
                     but_qap.parentNode.addEventListener('click', function () {
                         let horario = document.querySelector('div[aria-label="Menu de contexto"]').parentNode.parentNode.parentNode.querySelectorAll('span[dir=auto]')[document.querySelector('div[aria-label="Menu de contexto"]').parentNode.parentNode.parentNode.querySelectorAll('span[dir=auto]').length - 1].innerText.replaceAll('Editada', '');
-                        let gu = this.innerText.split(' ')[1];
+                        let gu;
+                        if(this.innerText.includes('Definir')) {
+                            gu = prompt('Defina a Gu escrevendo: 21, 31, 41, 51, 61, 71, 81, 91, C1, R1 ou P1');
+                        } else {
+                            gu = this.innerText.split(' ')[1];
+                        }
                         let gus = [];
                         if (sessionStorage.getItem('qap') && sessionStorage.getItem('qap') != '') {
                             let d = sessionStorage.getItem('qap').split('\n');
@@ -223,7 +234,8 @@ if (location.href.includes("web.whatsapp.com")) {
 
 
                                                 } else if (document.querySelector('#trava_texto')) {
-                                                    clearInterval(interval);
+                                                    clearInterval(interval_legenda);
+                                                    document.querySelector('#trava_texto').remove();
                                                 }
                                             }, 500);
                                             chrome.runtime.sendMessage({ action: "remover_imagem_consulta" }, () => { });
@@ -290,7 +302,7 @@ if (location.href.includes("web.whatsapp.com")) {
                     clearInterval(whats_interval);
                     console.error("Caught exception:", error);
                     window.location.reload();
-                    
+
                 }
             }, 100);
 
