@@ -129,4 +129,39 @@ chrome.webNavigation.onHistoryStateUpdated.addListener((details) => {
     });
 });
 
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+import { getFirestore, collection, addDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBag5uPzTK0sXx3nBzjGhmlmSCySO3u3_U",
+    authDomain: "rotinas-8498d.firebaseapp.com",
+    projectId: "rotinas-8498d",
+    storageBucket: "rotinas-8498d.firebasestorage.app",
+    messagingSenderId: "1053551077085",
+    appId: "1:1053551077085:web:4b2dcbbeb60f9f7fee1d34"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    (async () => {
+        if (message.action === "atualizar_equipes" || message.action === "atualizar_equipamentos") {
+            try {
+                const [docId, valor] = message.payload.split('|');
+                const registro = {};
+                registro[docId] = valor;
+                const data_registro = new Date();
+                data_registro.setHours(0,0,0,0)
+                await setDoc(doc(db, "equipes", data_registro.toISOString()), registro,{ merge: true });
+
+                sendResponse({ status: "ok" });
+            } catch (e) {
+                console.error("Erro Firebase:", e);
+                sendResponse({ status: "erro", error: e.message });
+            }
+        }
+    })();
+    return true; // <- IMPORTANTE: garante que o canal fica aberto até o sendResponse
+});
 

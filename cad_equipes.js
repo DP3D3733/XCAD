@@ -7,6 +7,11 @@ chrome.storage.local.get("ativa", (data) => {
         var unidade_servico = '';
         var concluir_encarramento_uniade_sv = '';
         localStorage.removeItem('editar_equipe');
+
+        
+
+        
+
         setInterval(function () {
             if (document.querySelectorAll('app-modal-editar-equipamentos').length > 1) {
                 document.querySelectorAll('app-modal-editar-equipamentos')[1].querySelector('button[fecharmodal]').click();
@@ -713,6 +718,43 @@ chrome.storage.local.get("ativa", (data) => {
                     });
                 }
             }
+            setInterval(() => {
+                
+            }, 1000);
+
+
+            if (document.querySelector('app-modal-editar-equipe') && document.querySelector('app-modal-editar-equipe input[formcontrolname="nome"]') && document.querySelector('app-modal-editar-equipe input[formcontrolname="nome"]').value != '') {
+                let gu = document.querySelector('app-modal-editar-equipe input[formcontrolname="nome"]').value;
+                let membros = Array.from(document.querySelectorAll('app-modal-editar-equipe ul li')).map(li => `${li.querySelector('span.titulo').innerText.split(' -')[0].trim()}-()-${li.querySelector('input').value}`);
+                sessionStorage.setItem('equipe_firebase', gu + '|' + membros);
+            }
+            if (!document.querySelector('app-modal-editar-equipe') && sessionStorage.getItem('equipe_firebase')) {
+                
+                chrome.runtime.sendMessage({ action: "atualizar_equipes", payload: sessionStorage.getItem('equipe_firebase') }, response => {
+                    
+                    if (chrome.runtime.lastError) {
+                        console.error("Erro na mensagem:", chrome.runtime.lastError.message);
+                    } else {
+                        console.log("Resposta do background:", response);
+                    }
+                });
+                sessionStorage.removeItem('equipe_firebase');
+            }
+            if (document.querySelector('app-modal-editar-equipamentos')) {
+                let area = document.querySelector('app-modal-editar-equipamentos strong').innerText.split('#')[0].trim();
+                let equipamentos = Array.from(document.querySelectorAll('app-modal-editar-equipamentos ul li')).map(li => `${li.querySelector('span.titulo').innerText.trim()}`);
+                sessionStorage.setItem('equipamentos_firebase', area + '|' + equipamentos);
+            }
+            if (!document.querySelector('app-modal-editar-equipamentos') && sessionStorage.getItem('equipamentos_firebase')) {
+                chrome.runtime.sendMessage({ action: "atualizar_equipamentos", payload: sessionStorage.getItem('equipamentos_firebase') }, response => {
+                    if (chrome.runtime.lastError) {
+                        console.error("Erro na mensagem:", chrome.runtime.lastError.message);
+                    } else {
+                        console.log("Resposta do background:", response);
+                    }
+                });
+                sessionStorage.removeItem('equipamentos_firebase');
+            }
             setTimeout(() => {
                 if (document.querySelector('app-equipe-mini-card')) {
                     if (document.querySelector("div[id='naorepete-empenhada']")) {
@@ -744,12 +786,12 @@ chrome.storage.local.get("ativa", (data) => {
                             });
                             document.querySelector("body > app-root > div > div > div.page > app-consultar-unidade-servico > form > div.fx-container-fluid.fx-mt-2 > div > cad-button-bar > div > div.box-regular > div > div > button.cancel-btn.ng-star-inserted").click();
                         });
-                        var eqps = ['A1','C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12', 'C13', 'C14', 'C15', 'R1', 'R2', 'R3', 'R4', 'R5', 'P1', 'P2', '21', '22', '31', '32', '41', '42', '51', '52', '61', '62', '71', '72', '81', '82', '91', '92', 'COGM'];
+                        var eqps = ['A1', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12', 'C13', 'C14', 'C15', 'R1', 'R2', 'R3', 'R4', 'R5', 'P1', 'P2', '21', '22', '31', '32', '41', '42', '51', '52', '61', '62', '71', '72', '81', '82', '91', '92', 'COGM'];
                         var vtrs_placa = new Map();
                         vtrs_placa.set('1470', '0118'); vtrs_placa.set('4G47', '0122'); vtrs_placa.set('4B58', '0124'); vtrs_placa.set('1468', '0218'); vtrs_placa.set('4E96', '0222'); vtrs_placa.set('3D36', '0224'); vtrs_placa.set('0283', '0283'); vtrs_placa.set('0301', '0301'); vtrs_placa.set('0305', '0305'); vtrs_placa.set('1469', '0318'); vtrs_placa.set('4E69', '0322'); vtrs_placa.set('3D37', '0324'); vtrs_placa.set('1471', '0418'); vtrs_placa.set('4E64', '0422'); vtrs_placa.set('3D50', '0424'); vtrs_placa.set('1473', '0518'); vtrs_placa.set('4G77', '0522'); vtrs_placa.set('2F38', '0524'); vtrs_placa.set('1467', '0618'); vtrs_placa.set('4E77', '0622'); vtrs_placa.set('4E57', '0722'); vtrs_placa.set('8J14', '0819'); vtrs_placa.set('4G14', '0822'); vtrs_placa.set('0906', '0906'); vtrs_placa.set('8J11', '0919'); vtrs_placa.set('4E85', '0922'); vtrs_placa.set('0F11', '0f11'); vtrs_placa.set('8J26', '1019'); vtrs_placa.set('4F34', '1022'); vtrs_placa.set('9A14', '1119'); vtrs_placa.set('4E88', '1122'); vtrs_placa.set('4G49', '1222'); vtrs_placa.set('1B67', '1267'); vtrs_placa.set('8J15', '1319'); vtrs_placa.set('4G36', '1322'); vtrs_placa.set('2J01', '1419'); vtrs_placa.set('4F48', '1422'); vtrs_placa.set('2J13', '1519'); vtrs_placa.set('4F75', '1522'); vtrs_placa.set('2J14', '1619'); vtrs_placa.set('4F19', '1622'); vtrs_placa.set('1667', '1667'); vtrs_placa.set('2J15', '1719'); vtrs_placa.set('4E76', '1722'); vtrs_placa.set('2J10', '1819'); vtrs_placa.set('4G61', '1822'); vtrs_placa.set('2J11', '1919'); vtrs_placa.set('4E61', '1922'); vtrs_placa.set('1G13', '1g13'); vtrs_placa.set('1I54', '1i54'); vtrs_placa.set('1I84', '1i84'); vtrs_placa.set('1J04', '1j04'); vtrs_placa.set('2J07', '2019'); vtrs_placa.set('4F60', '2022'); vtrs_placa.set('2048', '2048'); vtrs_placa.set('2J03', '2119'); vtrs_placa.set('2J05', '2219'); vtrs_placa.set('2240', '2240'); vtrs_placa.set('2241', '2241'); vtrs_placa.set('2253', '2253'); vtrs_placa.set('2254', '2254'); vtrs_placa.set('2J08', '2319'); vtrs_placa.set('2J12', '2419'); vtrs_placa.set('2420', '2420'); vtrs_placa.set('2J09', '2519'); vtrs_placa.set('2J02', '2619'); vtrs_placa.set('2747', '2747'); vtrs_placa.set('0287', '287'); vtrs_placa.set('0294', '294'); vtrs_placa.set('2975', '2975'); vtrs_placa.set('2A47', '2a47'); vtrs_placa.set('2A58', '2a58'); vtrs_placa.set('2A67', '2a67'); vtrs_placa.set('2A76', '2a76'); vtrs_placa.set('2B31', '2b31'); vtrs_placa.set('2B44', '2b44'); vtrs_placa.set('2B49', '2b49'); vtrs_placa.set('2B67', '2b67'); vtrs_placa.set('2B72', '2b72'); vtrs_placa.set('2B76', '2b76'); vtrs_placa.set('2B85', '2b85'); vtrs_placa.set('2B93', '2b93'); vtrs_placa.set('2B94', '2b94'); vtrs_placa.set('3376', '3376'); vtrs_placa.set('3377', '3377'); vtrs_placa.set('3378', '3378'); vtrs_placa.set('3379', '3379'); vtrs_placa.set('3380', '3380'); vtrs_placa.set('3742', '3742'); vtrs_placa.set('3753', '3753'); vtrs_placa.set('3761', '3761'); vtrs_placa.set('3766', '3766'); vtrs_placa.set('3770', '3770'); vtrs_placa.set('3932', '3932'); vtrs_placa.set('3942', '3942'); vtrs_placa.set('3948', '3948'); vtrs_placa.set('3953', '3953'); vtrs_placa.set('3955', '3955'); vtrs_placa.set('4267', '4267'); vtrs_placa.set('4339', '4339'); vtrs_placa.set('5255', '5255'); vtrs_placa.set('5G09', '5g09'); vtrs_placa.set('6017', '6017'); vtrs_placa.set('6046', '6046'); vtrs_placa.set('6077', '6077'); vtrs_placa.set('6085', '6085'); vtrs_placa.set('6094', '6094'); vtrs_placa.set('6103', '6103'); vtrs_placa.set('6108', '6108'); vtrs_placa.set('6121', '6121'); vtrs_placa.set('6126', '6126'); vtrs_placa.set('6915', '6915'); vtrs_placa.set('6950', '6950'); vtrs_placa.set('6959', '6959'); vtrs_placa.set('6965', '6965'); vtrs_placa.set('6972', '6972'); vtrs_placa.set('1466', '0718'); vtrs_placa.set('7259', '7259'); vtrs_placa.set('7280', '7280'); vtrs_placa.set('7285', '7285'); vtrs_placa.set('7337', '7337'); vtrs_placa.set('0734', '734'); vtrs_placa.set('7429', '7429'); vtrs_placa.set('7554', '7554'); vtrs_placa.set('7D34', '7d34'); vtrs_placa.set('7H22', '7h22'); vtrs_placa.set('7H23', '7h23'); vtrs_placa.set('7H25', '7h25'); vtrs_placa.set('7H29', '7h29'); vtrs_placa.set('7H32', '7h32'); vtrs_placa.set('7H38', '7h38'); vtrs_placa.set('8163', '8163'); vtrs_placa.set('8299', '8299'); vtrs_placa.set('8401', '8401'); vtrs_placa.set('8408', '8408'); vtrs_placa.set('8970', '8970'); vtrs_placa.set('9028', '9028'); vtrs_placa.set('9051', '9051'); vtrs_placa.set('9077', '9077'); vtrs_placa.set('9132', '9132'); vtrs_placa.set('9133', '9133'); vtrs_placa.set('9134', '9134'); vtrs_placa.set('9135', '9135'); vtrs_placa.set('9473', '9473'); vtrs_placa.set('9882', '9882'); vtrs_placa.set('9894', '9894'); vtrs_placa.set('9908', '9908'); vtrs_placa.set('9J14', 'Izf9j14'); vtrs_placa.set('9E63', 'Micro'); vtrs_placa.set('ICRO', 'Micro 03');
                         var vtrs = ['1000', ['0819', '0524', '0911', '0919', 1019, 1119, 1919, '2b31', '2a47', '1319'], '1100', ['0224', '0324'], '1200', ['0122', '1022', '1122', '1222', '1419', '1422', '2b49', '2b76', '2b67', '1919', '1622', '1522', '1322', '1i54', '2a76', '2b44', '2b85', '2b93', '2a57', '2a67', '2a58', '2319'], '200', ['0222', 2519], '300', [2119, '0322'], '400', ['0422', 2219], '500', ['0522', 1619], '600', ['0418', '0718', '2019', '2J07', '0622'], '700', ['0722', 2019], '800', [1719, '0822'], '900', ['1922', '0922', '1519', '4E85']];
                         var cameras = ['Dia', ['1000', [1302, 1303, 1304, 1305, 1306, 1307, 1308, 1309, 1310, 1311, 1312, 1313, 1314, 1315, 1316, 1317, 1318, 1319, 1320, 1341, 1342, 1343, 1346, 1344, 1345, 1347, 1348, 1349, 1350], '1100', [1417, 1222, 1227, 1226, 1221], '1200', [1241, 1242, 1243, 1244, 1245, 1246, 1248, 1249, 1250, 1251, 1252, 1253, 1254, 1255, 1256, 1257, 1258, 1259, 1260, 1261, 1262, 1263, 1264, 1265, 1266, 1267, 1268, 1269, 1270, 1271, 1272, 1273, 1274, 1275, 1276, 1277, 1278, 1279, 1280, 1365], '200', [1389, 1397, 1398, 1399, 1400, 1401, 1402, 1403, 1404], '300', [1233, 1234, 1235, 1236, 1237, 1238, 1239, 1240], '400', [1351, 1352, 1353, 1354, 1355, 1356, 1357, 1358, 1458, 1460], '500', [1389, 1390, 1391, 1392, 1393, 1394, 1395, 1396], '600', [1454, 1455, 1456, 1457, 1459, 1460, 1469], '700', [1445, 1446, 1447, 1448, 1449, 1450, 1451, 1452], '800', [1381, 1382, 1383, 1384, 1385, 1386, 1387, 1388], '900', [1405, 1406, 1407, 1409, 1408, 1409, 1410, 1411, 1412]]];
-                        var gms = ['Dia', ['1000', ['100', '120', '124', '124', '137', '140', '188', '222', '229', '279', '299', '325', '361', '445', '449', '465', '473', '475', '494', '502', '525', '543', '549', '574', '577', '585', '586', '608', '609', '619', '630', '642', '648', '653', '666', '667', '676', '705', '713', '714', '722', '735', '740', '753', '765', '766', '775', '777', '783','795', '797', '799', '835', '836', '845', '874'], '1100', ['236', '841', '855', '856', '873'], '1200', ['086', '099', '101', '104', '105', '134', '138', '153', '162', '167', '204', '211', '212', '224', '227', '246', '247', '295', '331', '343', '354', '408', '427', '429', '435', '445', '449', '478', '483', '485', '487', '519', '522', '523', '528', '535', '538', '571', '572', '575', '576', '578', '600', '649', '651', '669', '672', '716', '728', '781', '788', '801', '803', '806', '811', '818', '819', '820', '821', '822', '823', '824', '825', '826', '827', '828', '829', '830', '834', '837', '838', '840', '841', '843', '844', '847', '848', '849', '851', '852', '853', '854', '855', '856', '857', '859', '860', '861', '863', '864', '865', '866', '868', '870', '873'], '200', ['020', '117', '124', '129', '277', '464', '466', '496', '570', '607', '644'], '300', ['041', '049', '076', '111', '219', '278', '307', '331', '460', '482', '505', '516', '610', '628', '664', '758', '768', '791', '793', '812', '814', '816'], '400', ['013', '046', '053', '214', '372', '411', '446', '447', '469', '481', '497', '544', '603', '611', '809', '810'], '500', ['023', '128', '147', '265', '508', '524', '560', '665', '667', '730', '770', '784', '804'], '600', ['225', '318', '456', '492', '493', '507', '551', '742', '809'], '700', ['029', '113', '172', '209', '373', '522', '597', '601', '731', '751', '844'], '800', ['090', '016', '114', '187', '192', '488', '486', '506', '514', '526', '529', '594', '622', '743', '803', '804', '806', '808'], '900', ['173', '315', '417', '467', '491', '559', '677', '767', '784', '788', '792', '800', '861', '968'], 'COGM', ['098', '110', '139', '155', '231', '315', '336', '512', '520', '521', '523', '556', '558', '591', '621', '641', '643', '652', '660', '807', '813', '815', '831', '833', '834', '842', '848', '869', '706', '670', '805', '786', '723', '646', '771', '711', '604', '762', '533', '717', '691', '758', '679', '774', '875']]];
+                        var gms = ['Dia', ['1000', ['100', '120', '124', '124', '137', '140', '188', '222', '229', '279', '299', '325', '361', '445', '449', '465', '473', '475', '494', '502', '525', '543', '549', '574', '577', '585', '586', '608', '609', '619', '630', '642', '648', '653', '666', '667', '676', '705', '713', '714', '722', '735', '740', '753', '765', '766', '775', '777', '783', '795', '797', '799', '835', '836', '845', '874'], '1100', ['236', '841', '855', '856', '873'], '1200', ['086', '099', '101', '104', '105', '134', '138', '153', '162', '167', '204', '211', '212', '224', '227', '246', '247', '295', '331', '343', '354', '408', '427', '429', '435', '445', '449', '478', '483', '485', '487', '519', '522', '523', '528', '535', '538', '571', '572', '575', '576', '578', '600', '649', '651', '669', '672', '716', '728', '781', '788', '801', '803', '806', '811', '818', '819', '820', '821', '822', '823', '824', '825', '826', '827', '828', '829', '830', '834', '837', '838', '840', '841', '843', '844', '847', '848', '849', '851', '852', '853', '854', '855', '856', '857', '859', '860', '861', '863', '864', '865', '866', '868', '870', '873'], '200', ['020', '117', '124', '129', '277', '464', '466', '496', '570', '607', '644'], '300', ['041', '049', '076', '111', '219', '278', '307', '331', '460', '482', '505', '516', '610', '628', '664', '758', '768', '791', '793', '812', '814', '816'], '400', ['013', '046', '053', '214', '372', '411', '446', '447', '469', '481', '497', '544', '603', '611', '809', '810'], '500', ['023', '128', '147', '265', '508', '524', '560', '665', '667', '730', '770', '784', '804'], '600', ['225', '318', '456', '492', '493', '507', '551', '742', '809'], '700', ['029', '113', '172', '209', '373', '522', '597', '601', '731', '751', '844'], '800', ['090', '016', '114', '187', '192', '488', '486', '506', '514', '526', '529', '594', '622', '743', '803', '804', '806', '808'], '900', ['173', '315', '417', '467', '491', '559', '677', '767', '784', '788', '792', '800', '861', '968'], 'COGM', ['098', '110', '139', '155', '231', '315', '336', '512', '520', '521', '523', '556', '558', '591', '621', '641', '643', '652', '660', '807', '813', '815', '831', '833', '834', '842', '848', '869', '706', '670', '805', '786', '723', '646', '771', '711', '604', '762', '533', '717', '691', '758', '679', '774', '875']]];
                         if (!localStorage.getItem('atualizacao_pessoas') || localStorage.getItem('atualizacao_pessoas') != new Date().getDate()) {
                             const planilhaURL = "https://docs.google.com/spreadsheets/d/1xr8d6jwh70JBprPBHvZIHHfNdYJO-1UvEgAh9Jh5Ri4/gviz/tq?tqx=out:json&gid=1239289971"; // Substitua com seu ID e gid
                             let resultados = '';
@@ -771,13 +813,13 @@ chrome.storage.local.get("ativa", (data) => {
                                         }
                                     });
                                     gms = ['Dia', ['1000', dados[8], '1100', dados[10], '1200', dados[9], '200', dados[0], '300', dados[1], '400', dados[2], '500', dados[3], '600', dados[4], '700', dados[5], '800', dados[6], '900', dados[7], 'COGM', dados[11]]];
-                                    localStorage.setItem('gms',JSON.stringify(gms));
+                                    localStorage.setItem('gms', JSON.stringify(gms));
                                     localStorage.setItem('atualizacao_pessoas', new Date().getDate());
                                 })
                                 .catch(error => {
                                     console.error("Erro ao carregar dados da planilha:", error);
                                 });
-                        } else if(localStorage.getItem('atualizacao_pessoas') == new Date().getDate() && localStorage.getItem('gms') && localStorage.getItem('gms') != '') {
+                        } else if (localStorage.getItem('atualizacao_pessoas') == new Date().getDate() && localStorage.getItem('gms') && localStorage.getItem('gms') != '') {
                             gms = JSON.parse(localStorage.getItem('gms'));
                         }
 

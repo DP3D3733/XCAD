@@ -10,7 +10,8 @@
     "default_popup": "popup.html"
   },
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   },
   "web_accessible_resources": [
     {
@@ -23,7 +24,9 @@
         "consultas_integradas_tjrs_copiar_dados_basicos.js",
         "consultas_integradas_tjrs_pesquisanome.js",
         "consultas_integradas_tjrs_copiar_resultados_ocorrencias.js",
-        "consultas_integradas_tjrs_individuo_lista_nomes.js"
+        "consultas_integradas_tjrs_individuo_lista_nomes.js",
+        "libs/firebase-app-compat.js",
+        "libs/firebase-firestore-compat.js"
       ],
       "matches": [
         "<all_urls>"
@@ -164,6 +167,7 @@
     "storage",
     "tabs",
     "scripting",
-    "webNavigation"
+    "webNavigation",
+    "https://*.firebaseio.com/"
   ]
 }
