@@ -8,9 +8,9 @@ chrome.storage.local.get("ativa", (data) => {
         var concluir_encarramento_uniade_sv = '';
         localStorage.removeItem('editar_equipe');
 
-        
 
-        
+
+
 
         setInterval(function () {
             if (document.querySelectorAll('app-modal-editar-equipamentos').length > 1) {
@@ -719,19 +719,22 @@ chrome.storage.local.get("ativa", (data) => {
                 }
             }
             setInterval(() => {
-                
+
             }, 1000);
 
 
             if (document.querySelector('app-modal-editar-equipe') && document.querySelector('app-modal-editar-equipe input[formcontrolname="nome"]') && document.querySelector('app-modal-editar-equipe input[formcontrolname="nome"]').value != '') {
                 let gu = document.querySelector('app-modal-editar-equipe input[formcontrolname="nome"]').value;
                 let membros = Array.from(document.querySelectorAll('app-modal-editar-equipe ul li')).map(li => `${li.querySelector('span.titulo').innerText.split(' -')[0].trim()}-()-${li.querySelector('input').value}`);
-                sessionStorage.setItem('equipe_firebase', gu + '|' + membros);
-            }
-            if (!document.querySelector('app-modal-editar-equipe') && sessionStorage.getItem('equipe_firebase')) {
-                
-                chrome.runtime.sendMessage({ action: "atualizar_equipes", payload: sessionStorage.getItem('equipe_firebase') }, response => {
+                if (membros.length > 0) {
                     
+                    sessionStorage.setItem('equipe_firebase',`${(new Date()).getTime()}|${gu}-()-${document.querySelector('#nomeUsuario').innerText}-()-${membros}`);
+                }
+            }
+            if ((!document.querySelector('app-modal-editar-equipe') || (localStorage.getItem('editar_equipe') && document.querySelector('app-modal-editar-equipamentos'))) && sessionStorage.getItem('equipe_firebase')) {
+
+                chrome.runtime.sendMessage({ action: "atualizar_equipes", payload: sessionStorage.getItem('equipe_firebase') }, response => {
+
                     if (chrome.runtime.lastError) {
                         console.error("Erro na mensagem:", chrome.runtime.lastError.message);
                     } else {
@@ -743,7 +746,7 @@ chrome.storage.local.get("ativa", (data) => {
             if (document.querySelector('app-modal-editar-equipamentos')) {
                 let area = document.querySelector('app-modal-editar-equipamentos strong').innerText.split('#')[0].trim();
                 let equipamentos = Array.from(document.querySelectorAll('app-modal-editar-equipamentos ul li')).map(li => `${li.querySelector('span.titulo').innerText.trim()}`);
-                sessionStorage.setItem('equipamentos_firebase', area + '|' + equipamentos);
+                sessionStorage.setItem('equipamentos_firebase',`${(new Date()).getTime()}|${area}-()-${document.querySelector('#nomeUsuario').innerText}-()-${equipamentos}`);
             }
             if (!document.querySelector('app-modal-editar-equipamentos') && sessionStorage.getItem('equipamentos_firebase')) {
                 chrome.runtime.sendMessage({ action: "atualizar_equipamentos", payload: sessionStorage.getItem('equipamentos_firebase') }, response => {
