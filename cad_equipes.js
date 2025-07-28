@@ -725,7 +725,7 @@ chrome.storage.local.get("ativa", (data) => {
 
             if (document.querySelector('app-modal-editar-equipe') && document.querySelector('app-modal-editar-equipe input[formcontrolname="nome"]') && document.querySelector('app-modal-editar-equipe input[formcontrolname="nome"]').value != '') {
                 let gu = document.querySelector('app-modal-editar-equipe input[formcontrolname="nome"]').value;
-                let membros = Array.from(document.querySelectorAll('app-modal-editar-equipe ul li')).map(li => `${li.querySelector('span.titulo').innerText.split(' -')[0].trim()}-()-${li.querySelector('input').value}`);
+                let membros = Array.from(document.querySelectorAll('app-modal-editar-equipe ul li')).map(li => `${li.querySelector('span.titulo').innerText.split(' -')[0].trim()}-++-${li.querySelector('input').value}`);
                 if (membros.length > 0) {
                     
                     sessionStorage.setItem('equipe_firebase',`${(new Date()).getTime()}|${gu}-()-${document.querySelector('#nomeUsuario').innerText}-()-${membros}`);
