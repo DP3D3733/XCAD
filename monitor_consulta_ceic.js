@@ -93,13 +93,17 @@ if (location.href.includes("web.whatsapp.com")) {
                             })
                         );
                     });
+
+                    
                     but_qap.addEventListener('mouseenter', function () {
-                        but_qap.style.backgroundColor = '#f5f6f6'; // Altera a cor de fundo
+                        but_qap.style.backgroundColor = '#f5f6f6';
+                        but_qap.style.color = 'black' // Altera a cor de fundo
                     });
 
                     // Evento de mouse saindo da área do elemento
                     but_qap.addEventListener('mouseleave', function () {
-                        but_qap.style.backgroundColor = '#ffffff'; // Volta à cor original
+                        but_qap.style.backgroundColor = ''; // Volta à cor original
+                        but_qap.style.color = '';
                     });
                 }
 

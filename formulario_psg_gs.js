@@ -332,10 +332,9 @@ chrome.storage.local.get("ativa", (data) => {
             if (document.querySelector('#resumo_relatorio') && !document.querySelector('#resumo_relatorio').innerHTML.includes('⚠️') && !document.querySelector('#resumo_relatorio').innerHTML.includes('PENDÊNCIA')) {
                 let relatorio = '';
                 let campos = document.querySelector('#resumo_relatorio').innerHTML.split('<br>');
+                const preferencias = (localStorage.getItem('minuta_relatorio_preferencias') || '') + (localStorage.getItem('minuta_relatorio_preferencias_hoje') || '');
                 campos.forEach((campo) => {
-                    if (campo != '' && !campo.includes('MINUTA DO RELATÓRIO') && !campo.includes('PENDÊNCIA') && localStorage.getItem('minuta_relatorio_preferencias') && localStorage.getItem('minuta_relatorio_preferencias_hoje') && !localStorage.getItem('minuta_relatorio_preferencias').includes(campo.split('<strong>')[1]?.split('</strong>')[0]) && !localStorage.getItem('minuta_relatorio_preferencias_hoje').includes(campo.split('<strong>')[1]?.split('</strong>')[0]) && (campo.split('</strong>')[1] == '' || campo.split('</strong>')[1] == '0' || campo.split('</strong>')[1] == ':')) {
-                        relatorio += '<div>Não lembrar<button>Hoje</button><button>Nunca</button><span>⚠️</span>' + campo + '<br></div>';
-                    } else if (campo != '' && !campo.includes('MINUTA DO RELATÓRIO') && !campo.includes('PENDÊNCIA') && !localStorage.getItem('minuta_relatorio_preferencias') && !localStorage.getItem('minuta_relatorio_preferencias_hoje') && (campo.split('</strong>')[1] == '' || campo.split('</strong>')[1] == '0' || campo.split('</strong>')[1] == ':')) {
+                    if (campo != '' && !campo.includes('MINUTA DO RELATÓRIO') && !campo.includes('PENDÊNCIA') && !preferencias.includes(campo.split('<strong>')[1]?.split('</strong>')[0]) && (campo.split('</strong>')[1] == '' || campo.split('</strong>')[1] == '0' || campo.split('</strong>')[1] == ':')) {
                         relatorio += '<div>Não lembrar<button>Hoje</button><button>Nunca</button><span>⚠️</span>' + campo + '<br></div>';
                     } else {
                         relatorio += campo + '<br>';
@@ -368,11 +367,11 @@ chrome.storage.local.get("ativa", (data) => {
             }
 
 
-            //Duplica os botões de Próxima Página e Voltar para o topo da tela para facilitar a navegação
-            if (Array.from(document.querySelectorAll('div[role=button]')).filter(item => item.innerText == 'Próxima').length == 1) {
-                document.querySelector('form').insertAdjacentHTML('afterbegin', Array.from(document.querySelectorAll('div[role=button]')).filter(item => item.innerText == 'Próxima')[0].cloneNode(true).outerHTML);
-                Array.from(document.querySelectorAll('div[role=button]')).filter(item => item.innerText == 'Próxima')[0].addEventListener('click', function () {
-                    Array.from(document.querySelectorAll('div[role=button]')).filter(item => item.innerText == 'Próxima')[1].click();
+            //Duplica os botões de Avançar Página e Voltar para o topo da tela para facilitar a navegação
+            if (Array.from(document.querySelectorAll('div[role=button]')).filter(item => item.innerText == 'Avançar').length == 1) {
+                document.querySelector('form').insertAdjacentHTML('afterbegin', Array.from(document.querySelectorAll('div[role=button]')).filter(item => item.innerText == 'Avançar')[0].cloneNode(true).outerHTML);
+                Array.from(document.querySelectorAll('div[role=button]')).filter(item => item.innerText == 'Avançar')[0].addEventListener('click', function () {
+                    Array.from(document.querySelectorAll('div[role=button]')).filter(item => item.innerText == 'Avançar')[1].click();
                 });
             }
             if (Array.from(document.querySelectorAll('div[role=button]')).filter(item => item.innerText == 'Voltar').length == 1) {
