@@ -7,7 +7,7 @@ chrome.storage.local.get("ativa", (data) => {
     if (data.ativa === false) return;
     chrome.storage.local.get("CAD Ocorrências", (d) => {
         if (d['CAD Ocorrências'] == 'desativado') return;
-        var versao = '<span style="margin-right:30px;color: #d3d4d9">XCAD <strong>v1.4.5</strong>, por GM 842 Calebe. Deus é socorro bem presente!</span>';
+        var versao = '<span style="margin-right:30px;color: #d3d4d9">XCAD <strong>v1.5.0</strong>, por GM 842 Calebe. Deus é socorro bem presente!</span>';
         if (!localStorage.getItem('verifica_parametrizacao') || localStorage.getItem('verifica_parametrizacao') != new Date().getDate()) {
             localStorage.setItem('verifica_parametrizacao', 'nada');
         }

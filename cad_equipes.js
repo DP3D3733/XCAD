@@ -3,7 +3,7 @@ chrome.storage.local.get("ativa", (data) => {
     chrome.storage.local.get("CAD Equipes", (d) => {
         if (d['CAD Equipes'] == 'desativado') return;
 
-        var versao = '<span style="margin-right:30px;color: #d3d4d9">XCAD <strong>vv1.4.5</strong>, por GM 842 Calebe. Deus é socorro bem presente!</span>';
+        var versao = '<span style="margin-right:30px;color: #d3d4d9">XCAD <strong>vv1.5.0</strong>, por GM 842 Calebe. Deus é socorro bem presente!</span>';
         var unidade_servico = '';
         sessionStorage.setItem('concluir_encarramento_uniade_sv', '');
         localStorage.removeItem('editar_equipe');
