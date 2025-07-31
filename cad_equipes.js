@@ -5,7 +5,7 @@ chrome.storage.local.get("ativa", (data) => {
 
         var versao = '<span style="margin-right:30px;color: #d3d4d9">XCAD <strong>vv1.4.5</strong>, por GM 842 Calebe. Deus é socorro bem presente!</span>';
         var unidade_servico = '';
-        var concluir_encarramento_uniade_sv = '';
+        sessionStorage.setItem('concluir_encarramento_uniade_sv', '');
         localStorage.removeItem('editar_equipe');
 
 
@@ -13,6 +13,17 @@ chrome.storage.local.get("ativa", (data) => {
 
 
         setInterval(function () {
+            if (Array.from(document.querySelectorAll('button[botaosecundario]')).filter(botao => botao.innerText == 'Nova Unidade de Serviço')[0]) {
+                Array.from(document.querySelectorAll('button[botaosecundario]')).filter(botao => botao.innerText == 'Nova Unidade de Serviço')[0].style.display = 'none';
+            }
+            if (document.querySelector('app-manter-unidade-servico button[type="submit"]')) {
+                document.querySelector('app-manter-unidade-servico button[type="submit"]').style.display = 'none';
+            }
+            document.querySelectorAll('button[title="Incluir Equipe"]').forEach(button => {
+                button.style.display = 'none';
+            })
+
+
             if (document.querySelectorAll('app-modal-editar-equipamentos').length > 1) {
                 document.querySelectorAll('app-modal-editar-equipamentos')[1].querySelector('button[fecharmodal]').click();
             }
@@ -91,7 +102,7 @@ chrome.storage.local.get("ativa", (data) => {
             }
             if (!localStorage.getItem('editar_equipe')) {
                 document.querySelectorAll('button').forEach(function (botao) {
-                    if (botao.style.display == 'none') {
+                    if (botao.style.display == 'none' && botao.innerHTML != 'Nova Unidade de Serviço' && botao.innerHTML != 'Alterar' && botao.title != 'Incluir Equipe') {
                         botao.style.display = '';
                     }
                 });
@@ -246,11 +257,14 @@ chrome.storage.local.get("ativa", (data) => {
 
                 }
             }
-            if (localStorage.getItem('processo_edicao') == 'excluir_pessoas' && document.querySelector('div[matsnackbarlabel]') && document.querySelector('div[matsnackbarlabel]').innerText.includes('encerrado com sucesso') && document.querySelectorAll('app-unidade-servico-card')[parseInt(localStorage.getItem('editar_equipe').split('-')[1])] && concluir_encarramento_uniade_sv != 'sim') {
+            if (localStorage.getItem('processo_edicao') == 'excluir_pessoas' && document.querySelector('div[matsnackbarlabel]') && document.querySelector('div[matsnackbarlabel]').innerText.includes('encerrado com sucesso') && document.querySelectorAll('app-unidade-servico-card')[parseInt(localStorage.getItem('editar_equipe').split('-')[1])] && sessionStorage.getItem('concluir_encarramento_uniade_sv') != 'sim') {
                 for (let i = 0; i < document.querySelectorAll('app-unidade-servico-card')[parseInt(localStorage.getItem('editar_equipe').split('-')[1])].querySelectorAll('app-equipe-mini-card').length; i++) {
                     if (document.querySelectorAll('app-unidade-servico-card')[parseInt(localStorage.getItem('editar_equipe').split('-')[1])].querySelectorAll('app-equipe-mini-card')[i].querySelector('span').innerHTML.includes(document.querySelectorAll('select')[3].value)) {
                         document.querySelectorAll('app-unidade-servico-card')[parseInt(localStorage.getItem('editar_equipe').split('-')[1])].querySelectorAll('app-equipe-mini-card')[i].querySelectorAll('button')[1].click();
-                        concluir_encarramento_uniade_sv = 'sim';
+                        setTimeout(() => {
+                            sessionStorage.setItem('concluir_encarramento_uniade_sv', 'nao');
+                        }, 2000);
+                        sessionStorage.setItem('concluir_encarramento_uniade_sv', 'sim');
                     }
                 };
             }
@@ -259,7 +273,7 @@ chrome.storage.local.get("ativa", (data) => {
                     document.querySelector('app-modal-editar-equipe').querySelector('div[class="acoes-card ng-star-inserted"]').click();
                     if (document.querySelector('app-modal-editar-equipe').querySelector('div[class="row-actions"]')) {
                         document.querySelector('app-modal-editar-equipe').querySelector('div[class="row-actions"]').querySelector('button').click();
-                        concluir_encarramento_uniade_sv = 'nao';
+                        sessionStorage.setItem('concluir_encarramento_uniade_sv', 'nao');
                     }
                 }
 
@@ -727,8 +741,8 @@ chrome.storage.local.get("ativa", (data) => {
                 let gu = document.querySelector('app-modal-editar-equipe input[formcontrolname="nome"]').value;
                 let membros = Array.from(document.querySelectorAll('app-modal-editar-equipe ul li')).map(li => `${li.querySelector('span.titulo').innerText.split(' -')[0].trim()}-++-${li.querySelector('input').value}`);
                 if (membros.length > 0) {
-                    
-                    sessionStorage.setItem('equipe_firebase',`${(new Date()).getTime()}|${gu}-()-${document.querySelector('#nomeUsuario').innerText}-()-${membros}`);
+
+                    sessionStorage.setItem('equipe_firebase', `${(new Date()).getTime()}|${gu}-()-${document.querySelector('#nomeUsuario').innerText}-()-${membros}`);
                 }
             }
             if ((!document.querySelector('app-modal-editar-equipe') || (localStorage.getItem('editar_equipe') && document.querySelector('app-modal-editar-equipamentos'))) && sessionStorage.getItem('equipe_firebase')) {
@@ -746,7 +760,7 @@ chrome.storage.local.get("ativa", (data) => {
             if (document.querySelector('app-modal-editar-equipamentos')) {
                 let area = document.querySelector('app-modal-editar-equipamentos strong').innerText.split('#')[0].trim();
                 let equipamentos = Array.from(document.querySelectorAll('app-modal-editar-equipamentos ul li')).map(li => `${li.querySelector('span.titulo').innerText.trim()}`);
-                sessionStorage.setItem('equipamentos_firebase',`${(new Date()).getTime()}|${area}-()-${document.querySelector('#nomeUsuario').innerText}-()-${equipamentos}`);
+                sessionStorage.setItem('equipamentos_firebase', `${(new Date()).getTime()}|${area}-()-${document.querySelector('#nomeUsuario').innerText}-()-${equipamentos}`);
             }
             if (!document.querySelector('app-modal-editar-equipamentos') && sessionStorage.getItem('equipamentos_firebase')) {
                 chrome.runtime.sendMessage({ action: "atualizar_equipamentos", payload: sessionStorage.getItem('equipamentos_firebase') }, response => {
