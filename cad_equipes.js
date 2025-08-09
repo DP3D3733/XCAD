@@ -3,7 +3,18 @@ chrome.storage.local.get("ativa", (data) => {
     chrome.storage.local.get("CAD Equipes", (d) => {
         if (d['CAD Equipes'] == 'desativado') return;
 
-        var versao = '<span style="margin-right:30px;color: #d3d4d9">XCAD <strong>vv1.5.1</strong>, por GM 842 Calebe. Deus é socorro bem presente!</span>';
+        let versao, versiculo;
+        fetch(chrome.runtime.getURL("versiculos.json"))
+            .then(response => response.json())
+            .then(data => {
+                versiculo = data[Math.floor(Math.random() * data.length)].text;
+                versao = `<span style="margin-right:30px;color: #d3d4d9">XCAD <strong>v1.5.2</strong>, por GM 842 Calebe. ${versiculo}</span>`;
+            })
+            .catch(err => {
+                console.error("Erro ao carregar JSON:", err);
+                versao = `<span style="margin-right:30px;color: #d3d4d9">XCAD <strong>vv1.5.2</strong>, por GM 842 Calebe.</span>`;
+            });
+        
         var unidade_servico = '';
         sessionStorage.setItem('concluir_encarramento_uniade_sv', '');
         localStorage.removeItem('editar_equipe');
@@ -33,7 +44,7 @@ chrome.storage.local.get("ativa", (data) => {
             }
 
 
-            if (document.querySelector('cad-breadcrumb div') && !document.querySelector('cad-breadcrumb div').innerHTML.includes(versao)) {
+            if (versao && document.querySelector('cad-breadcrumb div') && !document.querySelector('cad-breadcrumb div').innerHTML.includes(versao)) {
                 document.querySelector('cad-breadcrumb div').innerHTML += versao;
             }
             if (document.querySelector('mat-option')) {

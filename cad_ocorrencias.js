@@ -7,7 +7,17 @@ chrome.storage.local.get("ativa", (data) => {
     if (data.ativa === false) return;
     chrome.storage.local.get("CAD Ocorrências", (d) => {
         if (d['CAD Ocorrências'] == 'desativado') return;
-        var versao = '<span style="margin-right:30px;color: #d3d4d9">XCAD <strong>v1.5.0</strong>, por GM 842 Calebe. Deus é socorro bem presente!</span>';
+        let versao, versiculo;
+        fetch(chrome.runtime.getURL("versiculos.json"))
+            .then(response => response.json())
+            .then(data => {
+                versiculo = data[Math.floor(Math.random() * data.length)].text;
+                versao = `<span style="margin-right:30px;color: #d3d4d9">XCAD <strong>v1.5.2</strong>, por GM 842 Calebe. ${versiculo}</span>`;
+            })
+            .catch(err => {
+                console.error("Erro ao carregar JSON:", err);
+                versao = `<span style="margin-right:30px;color: #d3d4d9">XCAD <strong>vv1.5.2</strong>, por GM 842 Calebe.</span>`;
+            });
         if (!localStorage.getItem('verifica_parametrizacao') || localStorage.getItem('verifica_parametrizacao') != new Date().getDate()) {
             localStorage.setItem('verifica_parametrizacao', 'nada');
         }
@@ -41,7 +51,7 @@ chrome.storage.local.get("ativa", (data) => {
                     document.querySelector('button[botaoconfirmar]').click();
                 }
             }
-            if (document.querySelector('app-info-status-voip') && !document.querySelector('app-info-status-voip').innerHTML.includes(versao)) {
+            if (versao && document.querySelector('app-info-status-voip') && !document.querySelector('app-info-status-voip').innerHTML.includes(versao)) {
                 document.querySelector('app-info-status-voip').innerHTML = versao
             }
             document.querySelectorAll('.tabela-title').forEach(function (item) { item.style.display = 'none' });
