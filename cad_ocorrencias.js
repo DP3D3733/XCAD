@@ -611,6 +611,7 @@ chrome.storage.local.get("ativa", (data) => {
                         }
                         document.querySelector('textarea[formcontrolname="relato"]').dispatchEvent(new Event('input', { bubbles: true }));
                     }
+
                 }
             }
             if (document.querySelector('app-edicao-ocorrencia-formulario') && !document.querySelector("div[id='naorepetealtenter_salvar']")) {
@@ -1258,4 +1259,27 @@ function atalho_botao_salvar(button) {
             }
         }
     });
+}
+
+if (window.location.href.includes('editar-ocorrencia')) {
+    let bairro;
+    let manter_bairro = setInterval(() => {
+        if (document.querySelector("#mat-input-10") && !bairro) {
+            bairro = document.querySelector("#mat-input-10").value;
+            console.log(document.querySelector("#mat-input-10").outerHTML)
+        } else if (document.querySelector("#mat-input-10") && bairro && document.querySelector("#mat-input-10").value != bairro && document.querySelector("#mat-input-3").value == 'Porto Alegre') {
+            document.querySelector("body > app-pop-out > div > app-edicao-ocorrencia-formulario > div.formulario-edicao > div.div-golden-layout > gl-host > div > div > div:nth-child(3) > div:nth-child(1) > div > section.lm_items > div > div > app-edicao-ocorrencia-golden-layout > div > ng-component > div > div > cad-tab-vertical-set > div > div.vertical-menu-content > cad-tab > app-chamado-form-localizacao > form > div > div:nth-child(2) > div:nth-child(3) > div:nth-child(1) > cad-select-autocomplete > mat-form-field > div.mat-mdc-text-field-wrapper.mdc-text-field.ng-tns-c508571215-27.mdc-text-field--outlined > div > div.mat-mdc-form-field-icon-suffix.ng-tns-c508571215-27.ng-star-inserted > button").click();
+            const alvo = document.querySelector("#mat-input-10");
+            alvo.value = bairro;
+            ["mousedown", "mouseup", "click", "focus", "input", "blur"].forEach(evtName => {
+                const evt = new Event(evtName, { bubbles: true, cancelable: true });
+                alvo.dispatchEvent(evt);
+            });
+            ["mousedown", "mouseup", "click", "focus", "input", "blur"].forEach(evtName => {
+                const evt = new Event(evtName, { bubbles: true, cancelable: true });
+                alvo.dispatchEvent(evt);
+            });
+
+        }
+    }, 100);
 }
