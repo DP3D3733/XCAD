@@ -418,6 +418,7 @@ chrome.storage.local.get("ativa", (data) => {
                             if (input.checked == true) {
                                 if (qual_filtro == 'cogm') {
                                     document.querySelector('div[data-params*=COGM]').style.display = '';
+                                    document.querySelector('div[data-params*=OUTROS]').style.display = '';
                                     document.getElementById('campo_insere_cogm').style.display = '';
                                 }
                                 if (qual_filtro == 'areas') {
@@ -763,6 +764,7 @@ chrome.storage.local.get("ativa", (data) => {
                             } else {
                                 if (qual_filtro == 'cogm') {
                                     document.querySelector('div[data-params*=COGM]').style.display = 'none';
+                                    document.querySelector('div[data-params*=OUTROS]').style.display = 'none';
                                     document.getElementById('campo_insere_cogm').style.display = 'none';
                                 }
                                 if (qual_filtro == 'areas') {
