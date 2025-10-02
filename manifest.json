@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "XCAD",
-  "version": "1.5.3.1",
+  "version": "1.5.3.2",
   "description": "Conjunto de módulos de automação para o serviço na COGM-GM POA",
   "icons": {
     "128": "icon.png"
@@ -73,7 +73,7 @@
     },
     {
       "matches": [
-        "https://portalbnmp.cnj.jus.br/*"
+        "https://portalbnmp.pdpj.jus.br/*"
       ],
       "js": [
         "consulta_cnj.js"
