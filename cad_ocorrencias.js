@@ -356,7 +356,7 @@ chrome.storage.local.get("ativa", (data) => {
                     const firstChar = area.trim().split('-()-')[1].charAt(0);
                     area = areaMap[firstChar] || 'Centro';
                     for (let i = 0; i < document.querySelectorAll("app-regiao-selecionavel").length; i++) {
-                        if (document.querySelectorAll("app-regiao-selecionavel")[i].innerHTML.includes(area)) {
+                        if (document.querySelectorAll("app-regiao-selecionavel")[i].innerHTML.includes(area) && document.querySelectorAll("app-regiao-selecionavel")[i].innerHTML.includes('Guarda Municipal')) {
                             document.querySelectorAll("app-regiao-selecionavel")[i].querySelector('label').click();
                         }
                     }
