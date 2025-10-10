@@ -56,7 +56,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                         chrome.tabs.reload(targetTab.id); // Recarrega a aba após ativá-la
                     });
                 } else {
-                    chrome.tabs.create({ url: "https://portalbnmp.cnj.jus.br/" });
+                    chrome.tabs.create({ url: "https://portalbnmp.pdpj.jus.br/" });
                 }
             });
         });

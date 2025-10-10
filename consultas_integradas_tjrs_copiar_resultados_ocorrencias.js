@@ -54,7 +54,7 @@
         window.postMessage({ type: "img", payload: 'SEM IMAGENS'}, "*");
         document.querySelector('#botao_buscar_mandado').addEventListener('click', function (item) {
             navigator.clipboard.writeText(tb);
-            window.open("https://portalbnmp.cnj.jus.br/", "_blank");
+            window.open("https://portalbnmp.pdpj.jus.br/", "_blank");
         });
     }
 }, 100);

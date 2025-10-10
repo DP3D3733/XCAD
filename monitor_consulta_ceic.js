@@ -30,7 +30,7 @@ if (location.href.includes("web.whatsapp.com")) {
                                 possiveis_gus.push(gus_numero[gus_extenso.indexOf(item)]);
                             }
                         });
-                        if(possiveis_gus.length == 0) {
+                        if (possiveis_gus.length == 0) {
                             possiveis_gus.push('Definir Gu')
                         }
                         possiveis_gus.forEach(function (item) {
@@ -46,7 +46,7 @@ if (location.href.includes("web.whatsapp.com")) {
                     but_qap.parentNode.addEventListener('click', function () {
                         let horario = document.querySelector('div[aria-label="Menu de contexto"]').parentNode.parentNode.parentNode.querySelectorAll('span[dir=auto]')[document.querySelector('div[aria-label="Menu de contexto"]').parentNode.parentNode.parentNode.querySelectorAll('span[dir=auto]').length - 1].innerText.replaceAll('Editada', '');
                         let gu;
-                        if(this.innerText.includes('Definir')) {
+                        if (this.innerText.includes('Definir')) {
                             gu = prompt('Defina a Gu escrevendo: 21, 31, 41, 51, 61, 71, 81, 91, C1, R1 ou P1');
                         } else {
                             gu = this.innerText.split(' ')[1];
@@ -94,7 +94,7 @@ if (location.href.includes("web.whatsapp.com")) {
                         );
                     });
 
-                    
+
                     but_qap.addEventListener('mouseenter', function () {
                         but_qap.style.backgroundColor = '#f5f6f6';
                         but_qap.style.color = 'black' // Altera a cor de fundo
@@ -168,7 +168,7 @@ if (location.href.includes("web.whatsapp.com")) {
                                             // 3. Criar um DataTransfer com esse arquivo
                                             const dt = new DataTransfer();
                                             dt.items.add(file);
-                                            document.querySelector('button[title=Anexar]')?.click();
+                                            document.querySelector('[aria-label="Anexar"]')?.click();
                                             // 4. Encontrar o input de arquivo e simular upload
                                             const interval = setInterval(() => {
                                                 const input = document.querySelector('input[type="file"][accept="image/*,video/mp4,video/3gpp,video/quicktime"]');
@@ -188,12 +188,7 @@ if (location.href.includes("web.whatsapp.com")) {
                                                 }
                                             }, 500);
                                             const interval_legenda = setInterval(() => {
-                                                let input = '';
-                                                if (response_dados_consulta.length > 800) {
-                                                    input = document.querySelector('div[aria-label="Digite uma mensagem"]');
-                                                } else {
-                                                    input = document.querySelector('div[aria-label="Adicione uma legenda"]');
-                                                }
+                                                let input = document.querySelector('div[aria-placeholder="Digite uma mensagem"]');
                                                 if (input && !document.querySelector('#trava_texto')) {
                                                     a = document.createElement("div");
                                                     a.setAttribute("id", "trava_texto");

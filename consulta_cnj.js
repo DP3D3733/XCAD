@@ -18,7 +18,7 @@ chrome.storage.local.get("ativa", (data) => {
             sessionStorage.setItem('dados_envolvido', await window.navigator.clipboard.readText());
         }
         function selecionarTabela(el) {
-            var body = document.body, range, sel;
+            let body = document.body, range, sel;
             if (document.createRange && window.getSelection) {
                 range = document.createRange();
                 sel = window.getSelection();
@@ -42,10 +42,12 @@ chrome.storage.local.get("ativa", (data) => {
                 // Exceção aqui
             }
         }
-        var procurado = '';
-        var mae = '';
-        var cpf = '';
-        var dataNascimento = '';
+        let procurado = '';
+        let mae = '';
+        let cpf = '';
+        let dataNascimento = '';
+        let foragido = '';
+        let pesquisa;
         setInterval(function () {
             if (document.querySelector('app-pesquisa-peca') && !document.body.innerText.includes('Nenhum registro encontrado') && !document.body.innerText.includes('DADOS BÁSICOS')) {
                 let copiar_resultados = document.createElement("button");
@@ -53,24 +55,24 @@ chrome.storage.local.get("ativa", (data) => {
                 copiar_resultados.setAttribute('style', 'height:150px;width:400px');
                 copiar_resultados.innerHTML = 'Copiar Resultados';
                 document.querySelector('h3').parentNode.insertAdjacentElement('beforebegin', copiar_resultados);
-                var resultado = document.querySelector('h3').parentNode;
+                let resultado = document.querySelector('h3').parentNode;
                 chrome.storage.local.get("imagem_consulta", (result) => {
                     if (result.imagem_consulta) {
                         const img = document.createElement("img");
                         img.src = result.imagem_consulta;
                         img.style.maxWidth = "300px";
-                        resultado.appendChild(img);
+                        copiar_resultados.insertAdjacentElement('afterend', img);
                     }
                 });
                 let dados_envolvido = sessionStorage.getItem('dados_envolvido');
                 sessionStorage.clear();
-                resultado.innerHTML = ('<div dados>*ATENÇÃO! CONDUZIR! ENVIAR IMAGENS DA CONDUÇÃO.*\n\n*MANDADO:*\n' + document.querySelector('tbody td').innerText + dados_envolvido + '</div>').replaceAll('\n', '<br>');
+                resultado.innerHTML = ('<div dados>*ATENÇÃO! CONDUZIR! ENVIAR IMAGENS DA CONDUÇÃO.*\n\n*MANDADO:*\n' + document.querySelector('tbody td').innerText + '\n\n' + dados_envolvido + '</div>').replaceAll('\n', '<br>').replaceAll('Foragido Polícia Penal<br>', '');
                 chrome.storage.local.get("pedido_consulta", (result) => {
                     if (result.pedido_consulta) {
                         chrome.storage.local.remove('pedido_consulta', function () {
                             console.log('Removido!');
                         });
-                        chrome.storage.local.set({ dados_consulta: '*ATENÇÃO! CONDUZIR!*\n\n*MANDADO:*\n' + document.querySelector('tbody td').innerText + '\n\n' + dados_envolvido }, () => {
+                        chrome.storage.local.set({ dados_consulta: '*ATENÇÃO! CONDUZIR! ENVIAR IMAGENS DA CONDUÇÃO.*\n\n*MANDADO:*\n' + document.querySelector('tbody td').innerText + '\n\n' + dados_envolvido }, () => {
                             chrome.runtime.sendMessage({ action: "retorna_consulta", data: '' });
                         });
                     }
@@ -91,13 +93,15 @@ chrome.storage.local.get("ativa", (data) => {
                 });
             }
             if (document.querySelector('input[name=nomePessoa]') && sessionStorage.getItem('dados_envolvido') && (!sessionStorage.getItem('dados_envolvido_ja_pesquisados') || !sessionStorage.getItem('dados_envolvido_ja_pesquisados').includes(sessionStorage.getItem('dados_envolvido')))) {
-                var pesquisa = sessionStorage.getItem('dados_envolvido');
+                pesquisa = sessionStorage.getItem('dados_envolvido');
                 procurado = pesquisa.split('Nome: ')[1]?.split('\n')[0].replaceAll('&nbsp;', '');
                 mae = pesquisa.split('Nome da mãe: ')[1]?.split('\n')[0].replaceAll('&nbsp;', '');
                 cpf = pesquisa.split('CPF: ')[1]?.split('\n')[0].replaceAll('&nbsp;', '');
                 dataNascimento = pesquisa.split('Nascimento: ')[1]?.split('\n')[0].replaceAll('&nbsp;', '');
-
-                if (cpf && cpf.trim() != '') {
+                if (pesquisa.includes('Foragido Polícia Penal')) {
+                    foragido = 'sim';
+                }
+                if (cpf && cpf.trim() != '' && foragido == '') {
                     document.querySelector('input[name=numeroCpf]').click();
                     document.querySelector('input[name=numeroCpf]').value = cpf;
                     document.querySelector('input[name=numeroCpf]').dispatchEvent(
@@ -137,17 +141,17 @@ chrome.storage.local.get("ativa", (data) => {
                 copiar_resultados.setAttribute('style', 'height:150px;width:400px');
                 copiar_resultados.innerHTML = 'Copiar Resultados';
                 resultado.parentNode.insertAdjacentElement('beforebegin', copiar_resultados);
-                let buscar_ultima_abordagem = document.createElement("button");
-                buscar_ultima_abordagem.setAttribute('id', 'buscar_ultima_abordagem');
-                buscar_ultima_abordagem.setAttribute('style', 'height:150px;width:400px');
-                buscar_ultima_abordagem.innerHTML = 'Buscar Última Abordagem';
-                resultado.parentNode.insertAdjacentElement('beforebegin', buscar_ultima_abordagem);
+                let enviar_whats = document.createElement("button");
+                enviar_whats.setAttribute('id', 'enviar_whats');
+                enviar_whats.setAttribute('style', 'height:150px;width:400px');
+                enviar_whats.innerHTML = 'Enviar P/ WhatsApp';
+                resultado.parentNode.insertAdjacentElement('beforebegin', enviar_whats);
                 chrome.storage.local.get("imagem_consulta", (result) => {
                     if (result.imagem_consulta) {
                         const img = document.createElement("img");
                         img.src = result.imagem_consulta;
                         img.style.maxWidth = "300px";
-                        resultado.appendChild(img);
+                        document.querySelector('app-sem-resultado').insertAdjacentElement('afterbegin', img);
                     }
                 });
                 let dados_envolvido = sessionStorage.getItem('dados_envolvido');
@@ -179,20 +183,13 @@ chrome.storage.local.get("ativa", (data) => {
                     selection.addRange(range);
                 });
 
-                document.querySelector('#buscar_ultima_abordagem').addEventListener('click', function () {
-                    navigator.clipboard.writeText(resultado.innerHTML.replace('*DADOS BÁSICOS:*', '\n\n*DADOS BÁSICOS:*').replace('*OCORRÊNCIAS:*', '\n*OCORRÊNCIAS:*').replaceAll('&nbsp;', ''));
-                    const range = document.createRange();
-                    const selection = window.getSelection();
-
-                    // Apaga qualquer seleção anterior
-                    selection.removeAllRanges();
-
-                    // Cria uma faixa de seleção e seleciona o conteúdo
-                    range.selectNodeContents(resultado);
-
-                    // Adiciona a seleção ao window.getSelection()
-                    selection.addRange(range);
-                    window.open(sessionStorage.getItem('ultima_abordagem'), "_blank");
+                document.querySelector('#enviar_whats').addEventListener('click', function () {
+                    chrome.storage.local.remove('pedido_consulta', function () {
+                        console.log('Removido!');
+                    });
+                    chrome.storage.local.set({ dados_consulta: this.nextElementSibling.querySelector('div[dados]').innerHTML.replaceAll('<br>','\n')}, () => {
+                        chrome.runtime.sendMessage({ action: "retorna_consulta", data: '' });
+                    });
                 });
             }
         }, 100);
