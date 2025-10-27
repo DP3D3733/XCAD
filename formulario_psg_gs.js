@@ -283,7 +283,6 @@ chrome.storage.local.get("ativa", (data) => {
                     gsp_romu: '',
                     gp_romu: '',
                     portaria_romu: '',
-                    gso_centro: '',
                     gsp_centro: '',
                     gp_centro: '',
                     portaria_centro: '',
@@ -331,10 +330,9 @@ chrome.storage.local.get("ativa", (data) => {
             if (document.querySelector('#resumo_relatorio') && !document.querySelector('#resumo_relatorio').innerHTML.includes('⚠️') && !document.querySelector('#resumo_relatorio').innerHTML.includes('PENDÊNCIA')) {
                 let relatorio = '';
                 let campos = document.querySelector('#resumo_relatorio').innerHTML.split('<br>');
+                const preferencias = (localStorage.getItem('minuta_relatorio_preferencias') || '') + (localStorage.getItem('minuta_relatorio_preferencias_hoje') || '');
                 campos.forEach((campo) => {
-                    if (campo != '' && !campo.includes('MINUTA DO RELATÓRIO') && !campo.includes('PENDÊNCIA') && localStorage.getItem('minuta_relatorio_preferencias') && localStorage.getItem('minuta_relatorio_preferencias_hoje') && !localStorage.getItem('minuta_relatorio_preferencias').includes(campo.split('<strong>')[1]?.split('</strong>')[0]) && !localStorage.getItem('minuta_relatorio_preferencias_hoje').includes(campo.split('<strong>')[1]?.split('</strong>')[0]) && (campo.split('</strong>')[1] == '' || campo.split('</strong>')[1] == '0' || campo.split('</strong>')[1] == ':')) {
-                        relatorio += '<div>Não lembrar<button>Hoje</button><button>Nunca</button><span>⚠️</span>' + campo + '<br></div>';
-                    } else if (campo != '' && !campo.includes('MINUTA DO RELATÓRIO') && !campo.includes('PENDÊNCIA') && !localStorage.getItem('minuta_relatorio_preferencias') && !localStorage.getItem('minuta_relatorio_preferencias_hoje') && (campo.split('</strong>')[1] == '' || campo.split('</strong>')[1] == '0' || campo.split('</strong>')[1] == ':')) {
+                    if (campo != '' && !campo.includes('MINUTA DO RELATÓRIO') && !campo.includes('PENDÊNCIA') && !preferencias.includes(campo.split('<strong>')[1]?.split('</strong>')[0]) && (campo.split('</strong>')[1] == '' || campo.split('</strong>')[1] == '0' || campo.split('</strong>')[1] == ':')) {
                         relatorio += '<div>Não lembrar<button>Hoje</button><button>Nunca</button><span>⚠️</span>' + campo + '<br></div>';
                     } else {
                         relatorio += campo + '<br>';
@@ -367,7 +365,7 @@ chrome.storage.local.get("ativa", (data) => {
             }
 
 
-            //Duplica os botões de Avançar e Voltar para o topo da tela para facilitar a navegação
+            //Duplica os botões de Avançar Página e Voltar para o topo da tela para facilitar a navegação
             if (Array.from(document.querySelectorAll('div[role=button]')).filter(item => item.innerText == 'Avançar').length == 1) {
                 document.querySelector('form').insertAdjacentHTML('afterbegin', Array.from(document.querySelectorAll('div[role=button]')).filter(item => item.innerText == 'Avançar')[0].cloneNode(true).outerHTML);
                 Array.from(document.querySelectorAll('div[role=button]')).filter(item => item.innerText == 'Avançar')[0].addEventListener('click', function () {
@@ -418,6 +416,7 @@ chrome.storage.local.get("ativa", (data) => {
                             if (input.checked == true) {
                                 if (qual_filtro == 'cogm') {
                                     document.querySelector('div[data-params*=COGM]').style.display = '';
+                                    document.querySelector('div[data-params*=OUTROS]').style.display = '';
                                     document.getElementById('campo_insere_cogm').style.display = '';
                                 }
                                 if (qual_filtro == 'areas') {
@@ -758,6 +757,7 @@ chrome.storage.local.get("ativa", (data) => {
                             } else {
                                 if (qual_filtro == 'cogm') {
                                     document.querySelector('div[data-params*=COGM]').style.display = 'none';
+                                    document.querySelector('div[data-params*=OUTROS]').style.display = 'none';
                                     document.getElementById('campo_insere_cogm').style.display = 'none';
                                 }
                                 if (qual_filtro == 'areas') {

@@ -7,7 +7,17 @@ chrome.storage.local.get("ativa", (data) => {
     if (data.ativa === false) return;
     chrome.storage.local.get("CAD Ocorrências", (d) => {
         if (d['CAD Ocorrências'] == 'desativado') return;
-        var versao = '<span style="margin-right:30px;color: #d3d4d9">XCAD <strong>v1.4.5</strong>, por GM 842 Calebe. Deus é socorro bem presente!</span>';
+        let versao, versiculo;
+        fetch(chrome.runtime.getURL("versiculos.json"))
+            .then(response => response.json())
+            .then(data => {
+                versiculo = data[Math.floor(Math.random() * data.length)].text;
+                versao = `<span style="margin-right:30px;color: #d3d4d9">XCAD <strong>v1.5.3</strong>, por GM 842 Calebe. ${versiculo}</span>`;
+            })
+            .catch(err => {
+                console.error("Erro ao carregar JSON:", err);
+                versao = `<span style="margin-right:30px;color: #d3d4d9">XCAD <strong>vv1.5.2</strong>, por GM 842 Calebe.</span>`;
+            });
         if (!localStorage.getItem('verifica_parametrizacao') || localStorage.getItem('verifica_parametrizacao') != new Date().getDate()) {
             localStorage.setItem('verifica_parametrizacao', 'nada');
         }
@@ -41,7 +51,7 @@ chrome.storage.local.get("ativa", (data) => {
                     document.querySelector('button[botaoconfirmar]').click();
                 }
             }
-            if (document.querySelector('app-info-status-voip') && !document.querySelector('app-info-status-voip').innerHTML.includes(versao)) {
+            if (versao && document.querySelector('app-info-status-voip') && !document.querySelector('app-info-status-voip').innerHTML.includes(versao)) {
                 document.querySelector('app-info-status-voip').innerHTML = versao
             }
             document.querySelectorAll('.tabela-title').forEach(function (item) { item.style.display = 'none' });
@@ -302,7 +312,7 @@ chrome.storage.local.get("ativa", (data) => {
             if (document.querySelector("input[formcontrolname=horaFato]") && document.querySelector("input[formcontrolname=horaFato]").value == '__:__' && document.querySelector("input[formcontrolname=dataFato]") && document.querySelector("input[formcontrolname=dataFato]").value != '' && document.getElementById('cod_montar_cad').value.match(/\d{2}(\D)\d{2}\1\d{4}/g)) {
                 document.getElementById('cod_montar_cad').dispatchEvent(new Event('input', { bubbles: true }));
             }
-            if (localStorage.getItem("dados_para_o_cad") && document.getElementById('cod_montar_cad') && document.querySelector('app-logradouro-autocomplete input[placeholder="Por Favor Informe ao Menos 3 caracteres"]') && document.querySelector('app-protocolo-tempo-chamado').innerHTML.includes('GM-POA2025')) {
+            if (localStorage.getItem("dados_para_o_cad") && document.getElementById('cod_montar_cad') && document.querySelector('app-logradouro-autocomplete input[placeholder="Por Favor Informe ao Menos 3 caracteres"]') && document.querySelector('app-protocolo-tempo-chamado').innerHTML.includes('GCM-POA2025')) {
                 sessionStorage.setItem('multicads_montar_cad', JSON.stringify(localStorage.getItem("dados_para_o_cad").split('-++-')));
                 localStorage.removeItem("dados_para_o_cad");
             }
@@ -346,7 +356,7 @@ chrome.storage.local.get("ativa", (data) => {
                     const firstChar = area.trim().split('-()-')[1].charAt(0);
                     area = areaMap[firstChar] || 'Centro';
                     for (let i = 0; i < document.querySelectorAll("app-regiao-selecionavel").length; i++) {
-                        if (document.querySelectorAll("app-regiao-selecionavel")[i].innerHTML.includes(area)) {
+                        if (document.querySelectorAll("app-regiao-selecionavel")[i].innerHTML.includes(area) && document.querySelectorAll("app-regiao-selecionavel")[i].innerHTML.includes('Guarda Municipal')) {
                             document.querySelectorAll("app-regiao-selecionavel")[i].querySelector('label').click();
                         }
                     }
@@ -601,6 +611,7 @@ chrome.storage.local.get("ativa", (data) => {
                         }
                         document.querySelector('textarea[formcontrolname="relato"]').dispatchEvent(new Event('input', { bubbles: true }));
                     }
+
                 }
             }
             if (document.querySelector('app-edicao-ocorrencia-formulario') && !document.querySelector("div[id='naorepetealtenter_salvar']")) {
@@ -623,7 +634,7 @@ chrome.storage.local.get("ativa", (data) => {
                     localStorage.removeItem("cad_relacionado_decorrente");
                 }
             }
-            if (document.querySelector('app-finalizar-ocorrencia-modal') && document.querySelector('app-async-data-loading') && document.querySelector('app-async-data-loading').querySelector('span') && document.querySelector('app-async-data-loading').innerHTML.includes('GM-POA')) {
+            if (document.querySelector('app-finalizar-ocorrencia-modal') && document.querySelector('app-async-data-loading') && document.querySelector('app-async-data-loading').querySelector('span') && document.querySelector('app-async-data-loading').innerHTML.includes('GCM-POA')) {
                 if (document.querySelector("div[id='naorepete']")) {
                 } else {
                     var natureza_inicial = '';
@@ -1028,7 +1039,7 @@ chrome.storage.local.get("ativa", (data) => {
                 }
             }
 
-            if (document.querySelector('app-ocorrencias-despachadas-golden-layout') && document.querySelector('app-ocorrencias-nao-despachadas-golden-layout app-card-ocorrencia p[class*="dado-card protocolo"]') && (!document.querySelector('app-ocorrencias-despachadas-golden-layout').innerHTML.includes('GM-POA2025') || !document.querySelector('app-ocorrencias-nao-despachadas-golden-layout').innerHTML.includes('GM-POA2025'))) {
+            if (document.querySelector('app-ocorrencias-despachadas-golden-layout') && document.querySelector('app-ocorrencias-nao-despachadas-golden-layout app-card-ocorrencia p[class*="dado-card protocolo"]') && (!document.querySelector('app-ocorrencias-despachadas-golden-layout').innerHTML.includes('GCM-POA2025') || !document.querySelector('app-ocorrencias-nao-despachadas-golden-layout').innerHTML.includes('GCM-POA2025'))) {
                 document.querySelector("#painelMenuFiltrosOcorrenciasDespachadas div[class*= toggle-switch]").click();
                 if (document.querySelectorAll("#painelMenuFiltrosOcorrenciasDespachadas input[type=checkbox]")[document.querySelectorAll("#painelMenuFiltrosOcorrenciasDespachadas input[type=checkbox]").length - 1].checked == true) {
                     document.querySelectorAll("#painelMenuFiltrosOcorrenciasDespachadas input[type=checkbox]")[document.querySelectorAll("#painelMenuFiltrosOcorrenciasDespachadas input[type=checkbox]").length - 1].click();
@@ -1040,10 +1051,10 @@ chrome.storage.local.get("ativa", (data) => {
                 document.querySelectorAll('app-ocorrencias-nao-despachadas-golden-layout app-card-ocorrencia').forEach(item => {
                     item.querySelector('p[class*="dado-card protocolo"]').style.display = 'none';
                     item.querySelector('p[class*="data-hora"]').style.display = 'none';
-                    Array.from(item.querySelectorAll('p[class*=dado-card]')).filter(p => p.innerText.includes('GM-POA')).forEach(i => { i.style.display = 'none' });
+                    Array.from(item.querySelectorAll('p[class*=dado-card]')).filter(p => p.innerText.includes('GCM-POA')).forEach(i => { i.style.display = 'none' });
                 })
             }
-            if (document.querySelector('app-ocorrencias-despachadas-golden-layout') && document.querySelector('app-ocorrencias-despachadas-golden-layout').querySelector('app-card-ocorrencia:not(:has(button[acao="Referenciar CAD"]))') && Array.from(document.querySelector('app-ocorrencias-despachadas-golden-layout').querySelector('app-card-ocorrencia:not(:has(button[acao="Referenciar CAD"]))').querySelectorAll('p')).filter((dado) => dado.innerHTML.includes('GM-POA2025'))[0]) {
+            if (document.querySelector('app-ocorrencias-despachadas-golden-layout') && document.querySelector('app-ocorrencias-despachadas-golden-layout').querySelector('app-card-ocorrencia:not(:has(button[acao="Referenciar CAD"]))') && Array.from(document.querySelector('app-ocorrencias-despachadas-golden-layout').querySelector('app-card-ocorrencia:not(:has(button[acao="Referenciar CAD"]))').querySelectorAll('p')).filter((dado) => dado.innerHTML.includes('GCM-POA2025'))[0]) {
                 var cad = document.querySelector('app-ocorrencias-despachadas-golden-layout').querySelector('app-card-ocorrencia:not(:has(button[acao="Referenciar CAD"]))');
                 var botao_referenciar_cad = document.createElement('button');
                 botao_referenciar_cad.setAttribute("class", "mat-mdc-tooltip-trigger button-icon");
@@ -1070,29 +1081,32 @@ chrome.storage.local.get("ativa", (data) => {
                     mesF = (mes.length == 1) ? '0' + mes : mes,
                     anoF = data.getFullYear();
                 var data_hora = diaF + '/' + mesF + '/' + anoF + ' ' + ('0' + data.getHours()).slice(-2) + ':' + ('0' + data.getMinutes()).slice(-2);
-                area = Array.from(cad.querySelectorAll('p')).filter((dado) => dado.innerHTML.includes(' GM-POA'))[0];
-                let tipo_local = '';
-                if (Array.from(cad.querySelectorAll('p')).filter((dado) => dado.innerHTML.includes('Tipo Local'))[0]) {
-                    tipo_local = Array.from(cad.querySelectorAll('p')).filter((dado) => dado.innerHTML.includes('Tipo Local'))[0].innerHTML.split('Tipo Local:')[1].trim();
-                }
-                var n_registro = Array.from(cad.querySelectorAll('p')).filter((dado) => dado.innerHTML.includes('GM-POA2025'))[0];
-                let ponto_referencia = '';
-                let endereco = cad.querySelectorAll('p')[3].innerText.trim().replaceAll(' ,', ',').replaceAll('/RS', '');
-                if (cad.querySelectorAll('p').length == 8) {
-                    ponto_referencia = cad.querySelectorAll('p')[2].innerText.trim();
-                    endereco = cad.querySelectorAll('p')[4].innerText.trim().replaceAll(' ,', ',').replaceAll('/RS', '');
-                }
-                botao_referenciar_cad.setAttribute("dados_para_referencia", ponto_referencia + '-()-' + tipo_local + '-()-Durante uma atividade de ' + cad.querySelector('span').innerText.trim() + ' descrita no registro n.º ' + n_registro.innerText.trim() + ', ' + equipes + ' uma NATUREZA_INICIAL no local.-()-' + endereco + '-()-Abordagem a Pessoa Em Atitude Suspeita-()-' + area.innerText.replace(/\D/g, '') + '-()-' + data_hora + '-()-40-()--()--()--++-');
-                botao_referenciar_cad.innerHTML = '↔';
-                cad.querySelector('div[class*=acoes-ocorrencia]').append(botao_referenciar_cad);
-                cad.querySelector('div[class*=acoes-card-estreito]').append(botao_referenciar_cad.cloneNode(true));
-                cad.querySelectorAll('button[acao="Referenciar CAD"]').forEach(function (but) {
-                    but.addEventListener('click', function () {
-                        localStorage.setItem("dados_para_o_cad", this.getAttribute('dados_para_referencia'));
-                        localStorage.setItem("cad_relacionado_original", this.parentNode.parentNode.parentNode.querySelector('p').innerText);
-                        document.querySelectorAll('div[routerlinkactive="item-menu-selected"]')[1].click();
+                area = Array.from(cad.querySelectorAll('p')).filter((dado) => dado.innerHTML.includes('GCM-POA'))[0];
+                if (area) {
+                    let tipo_local = '';
+                    if (Array.from(cad.querySelectorAll('p')).filter((dado) => dado.innerHTML.includes('Tipo Local'))[0]) {
+                        tipo_local = Array.from(cad.querySelectorAll('p')).filter((dado) => dado.innerHTML.includes('Tipo Local'))[0].innerHTML.split('Tipo Local:')[1].trim();
+                    }
+                    var n_registro = Array.from(cad.querySelectorAll('p')).filter((dado) => dado.innerHTML.includes('GCM-POA2025'))[0];
+                    let ponto_referencia = '';
+                    let endereco = cad.querySelectorAll('p')[3].innerText.trim().replaceAll(' ,', ',').replaceAll('/RS', '');
+                    if (cad.querySelectorAll('p').length == 8) {
+                        ponto_referencia = cad.querySelectorAll('p')[2].innerText.trim();
+                        endereco = cad.querySelectorAll('p')[4].innerText.trim().replaceAll(' ,', ',').replaceAll('/RS', '');
+                    }
+                    botao_referenciar_cad.setAttribute("dados_para_referencia", ponto_referencia + '-()-' + tipo_local + '-()-Durante uma atividade de ' + cad.querySelector('span').innerText.trim() + ' descrita no registro n.º ' + n_registro.innerText.trim() + ', ' + equipes + ' uma NATUREZA_INICIAL no local.-()-' + endereco + '-()-Abordagem a Pessoa Em Atitude Suspeita-()-' + area.innerText.replace(/\D/g, '') + '-()-' + data_hora + '-()-40-()--()--()--++-');
+                    botao_referenciar_cad.innerHTML = '↔';
+                    cad.querySelector('div[class*=acoes-ocorrencia]').append(botao_referenciar_cad);
+                    cad.querySelector('div[class*=acoes-card-estreito]').append(botao_referenciar_cad.cloneNode(true));
+                    cad.querySelectorAll('button[acao="Referenciar CAD"]').forEach(function (but) {
+                        but.addEventListener('click', function () {
+                            localStorage.setItem("dados_para_o_cad", this.getAttribute('dados_para_referencia'));
+                            localStorage.setItem("cad_relacionado_original", this.parentNode.parentNode.parentNode.querySelector('p').innerText);
+                            document.querySelectorAll('div[routerlinkactive="item-menu-selected"]')[1].click();
+                        });
                     });
-                });
+                }
+
             }
             if (document.querySelector('app-ocorrencias-despachadas-golden-layout') && localStorage.getItem("cad_relacionado_original") && localStorage.getItem("cad_relacionado_original").split('-()-').length == 2 && document.querySelector('app-ocorrencias-despachadas-golden-layout').querySelector('app-card-ocorrencia:not(:has(button[acao="Referenciar CAD"]))')) {
                 var xpath = document.evaluate("//p[contains(.,'" + localStorage.getItem("cad_relacionado_original").split('-()-')[0] + "')]", document, null, XPathResult.ANY_TYPE, null);
@@ -1248,4 +1262,27 @@ function atalho_botao_salvar(button) {
             }
         }
     });
+}
+
+if (window.location.href.includes('editar-ocorrencia')) {
+    let bairro;
+    let manter_bairro = setInterval(() => {
+        if (document.querySelector("#mat-input-10") && !bairro) {
+            bairro = document.querySelector("#mat-input-10").value;
+            console.log(document.querySelector("#mat-input-10").outerHTML)
+        } else if (document.querySelector("#mat-input-10") && bairro && document.querySelector("#mat-input-10").value != bairro && document.querySelector("#mat-input-3").value == 'Porto Alegre') {
+            document.querySelector("body > app-pop-out > div > app-edicao-ocorrencia-formulario > div.formulario-edicao > div.div-golden-layout > gl-host > div > div > div:nth-child(3) > div:nth-child(1) > div > section.lm_items > div > div > app-edicao-ocorrencia-golden-layout > div > ng-component > div > div > cad-tab-vertical-set > div > div.vertical-menu-content > cad-tab > app-chamado-form-localizacao > form > div > div:nth-child(2) > div:nth-child(3) > div:nth-child(1) > cad-select-autocomplete > mat-form-field > div.mat-mdc-text-field-wrapper.mdc-text-field.ng-tns-c508571215-27.mdc-text-field--outlined > div > div.mat-mdc-form-field-icon-suffix.ng-tns-c508571215-27.ng-star-inserted > button").click();
+            const alvo = document.querySelector("#mat-input-10");
+            alvo.value = bairro;
+            ["mousedown", "mouseup", "click", "focus", "input", "blur"].forEach(evtName => {
+                const evt = new Event(evtName, { bubbles: true, cancelable: true });
+                alvo.dispatchEvent(evt);
+            });
+            ["mousedown", "mouseup", "click", "focus", "input", "blur"].forEach(evtName => {
+                const evt = new Event(evtName, { bubbles: true, cancelable: true });
+                alvo.dispatchEvent(evt);
+            });
+
+        }
+    }, 100);
 }

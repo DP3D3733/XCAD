@@ -1,15 +1,16 @@
 ﻿setInterval(() => {
     if (document.querySelector('table[name="tab-dados"]') && localStorage.getItem("dados_prontos") != "basicos") {
-        var procurado = '';
-        var mae = '';
-        var nascimento = '';
-        var cpf = '';
-        var pai = '';
-        var rg = '';
-        var sexo = '';
-        var cor_pele = '';
-        var naturalidade = '';
-        var d = document.querySelectorAll('span[class="LabelVisSecund"]');
+        let procurado = '';
+        let mae = '';
+        let nascimento = '';
+        let cpf = '';
+        let pai = '';
+        let rg = '';
+        let sexo = '';
+        let cor_pele = '';
+        let naturalidade = '';
+        let foragido = '';
+        let d = document.querySelectorAll('[class="LabelVisSecund"]');
         for (let i = 0; i < d.length - 1; i++) {
             if (d[i].parentNode.innerText.includes('Nome:') && procurado == '') {
                 procurado = d[i].innerHTML;
@@ -31,15 +32,17 @@
                 nascimento = d[i].innerHTML;
             } else if (d[i].parentNode.innerHTML.includes('CPF') && cpf == '') {
                 cpf = d[i].innerHTML;
+            } else if (d[i].parentNode.innerHTML.includes('Preso Foragido') && foragido == '') {
+                foragido = '\nForagido Polícia Penal';
             }
         }
         localStorage.setItem("procurado_cpf", cpf.replace(/[^0-9]/g, ''));
         localStorage.setItem("procurado", procurado.normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
         localStorage.setItem("mae", mae.normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
-        localStorage.setItem("dados_basicos", '\nNome: ' + procurado + '\nSexo: ' + sexo + '\nCor da pele: ' + cor_pele + '\nNaturalidade: ' + naturalidade + '\nNascimento: ' + nascimento + '\n'+'Nome da mãe: ' + mae + '\nNome do pai: ' + pai + '\nCPF: ' + cpf + '\nRG: ' + rg);
+        localStorage.setItem("dados_basicos", '\nNome: ' + procurado + '\nSexo: ' + sexo + '\nCor da pele: ' + cor_pele + '\nNaturalidade: ' + naturalidade + '\nNascimento: ' + nascimento + '\n' + 'Nome da mãe: ' + mae + '\nNome do pai: ' + pai + '\nCPF: ' + cpf + '\nRG: ' + rg + foragido);
         localStorage.setItem("dados_prontos", "basicos");
         if (localStorage.getItem('tem_ocorrencia') && localStorage.getItem('tem_ocorrencia') == 'não' && !document.querySelector('#botao_buscar_mandado')) {
-            var tb = localStorage.getItem('dados_completos');
+            let tb = localStorage.getItem('dados_completos');
             if (localStorage.getItem('tem_imagem') == 'nao') {
                 tb += '\nIndivíduo sem imagem.';
             }
@@ -53,7 +56,7 @@
             textarea.insertAdjacentElement('beforebegin', botao_buscar_mandado);
             document.querySelector('#botao_buscar_mandado').addEventListener('click', function (item) {
                 navigator.clipboard.writeText(tb);
-                window.open("https://portalbnmp.cnj.jus.br/", "_blank");
+                window.open("https://portalbnmp.pdpj.jus.br/", "_blank");
             });
         }
 

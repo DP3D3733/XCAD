@@ -46,11 +46,16 @@ if (sessionStorage.getItem('img_n_repete')) {
     botao_buscar_mandado.setAttribute('id', 'botao_buscar_mandado');
     botao_buscar_mandado.innerHTML = 'Buscar Mandado';
     textarea.insertAdjacentElement('beforebegin', botao_buscar_mandado);
-    imageToBase64(document.querySelector('img'),tb);
+    const interval_img = setInterval(() => {
+        if(document.querySelector('img')) {
+            clearInterval(interval_img);
+            imageToBase64(document.querySelector('img'),tb);
+        }
+    }, 100);
     document.querySelector('#botao_buscar_mandado').addEventListener('click', function (item) {
         //window.postMessage({ type: "FROM_PAGE", payload: tb }, "*");
         //navigator.clipboard.writeText(tb);
-        //window.open("https://portalbnmp.cnj.jus.br/", "_blank");
+        //window.open("https://portalbnmp.pdpj.jus.br/", "_blank");
     });
 } else {
     document.querySelectorAll('a')[3].click();
