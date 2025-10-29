@@ -8,7 +8,7 @@ chrome.storage.local.get("ativa", (data) => {
             .then(response => response.json())
             .then(data => {
                 versiculo = data[Math.floor(Math.random() * data.length)].text;
-                versao = `<span style="margin-right:30px;color: #d3d4d9">XCAD <strong>v1.5.3</strong>, por GM 842 Calebe. ${versiculo}</span>`;
+                versao = `<span style="margin-right:30px;color: #d3d4d9">XCAD <strong>v1.5.5</strong>, por GM 842 Calebe. ${versiculo}</span>`;
             })
             .catch(err => {
                 console.error("Erro ao carregar JSON:", err);

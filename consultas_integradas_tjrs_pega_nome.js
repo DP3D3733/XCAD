@@ -7,4 +7,7 @@ setInterval(function() {
     if(document.body.innerHTML.includes('Não existe indivíduo com os critérios informados!') && chrome.storage.local.get("pedido_consulta")) {
         chrome.storage.local.remove("pedido_consulta");
     }
+    if (document.body.innerHTML.includes('CPF inválido') && chrome.storage.local.get("pedido_consulta")) {
+        chrome.storage.local.remove("pedido_consulta");
+    }
 },100);

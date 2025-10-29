@@ -50,13 +50,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === "imagem") {
         chrome.storage.local.set({ imagem_consulta: message.data }, () => {
             chrome.tabs.query({ currentWindow: true }, (tabs) => {
-                const targetTab = tabs.find(tab => tab.title.includes('Portal BNMP'));
+                const targetTab = tabs.find(tab => tab.title.includes('Sinesp Infoseg'));
                 if (targetTab) {
                     chrome.tabs.update(targetTab.id, { active: true }, () => {
                         chrome.tabs.reload(targetTab.id); // Recarrega a aba após ativá-la
                     });
                 } else {
-                    chrome.tabs.create({ url: "https://portalbnmp.pdpj.jus.br/" });
+                    chrome.tabs.create({ url: "https://infoseg.sinesp.gov.br/infoseg2/" });
                 }
             });
         });
