@@ -979,8 +979,31 @@ chrome.storage.local.get("ativa", (data) => {
                     });
                 }
             }
+
+            if (Array.from(document.querySelectorAll('div[role=list]')).filter(item => item.innerText.includes('BALANÇO DE FISCALIZAÇÃO'))[0] && !document.querySelector('#textarea_resumo_chamadas')) {
+                const element = document.createElement('textarea');
+                element.setAttribute('id', 'textarea_resumo_chamadas');
+                Array.from(document.querySelectorAll('div[role=list]')).filter(item => item.innerText.includes('BALANÇO DE FISCALIZAÇÃO'))[0].parentNode.insertBefore(element, Array.from(document.querySelectorAll('div[role=list]')).filter(item => item.innerText.includes('BALANÇO DE FISCALIZAÇÃO'))[0]);
+                element.addEventListener('input', function () {
+                    const texto = this.value;
+                    if(texto.includes('Denúncias 153')) {
+                        const resumo = texto.split('\n').map(item => item.split('- ')[1]);
+                        document.querySelector('div[data-params*="DENÚNCIAS 156POA"] input').value = resumo[0];
+                        document.querySelector('div[data-params*="DENÚNCIAS WATSAPP"] input').value = resumo[1];
+                        document.querySelector('div[data-params*="TOTAL DE LIGAÇÕES"] input').value = resumo[2];
+                        document.querySelector('div[data-params*="APOIO SAMU"] input').value = resumo[3];
+                    }
+                })
+            }
+            /*Denúncias 153 - 1
+Denúncias WhatsApp - 1
+Total de Ligações - 1
+Apoio ao Samu - 1
+*/
             //Insere automaticamente o valor zero nos campos em branco no balanço de fiscalização
             if (Array.from(document.querySelectorAll('div[role=list]')).filter(item => item.innerText.includes('BALANÇO DE FISCALIZAÇÃO'))[0] && Array.from(Array.from(document.querySelectorAll('div[role=list]')).filter(item => item.innerText.includes('BALANÇO DE FISCALIZAÇÃO'))[0].querySelectorAll('input')).filter(item => item.value == '').length > 0) {
+                const element = document.createElement('textarea');
+                document.insertBefore(element,Array.from(document.querySelectorAll('div[role=list]')).filter(item => item.innerText.includes('BALANÇO DE FISCALIZAÇÃO'))[0]);
                 var input = Array.from(Array.from(document.querySelectorAll('div[role=list]')).filter(item => item.innerText.includes('BALANÇO DE FISCALIZAÇÃO'))[0].querySelectorAll('input')).filter(item => item.value == '')[0];
                 input.value = '0';
                 input.dispatchEvent(new Event('input', { bubbles: true }));
