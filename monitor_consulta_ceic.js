@@ -30,9 +30,7 @@ if (location.href.includes("web.whatsapp.com")) {
                                 possiveis_gus.push(gus_numero[gus_extenso.indexOf(item)]);
                             }
                         });
-                        if (possiveis_gus.length == 0) {
-                            possiveis_gus.push('Definir Gu')
-                        }
+                        possiveis_gus.push('Definir Gu');
                         possiveis_gus.forEach(function (item) {
                             let but_qap = '<li tabindex="0" class="_aj-r _aj-q _aj-_ false false" data-animate-dropdown-item="true" role="button" style="opacity: 1;"><div class="_aj-z _aj-t _alxo" aria-label="qap" style="">QAP ' + item + '</div></li>';
                             Array.from(document.querySelectorAll('li')).filter((li) => li.innerText.includes('Responder em particular'))[0].parentNode.insertAdjacentHTML("beforebegin", but_qap);
@@ -109,8 +107,8 @@ if (location.href.includes("web.whatsapp.com")) {
 
                 if (document.querySelector('button[aria-label="Comunidades"]') && !document.querySelector('div[aria-label="num_qap"]')) {
                     let num_qap = '<div class="notification-container" style="position:relative;display:inline-block" aria-label="num_qap"><button class="notification-button" style="font-size:26px;color:white;border:none;border-radius:5px;cursor:pointer;position:relative">🕒</button><span class="notification-badge" style="position: absolute; top: -5px; right: -5px; background-color: red; color: white; font-size: 8px; font-weight: bold; border-radius: 50%; width: 20px; height: 20px; display: flex; justify-content: center; align-items: center">0/11</span></div>';
-                    document.querySelector('button[aria-label="Comunidades"]').parentNode.insertAdjacentHTML("afterend", num_qap);
-                    let tooltip = '<div class="tooltip" style="visibility: hidden; width:fit-content; position: absolute; top: 35px; left: 50%; transform: translateX(-50%); background-color: rgba(0, 0, 0, 0.7); color: white; padding: 5px 10px; border-radius: 5px; font-size: 14px; white-space: nowrap; z-index: 9999">Você tem novas notificações!</div>'
+                    document.querySelector('button[aria-label="Comunidades"]').parentNode.parentNode.parentNode.insertAdjacentHTML("afterend", num_qap);
+                    let tooltip = '<div class="tooltip" style="visibility: hidden; width:fit-content; position: absolute; top: 35px; background-color: rgba(0, 0, 0, 0.7); color: white; padding: 5px 10px; border-radius: 5px; font-size: 14px; white-space: nowrap; z-index: 9999">Você tem novas notificações!</div>'
                     document.body.insertAdjacentHTML("beforeend", tooltip);
                     if (sessionStorage.getItem('qap') && sessionStorage.getItem('qap') != '') {
                         document.querySelector('span[class="notification-badge"]').innerHTML = (sessionStorage.getItem('qap').split('\n').length - 1) + '/11';
@@ -129,19 +127,22 @@ if (location.href.includes("web.whatsapp.com")) {
                             }
                         }
                     }
-                    document.querySelector('button[class="notification-button"]').addEventListener('mouseover', function () {
-                        const button = document.querySelector('.notification-button');
-                        const tooltip = document.querySelector('.tooltip');
-                        const buttonRect = button.getBoundingClientRect(); // Obter a posição do botão na tela
-                        // Calcular a posição da tooltip
-                        tooltip.style.visibility = 'visible';
-                        // Posicionar a tooltip 5px à direita do botão
-                        tooltip.style.top = `${buttonRect.top + window.scrollY + buttonRect.height + 5}px`; // 5px abaixo do botão
-                        tooltip.style.left = `${buttonRect.right + window.scrollX + 50}px`; // 5px à direita do botão
+                    const button = document.querySelector('.notification-button');
+                    tooltip = document.querySelector('.tooltip');
 
+                    button.addEventListener('mouseover', function () {
+                        const buttonRect = button.getBoundingClientRect();
+
+                        tooltip.style.visibility = 'visible';
+                        tooltip.style.position = 'absolute'; // Garante posicionamento independente
+
+                        // Define posição relativa ao botão:
+                        tooltip.style.top = `${buttonRect.top + window.scrollY + buttonRect.height + 8}px`; // um pouco abaixo
+                        tooltip.style.left = `${buttonRect.left + window.scrollX + buttonRect.width + 8}px`; // um pouco à direita
                     });
-                    document.querySelector('button[class="notification-button"]').addEventListener('mouseout', function () {
-                        document.querySelector('div[class="tooltip"]').style.visibility = "hidden";
+
+                    button.addEventListener('mouseout', function () {
+                        tooltip.style.visibility = 'hidden';
                     });
 
                     document.querySelector('button[class="notification-button"]').addEventListener('click', function () {

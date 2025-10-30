@@ -618,7 +618,7 @@ chrome.storage.local.get("ativa", (data) => {
                 var b = document.createElement("div");
                 b.setAttribute("id", "naorepetealtenter_salvar");
                 document.querySelector('app-edicao-ocorrencia-formulario').append(b);
-                atalho_botao_salvar(document.querySelectorAll('app-edicao-ocorrencia-formulario button[botaoconfirmar]')[2]);
+                atalho_botao_salvar(document.querySelectorAll('app-edicao-ocorrencia-formulario button[botaoconfirmar]')[3]);
             }
             if (document.querySelector('textarea[formcontrolname="relato"]') && document.querySelector('textarea[formcontrolname="relato"]').value != '' && localStorage.getItem('verifica_relato') && !document.querySelectorAll('button[botaoconfirmar]')[document.querySelectorAll('button[botaoconfirmar]').length - 1].getAttribute('disabled')) {
                 localStorage.setItem('cads_com_relato', localStorage.getItem('cads_com_relato') + ',' + document.querySelector('app-async-data-loading').querySelector('span').innerText.trim());
@@ -1263,7 +1263,7 @@ function atalho_botao_salvar(button) {
         }
     });
 }
-
+/*
 if (window.location.href.includes('editar-ocorrencia')) {
     let bairro;
     let manter_bairro = setInterval(() => {
@@ -1285,4 +1285,4 @@ if (window.location.href.includes('editar-ocorrencia')) {
 
         }
     }, 100);
-}
+}*/
