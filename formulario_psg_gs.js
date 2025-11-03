@@ -923,38 +923,81 @@ chrome.storage.local.get("ativa", (data) => {
                     campo_insere_equipes.setAttribute("id", "campo_insere_equipes");
                     var formulario_21 = Array.from(document.querySelectorAll('u')).filter(item => item.innerText == 'GU 21')[0].parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode;
                     formulario_21.parentNode.insertBefore(campo_insere_equipes, formulario_21);
+                    var vtrs_placa = new Map();
+                    vtrs_placa.set('0118', '1470'); vtrs_placa.set('0122', '4G47'); vtrs_placa.set('0124', '4B58'); vtrs_placa.set('0218', '1468'); vtrs_placa.set('0222', '4E96'); vtrs_placa.set('0224', '3D36'); vtrs_placa.set('0283', '0283'); vtrs_placa.set('0301', '0301'); vtrs_placa.set('0305', '0305'); vtrs_placa.set('0318', '1469'); vtrs_placa.set('0322', '4E69'); vtrs_placa.set('0324', '3D37'); vtrs_placa.set('0418', '1471'); vtrs_placa.set('0422', '4E64'); vtrs_placa.set('0424', '3D50'); vtrs_placa.set('0518', '1473'); vtrs_placa.set('0522', '4G77'); vtrs_placa.set('0524', '2F38'); vtrs_placa.set('0618', '1467'); vtrs_placa.set('0622', '4E77'); vtrs_placa.set('0722', '4E57'); vtrs_placa.set('0819', '8J14'); vtrs_placa.set('0822', '4G14'); vtrs_placa.set('0906', '0906'); vtrs_placa.set('0919', '8J11'); vtrs_placa.set('0922', '4E85'); vtrs_placa.set('0f11', '0F11'); vtrs_placa.set('1019', '8J26'); vtrs_placa.set('1022', '4F34'); vtrs_placa.set('1119', '9A14'); vtrs_placa.set('1122', '4E88'); vtrs_placa.set('1222', '4G49'); vtrs_placa.set('1267', '1B67'); vtrs_placa.set('1319', '8J15'); vtrs_placa.set('1322', '4G36'); vtrs_placa.set('1419', '2J01'); vtrs_placa.set('1422', '4F48'); vtrs_placa.set('1519', '2J13'); vtrs_placa.set('1522', '4F75'); vtrs_placa.set('1619', '2J14'); vtrs_placa.set('1622', '4F19'); vtrs_placa.set('1667', '1667'); vtrs_placa.set('1719', '2J15'); vtrs_placa.set('1722', '4E76'); vtrs_placa.set('1819', '2J10'); vtrs_placa.set('1822', '4G61'); vtrs_placa.set('1919', '2J11'); vtrs_placa.set('1922', '4E61'); vtrs_placa.set('1g13', '1G13'); vtrs_placa.set('1i54', '1I54'); vtrs_placa.set('1i84', '1I84'); vtrs_placa.set('1j04', '1J04'); vtrs_placa.set('2019', '2J07'); vtrs_placa.set('2022', '4F60'); vtrs_placa.set('2048', '2048'); vtrs_placa.set('2119', '2J03'); vtrs_placa.set('2219', '2J05'); vtrs_placa.set('2240', '2240'); vtrs_placa.set('2241', '2241'); vtrs_placa.set('2253', '2253'); vtrs_placa.set('2254', '2254'); vtrs_placa.set('2319', '2J08'); vtrs_placa.set('2419', '2J12'); vtrs_placa.set('2420', '2420'); vtrs_placa.set('2519', '2J09'); vtrs_placa.set('2619', '2J02'); vtrs_placa.set('2747', '2747'); vtrs_placa.set('0287', '0287'); vtrs_placa.set('0294', '0294'); vtrs_placa.set('2975', '2975'); vtrs_placa.set('2a47', '2A47'); vtrs_placa.set('2a58', '2A58'); vtrs_placa.set('2a67', '2A67'); vtrs_placa.set('2a76', '2A76'); vtrs_placa.set('2b31', '2B31'); vtrs_placa.set('2b44', '2B44'); vtrs_placa.set('2b49', '2B49'); vtrs_placa.set('2b67', '2B67'); vtrs_placa.set('2b72', '2B72'); vtrs_placa.set('2b76', '2B76'); vtrs_placa.set('2b85', '2B85'); vtrs_placa.set('2b93', '2B93'); vtrs_placa.set('2b94', '2B94'); vtrs_placa.set('3376', '3376'); vtrs_placa.set('3377', '3377'); vtrs_placa.set('3378', '3378'); vtrs_placa.set('3379', '3379'); vtrs_placa.set('3380', '3380'); vtrs_placa.set('3742', '3742'); vtrs_placa.set('3753', '3753'); vtrs_placa.set('3761', '3761'); vtrs_placa.set('3766', '3766'); vtrs_placa.set('3770', '3770'); vtrs_placa.set('3932', '3932'); vtrs_placa.set('3942', '3942'); vtrs_placa.set('3948', '3948'); vtrs_placa.set('3953', '3953'); vtrs_placa.set('3955', '3955'); vtrs_placa.set('4267', '4267'); vtrs_placa.set('4339', '4339'); vtrs_placa.set('5255', '5255'); vtrs_placa.set('5g09', '5G09'); vtrs_placa.set('6017', '6017'); vtrs_placa.set('6046', '6046'); vtrs_placa.set('6077', '6077'); vtrs_placa.set('6085', '6085'); vtrs_placa.set('6094', '6094'); vtrs_placa.set('6103', '6103'); vtrs_placa.set('6108', '6108'); vtrs_placa.set('6121', '6121'); vtrs_placa.set('6126', '6126'); vtrs_placa.set('6915', '6915'); vtrs_placa.set('6950', '6950'); vtrs_placa.set('6959', '6959'); vtrs_placa.set('6965', '6965'); vtrs_placa.set('6972', '6972'); vtrs_placa.set('0718', '1466'); vtrs_placa.set('7259', '7259'); vtrs_placa.set('7280', '7280'); vtrs_placa.set('7285', '7285'); vtrs_placa.set('7337', '7337'); vtrs_placa.set('0734', '0734'); vtrs_placa.set('7429', '7429'); vtrs_placa.set('7554', '7554'); vtrs_placa.set('7d34', '7D34'); vtrs_placa.set('7h22', '7H22'); vtrs_placa.set('7h23', '7H23'); vtrs_placa.set('7h25', '7H25'); vtrs_placa.set('7h29', '7H29'); vtrs_placa.set('7h32', '7H32'); vtrs_placa.set('7h38', '7H38'); vtrs_placa.set('8163', '8163'); vtrs_placa.set('8299', '8299'); vtrs_placa.set('8401', '8401'); vtrs_placa.set('8408', '8408'); vtrs_placa.set('8970', '8970'); vtrs_placa.set('9028', '9028'); vtrs_placa.set('9051', '9051'); vtrs_placa.set('9077', '9077'); vtrs_placa.set('9132', '9132'); vtrs_placa.set('9133', '9133'); vtrs_placa.set('9134', '9134'); vtrs_placa.set('9135', '9135'); vtrs_placa.set('9473', '9473'); vtrs_placa.set('9882', '9882'); vtrs_placa.set('9894', '9894'); vtrs_placa.set('9908', '9908');
+
                     campo_insere_equipes.addEventListener('input', function () {
-                        var equipes = campo_insere_equipes.value.replaceAll('\nC0', '\nC').split('\n');
-                        equipes.forEach(function (item) {
-                            if (item != '') {
-                                if (item.split(' - ')[0].includes('C') || item.split(' - ')[0].includes('R') || item.split(' - ')[0].includes('P')) {
-                                    var campo_da_equipe = document.querySelector('div[data-params*="' + item.split(' - ')[0] + '"]');
-                                } else {
-                                    campo_da_equipe = document.querySelector('div[data-params*="GU ' + item.split(' - ')[0].trim() + '"]');
-                                }
-                                if (campo_da_equipe) {
-                                    var check_componente = campo_da_equipe.querySelector('div[data-answer-value*="' + item.split('\t')[1] + '"]');
-                                    if (check_componente && check_componente.ariaChecked == 'false') {
-                                        check_componente.click();
-                                    } else if (!check_componente) {
-                                        campo_da_equipe.querySelector('div[aria-label="Outro:"]').click();
-                                        campo_da_equipe.querySelectorAll('input')[1].value = item.split('\t')[1] + ' ' + item.split('\t')[2];
-                                        campo_da_equipe.querySelectorAll('input')[1].dispatchEvent(new Event('input', { bubbles: true }));
+                        if (campo_insere_equipes.value.includes('-&&-')) {
+                            const linhas = campo_insere_equipes.value.split('-&&-');
+                            linhas.forEach(linha => {
+                                const campos = linha.split('-()-');
+                                //equipamentos
+
+                                if (campos[1] && campos[0].includes('00') && campos[2] != 'Câmera Corporal') {
+                                    const gu = campos[0].split(' - ')[1];
+                                    const placa = vtrs_placa.get(campos[1]);
+                                    let check;
+                                    if (document.querySelector(`div[data-params*='VTR DA GU ${gu}']`)) {
+                                        check = document.querySelector(`div[data-params*='VTR DA GU ${gu}'] div[data-answer-value*='${placa}'] `);
+                                    } else {
+                                        check = document.querySelector(`div[data-params*='VTR DA ${gu}'] div[data-answer-value*='${placa}'] `);
+                                    }
+                                    if (check && check.ariaChecked == 'false') {
+                                        check.click();
                                     }
                                 }
-                                var campo_da_vtr_da_equipe = document.querySelector('div[data-params*="VTR"][data-params*=" ' + item.split(' - ')[0] + '"]');
-                                if (campo_da_vtr_da_equipe) {
-                                    var check_vtr = campo_da_vtr_da_equipe.querySelector('div[data-answer-value*="' + item.split('\t')[4].substring(item.split('\t')[4].length - 4, item.split('\t')[4].length) + '"]');
-                                    if (check_vtr && check_vtr.ariaChecked == 'false') {
-                                        check_vtr.click();
-                                    } else if (!check_vtr) {
-                                        campo_da_vtr_da_equipe.querySelector('div[data-answer-value="__other_option__"]').click();
-                                        campo_da_vtr_da_equipe.querySelectorAll('input')[1].value = item.split('\t')[4];
-                                        campo_da_vtr_da_equipe.querySelectorAll('input')[1].dispatchEvent(new Event('input', { bubbles: true }));
+
+                                //pessoas
+                                if (campos[1] && !campos[0].includes('00')) {
+                                    const gu = campos[0].split(' - ')[0];
+                                    const pessoa = campos[1].replace(/\D/g, '');
+                                    let check;
+                                    
+                                    if (document.querySelector(`div[data-params*='${gu}']`) && document.querySelector(`div[data-params*='${gu}'] div[data-answer-value*="${pessoa}"] `)) {
+                                        check = document.querySelector(`div[data-params*='${gu}']:not([data-params*="VTR"]) div[data-answer-value*="${pessoa}"] `);
+                                    } else {
+                                        console.log(`${gu} - ${pessoa}`);
+                                        console.log(`div[data-params*='${gu}']:not([data-params*="VTR"]) div[data-answer-value*="${pessoa}"] `);
+                                        
+                                    }
+                                    if (check && check.ariaChecked == 'false') {
+                                        check.click();
                                     }
                                 }
-                            }
-                        });
+                            })
+                        } else {
+                            var equipes = campo_insere_equipes.value.replaceAll('\nC0', '\nC').split('\n');
+                            equipes.forEach(function (item) {
+                                if (item != '') {
+                                    if (item.split(' - ')[0].includes('C') || item.split(' - ')[0].includes('R') || item.split(' - ')[0].includes('P')) {
+                                        var campo_da_equipe = document.querySelector('div[data-params*="' + item.split(' - ')[0] + '"]');
+                                    } else {
+                                        campo_da_equipe = document.querySelector('div[data-params*="GU ' + item.split(' - ')[0].trim() + '"]');
+                                    }
+                                    if (campo_da_equipe) {
+                                        var check_componente = campo_da_equipe.querySelector('div[data-answer-value*="' + item.split('\t')[1] + '"]');
+                                        if (check_componente && check_componente.ariaChecked == 'false') {
+                                            check_componente.click();
+                                        } else if (!check_componente) {
+                                            campo_da_equipe.querySelector('div[aria-label="Outro:"]').click();
+                                            campo_da_equipe.querySelectorAll('input')[1].value = item.split('\t')[1] + ' ' + item.split('\t')[2];
+                                            campo_da_equipe.querySelectorAll('input')[1].dispatchEvent(new Event('input', { bubbles: true }));
+                                        }
+                                    }
+                                    var campo_da_vtr_da_equipe = document.querySelector('div[data-params*="VTR"][data-params*=" ' + item.split(' - ')[0] + '"]');
+                                    if (campo_da_vtr_da_equipe) {
+                                        var check_vtr = campo_da_vtr_da_equipe.querySelector('div[data-answer-value*="' + item.split('\t')[4].substring(item.split('\t')[4].length - 4, item.split('\t')[4].length) + '"]');
+                                        if (check_vtr && check_vtr.ariaChecked == 'false') {
+                                            check_vtr.click();
+                                        } else if (!check_vtr) {
+                                            campo_da_vtr_da_equipe.querySelector('div[data-answer-value="__other_option__"]').click();
+                                            campo_da_vtr_da_equipe.querySelectorAll('input')[1].value = item.split('\t')[4];
+                                            campo_da_vtr_da_equipe.querySelectorAll('input')[1].dispatchEvent(new Event('input', { bubbles: true }));
+                                        }
+                                    }
+                                }
+                            });
+                        }
                     });
                     var campo_insere_qap = document.createElement("textarea");
                     campo_insere_qap.setAttribute("id", "campo_insere_qap");
@@ -986,7 +1029,7 @@ chrome.storage.local.get("ativa", (data) => {
                 Array.from(document.querySelectorAll('div[role=list]')).filter(item => item.innerText.includes('BALANÇO DE FISCALIZAÇÃO'))[0].parentNode.insertBefore(element, Array.from(document.querySelectorAll('div[role=list]')).filter(item => item.innerText.includes('BALANÇO DE FISCALIZAÇÃO'))[0]);
                 element.addEventListener('input', function () {
                     const texto = this.value;
-                    if(texto.includes('Denúncias 153')) {
+                    if (texto.includes('Denúncias 153')) {
                         const resumo = texto.split('\n').map(item => item.split('- ')[1]);
                         document.querySelector('div[data-params*="DENÚNCIAS 156POA"] input').value = resumo[0];
                         document.querySelector('div[data-params*="DENÚNCIAS WATSAPP"] input').value = resumo[1];
@@ -996,14 +1039,14 @@ chrome.storage.local.get("ativa", (data) => {
                 })
             }
             /*Denúncias 153 - 1
-Denúncias WhatsApp - 1
-Total de Ligações - 1
-Apoio ao Samu - 1
-*/
+            Denúncias WhatsApp - 1
+            Total de Ligações - 1
+            Apoio ao Samu - 1
+            */
             //Insere automaticamente o valor zero nos campos em branco no balanço de fiscalização
             if (Array.from(document.querySelectorAll('div[role=list]')).filter(item => item.innerText.includes('BALANÇO DE FISCALIZAÇÃO'))[0] && Array.from(Array.from(document.querySelectorAll('div[role=list]')).filter(item => item.innerText.includes('BALANÇO DE FISCALIZAÇÃO'))[0].querySelectorAll('input')).filter(item => item.value == '').length > 0) {
                 const element = document.createElement('textarea');
-                document.insertBefore(element,Array.from(document.querySelectorAll('div[role=list]')).filter(item => item.innerText.includes('BALANÇO DE FISCALIZAÇÃO'))[0]);
+                document.insertBefore(element, Array.from(document.querySelectorAll('div[role=list]')).filter(item => item.innerText.includes('BALANÇO DE FISCALIZAÇÃO'))[0]);
                 var input = Array.from(Array.from(document.querySelectorAll('div[role=list]')).filter(item => item.innerText.includes('BALANÇO DE FISCALIZAÇÃO'))[0].querySelectorAll('input')).filter(item => item.value == '')[0];
                 input.value = '0';
                 input.dispatchEvent(new Event('input', { bubbles: true }));
