@@ -261,6 +261,7 @@ chrome.storage.local.get("ativa", (data) => {
                 }
                 if (document.querySelector("div[id='naorepete']")) {
                 } else {
+                    Array.from(document.querySelectorAll('button[botaoconfirmar]')).filter(button => button.innerText.includes('Encaminhar') && !button.innerText.includes('Encaminhar e Finalizar'))[0].style.display = 'none';
                     a = document.createElement("div");
                     a.setAttribute("id", "naorepete");
                     document.querySelector("gl-host").insertAdjacentElement('beforebegin', a);
