@@ -952,13 +952,13 @@ chrome.storage.local.get("ativa", (data) => {
                                     const gu = campos[0].split(' - ')[0];
                                     const pessoa = campos[1].replace(/\D/g, '');
                                     let check;
-                                    
+
                                     if (document.querySelector(`div[data-params*='${gu}']`) && document.querySelector(`div[data-params*='${gu}'] div[data-answer-value*="${pessoa}"] `)) {
                                         check = document.querySelector(`div[data-params*='${gu}']:not([data-params*="VTR"]) div[data-answer-value*="${pessoa}"] `);
                                     } else {
                                         console.log(`${gu} - ${pessoa}`);
                                         console.log(`div[data-params*='${gu}']:not([data-params*="VTR"]) div[data-answer-value*="${pessoa}"] `);
-                                        
+
                                     }
                                     if (check && check.ariaChecked == 'false') {
                                         check.click();
@@ -1045,8 +1045,6 @@ chrome.storage.local.get("ativa", (data) => {
             */
             //Insere automaticamente o valor zero nos campos em branco no balanço de fiscalização
             if (Array.from(document.querySelectorAll('div[role=list]')).filter(item => item.innerText.includes('BALANÇO DE FISCALIZAÇÃO'))[0] && Array.from(Array.from(document.querySelectorAll('div[role=list]')).filter(item => item.innerText.includes('BALANÇO DE FISCALIZAÇÃO'))[0].querySelectorAll('input')).filter(item => item.value == '').length > 0) {
-                const element = document.createElement('textarea');
-                document.insertBefore(element, Array.from(document.querySelectorAll('div[role=list]')).filter(item => item.innerText.includes('BALANÇO DE FISCALIZAÇÃO'))[0]);
                 var input = Array.from(Array.from(document.querySelectorAll('div[role=list]')).filter(item => item.innerText.includes('BALANÇO DE FISCALIZAÇÃO'))[0].querySelectorAll('input')).filter(item => item.value == '')[0];
                 input.value = '0';
                 input.dispatchEvent(new Event('input', { bubbles: true }));
@@ -1056,18 +1054,6 @@ chrome.storage.local.get("ativa", (data) => {
                 Array.from(document.querySelectorAll('div[role=checkbox]')).filter(item => item.ariaChecked == 'false').forEach(function (item) {
                     item.click();
                 });
-                /*
-                a.addEventListener('click',function(){
-                    if(document.querySelector('#selecionatodos').checked == true){
-                        Array.from(document.querySelectorAll('div[role=checkbox]')).filter(item => item.ariaChecked == 'false').forEach(function(item){
-                            item.click();
-                        });
-                    } else if(document.querySelector('#selecionatodos').checked == false) {
-                        Array.from(document.querySelectorAll('div[role=checkbox]')).filter(item => item.ariaChecked == 'true').forEach(function(item){
-                            item.click();
-                        });
-                    }
-                });*/
             }
         }, 100);
 

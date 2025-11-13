@@ -1040,7 +1040,7 @@ chrome.storage.local.get("ativa", (data) => {
                 }
             }
 
-            if (document.querySelector('app-ocorrencias-despachadas-golden-layout') && document.querySelector('app-ocorrencias-nao-despachadas-golden-layout app-card-ocorrencia p[class*="dado-card protocolo"]') && (!document.querySelector('app-ocorrencias-despachadas-golden-layout').innerHTML.includes('GCM-POA2025') || !document.querySelector('app-ocorrencias-nao-despachadas-golden-layout').innerHTML.includes('GCM-POA2025'))) {
+            if (document.querySelector('app-ocorrencias-despachadas-golden-layout') && document.querySelector('app-ocorrencias-nao-despachadas-golden-layout app-card-ocorrencia') && (!document.querySelector('app-ocorrencias-despachadas-golden-layout').innerHTML.includes('GCM-POA2025') || !document.querySelector('app-ocorrencias-nao-despachadas-golden-layout').innerHTML.includes('GCM-POA2025'))) {
                 document.querySelector("#painelMenuFiltrosOcorrenciasDespachadas div[class*= toggle-switch]").click();
                 if (document.querySelectorAll("#painelMenuFiltrosOcorrenciasDespachadas input[type=checkbox]")[document.querySelectorAll("#painelMenuFiltrosOcorrenciasDespachadas input[type=checkbox]").length - 1].checked == true) {
                     document.querySelectorAll("#painelMenuFiltrosOcorrenciasDespachadas input[type=checkbox]")[document.querySelectorAll("#painelMenuFiltrosOcorrenciasDespachadas input[type=checkbox]").length - 1].click();
@@ -1050,7 +1050,9 @@ chrome.storage.local.get("ativa", (data) => {
                     document.querySelectorAll("#painelMenuFiltrosOcorrenciasNaoDespachadas input[type=checkbox]")[document.querySelectorAll("#painelMenuFiltrosOcorrenciasNaoDespachadas input[type=checkbox]").length - 1].click();
                 }
                 document.querySelectorAll('app-ocorrencias-nao-despachadas-golden-layout app-card-ocorrencia').forEach(item => {
-                    item.querySelector('p[class*="dado-card protocolo"]').style.display = 'none';
+                    if (item.querySelector('p[class*="dado-card protocolo"]')) {
+                        item.querySelector('p[class*="dado-card protocolo"]').style.display = 'none';
+                    }
                     item.querySelector('p[class*="data-hora"]').style.display = 'none';
                     Array.from(item.querySelectorAll('p[class*=dado-card]')).filter(p => p.innerText.includes('GCM-POA')).forEach(i => { i.style.display = 'none' });
                 })

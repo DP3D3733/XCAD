@@ -12,6 +12,48 @@ if (location.href.includes("web.whatsapp.com")) {
             var a = [];
             var mensagens_novas = [];
             var mensagens_antigas = [];
+           /* const texto_rapido_interval = setInterval(() => {
+                const input = document.querySelector('div[aria-placeholder="Digite uma mensagem"]');
+                if (input && !input.getAttribute('texto_rapido')) {
+                    input.setAttribute('texto_rapido', 'sim');
+
+                    input.addEventListener('input', function () {
+                        setTimeout(() => { // aguarda o Lexical atualizar o texto
+                            const texto = input.innerText.trim();
+                            const sugestao = 'Positivo';
+
+                            for (let index = 0; index < sugestao.length; index++) {
+                                if (texto.endsWith(sugestao.substring(0, index + 1))) {
+                                    const restante = sugestao.substring(index + 1);
+                                    if (restante.length > 0) {
+                                        document.execCommand('insertText', false, restante);
+
+                                        // Seleciona o texto sugerido
+                                        setTimeout(() => {
+                                            const span = input.querySelector('span');
+                                            if (!span) return;
+                                            const textNode = span.firstChild;
+                                            if (!textNode) return;
+
+                                            const range = document.createRange();
+                                            const selection = window.getSelection();
+
+                                            range.setStart(textNode, index + 1);
+                                            range.setEnd(textNode, textNode.length);
+
+                                            selection.removeAllRanges();
+                                            selection.addRange(range);
+                                        }, 10);
+                                    }
+                                    break;
+                                }
+                            }
+                        }, 100); // ← atraso mínimo (0 ms já basta)
+                    });
+                }
+            }, 1000);*/
+
+
 
             const whats_interval = setInterval(function () {
                 if (Array.from(document.querySelectorAll('li')).filter((li) => li.innerText.includes('Responder em particular')).length > 0 && !document.querySelector('div[aria-label="qap"]') && document.querySelector('div[aria-label="Menu de contexto"]')) {
