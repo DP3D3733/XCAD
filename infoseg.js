@@ -34,6 +34,7 @@ chrome.storage.local.get("ativa", (data) => {
             const buscarMandado = setInterval(() => {
                 if (!sessionStorage.getItem('dados_envolvido')) return;
                 const dados = sessionStorage.getItem('dados_envolvido');
+                const data_nascimento = dados.split('Nascimento: ')[1].split('\n')[0];
                 const nome = dados.split('Nome: ')[1].split('\n')[0];
                 const mae = dados.split('mãe: ')[1].split('\n')[0];
                 document.querySelector('#mandados-nome').value = nome;
@@ -42,7 +43,7 @@ chrome.storage.local.get("ativa", (data) => {
                 setTimeout(() => {
                     const apresentarResultado = setInterval(() => {
                         if (!document.querySelector('#copiar_resultados')) {
-                            if (document.querySelector('input[data-servico="SRV_MANDADOS"]') && document.querySelector('input[data-servico="SRV_MANDADOS"]').getAttribute('data-key').includes('buscaPorOrgaos')) {
+                            if ((document.querySelector('input[data-servico="SRV_MANDADOS"]') && document.querySelector('input[data-servico="SRV_MANDADOS"]').getAttribute('data-key').includes('buscaPorOrgaos')) || !Array.from(document.querySelectorAll('a')).filter(a => a.innerText == data_nascimento)[0]) {
                                 let copiar_resultados = document.createElement("button");
                                 copiar_resultados.setAttribute('id', 'copiar_resultados');
                                 copiar_resultados.setAttribute('style', 'height:150px;width:400px');
@@ -99,7 +100,7 @@ chrome.storage.local.get("ativa", (data) => {
                                     });
                                 });
                             }
-                            if (document.querySelector('input[data-servico="SRV_MANDADOS"]') && !document.querySelector('input[data-servico="SRV_MANDADOS"]').getAttribute('data-key').includes('buscaPorOrgaos')) {
+                            if (document.querySelector('input[data-servico="SRV_MANDADOS"]') && !document.querySelector('input[data-servico="SRV_MANDADOS"]').getAttribute('data-key').includes('buscaPorOrgaos') && Array.from(document.querySelectorAll('a')).filter(a => a.innerText == data_nascimento)[0]) {
                                 let copiar_resultados = document.createElement("button");
                                 copiar_resultados.setAttribute('id', 'copiar_resultados');
                                 copiar_resultados.setAttribute('style', 'height:150px;width:400px');
@@ -120,8 +121,8 @@ chrome.storage.local.get("ativa", (data) => {
                                 enviar_whats.setAttribute('style', 'height:150px;width:400px');
                                 enviar_whats.innerHTML = 'Enviar P/ WhatsApp';
                                 copiar_resultados.insertAdjacentElement('afterend', enviar_whats);
-                                let dados_envolvido = sessionStorage.getItem('dados_envolvido');
-                                resultado.innerHTML = ('<div dados>*ATENÇÃO! CONDUZIR! ENVIAR IMAGENS DA CONDUÇÃO.*\n\n*MANDADO:*\n' + document.querySelectorAll("#p0-ADVANCED_SEARCH-lista-conteudo div")[9].innerText + '\n\n' + dados_envolvido + '</div>').replaceAll('\n', '<br>').replaceAll('Foragido Polícia Penal<br>', '');
+
+                                resultado.innerHTML = ('<div dados>*ATENÇÃO! CONDUZIR! ENVIAR IMAGENS DA CONDUÇÃO.*\n\n*MANDADO:*\n' + document.querySelectorAll("#p0-ADVANCED_SEARCH-lista-conteudo div")[9].innerText + '\n\n' + dados + '</div>').replaceAll('\n', '<br>').replaceAll('Foragido Polícia Penal<br>', '');
                                 chrome.storage.local.get("pedido_consulta", (result) => {
                                     if (result.pedido_consulta) {
                                         chrome.storage.local.remove('pedido_consulta', function () {

@@ -1018,22 +1018,23 @@ chrome.storage.local.get("ativa", (data) => {
                             document.querySelector('app-consultar-unidade-servico').insertBefore(c, document.querySelector('app-consultar-unidade-servico').querySelector('form'));
                             document.getElementById('txt_separador_equipes').addEventListener('input', function () {
                                 var tbody = '';
-                                var equipes = document.getElementById('txt_separador_equipes').value.toUpperCase().replaceAll('GU', ' ').replaceAll(';', ' ').replaceAll(':', ' ').replaceAll('.', ' ').replaceAll('(', ' ').replaceAll(')', ' ').replaceAll('-', ' ').replaceAll(',', ' ').replaceAll('/', ' ').replaceAll('JBL', ' ').replaceAll('CAM', ' ').replaceAll('CAMERAS', ' ').replaceAll('CÂMERAS', ' ').replaceAll('\n', ' ').replaceAll('  ', ' ').replaceAll('  ', ' ');
+                                var equipes = document.getElementById('txt_separador_equipes').value.toUpperCase().replaceAll('GU', ' ').replaceAll(';', ' ').replaceAll(':', ' ').replaceAll('.', ' ').replaceAll('(', ' ').replaceAll(')', ' ').replaceAll('-', ' ').replaceAll(',', ' ').replaceAll('/', ' ').replaceAll('JBL', ' ').replaceAll('CAM', ' ').replaceAll('CAMERAS', ' ').replaceAll('CÂMERAS', ' ').replaceAll('\n', ' ').replaceAll('  ', ' ').replaceAll('  ', ' ').split(' ');
                                 var e = [];
                                 var n = [];
-                                equipes.split(' ').forEach(function (i) {
-                                    if (eqps.includes(i)) {
-                                        e.push(equipes.indexOf(i));
+                                for (let index = 0; index < equipes.length; index++) {
+                                    if(eqps.includes(equipes[index])) {
+                                        e.push(index);
                                     }
-                                });
+                                }
+                                console.log(e);
                                 if (e.length == 1) {
-                                    n.push(equipes);
+                                    n.push(equipes.join(' '));
                                 } else if (e.length > 1) {
-                                    n.push(equipes.slice(0, e[1]));
+                                    n.push(equipes.slice(0, e[1]).join(' '));
                                     for (let i = 1; i < e.length - 1; i++) {
-                                        n.push(equipes.slice(e[i], e[i + 1]));
+                                        n.push(equipes.slice(e[i], e[i + 1]).join(' '));
                                     }
-                                    n.push(equipes.slice(e[e.length - 1], equipes.length));
+                                    n.push(equipes.slice(e[e.length - 1], equipes.length).join(' '));
                                 }
                                 n.forEach(function (indx) {
                                     var equipe = '';
@@ -1074,7 +1075,6 @@ chrome.storage.local.get("ativa", (data) => {
                                     let gsp;
                                     let gmo;
                                     let ptr;
-                                    console.log(equipes);
                                     guardas.forEach(function (guarda) {
                                         if (equipes.includes('GSP ' + guarda) || equipes.includes('GSP' + guarda) || equipes.includes(guarda + ' GSP') || equipes.includes(guarda + 'GSP')) {
                                             gsp = '<td><input value="' + guarda + '" /></td>';
@@ -1096,7 +1096,6 @@ chrome.storage.local.get("ativa", (data) => {
                                         });
                                         const regex = new RegExp('<td>', 'g');
                                         let qtd_celulas = 9 - (tbody.split('<tr>')[tbody.split('<tr>').length - 1].match(regex)).length;
-                                        console.log(qtd_celulas);
                                         for (let i = 0; i < qtd_celulas; i++) {
                                             tbody += '<td><input value=" " /></td>';
                                         }
@@ -1154,7 +1153,6 @@ chrome.storage.local.get("ativa", (data) => {
                                             }
                                         });
                                         var selects = item.parentNode.parentNode.querySelectorAll('input, select');
-                                        console.log(unidade_servico);
                                         localStorage.setItem('editar_equipe', selects[0].value + '-' + Array.from(document.querySelectorAll('app-unidade-servico-card')).indexOf(unidade_servico) + '-' + selects[1].value + '-' + selects[2].value + '-' + selects[3].value + '-' + selects[4].value + '-' + selects[5].value + '-' + selects[6].value + '-' + selects[7].value + '-' + selects[8].value + '-' + selects[9].value + '-' + selects[10].value + '-' + selects[11].value + '-' + selects[12].value + '-' + selects[13].value + '-' + selects[14].value + '-' + selects[15].value)
 
                                         if (unidade_servico.querySelector('button[title="Iniciar Serviço"]')) {
@@ -1187,8 +1185,6 @@ chrome.storage.local.get("ativa", (data) => {
                                         if (!eqps.filter(i => dados.includes(i))[0] && dados.filter(i => gms.toString().includes(i) && i != '')[0] && dados.filter(i => cameras.toString().includes(i) && i != '')[0]) {
                                             gm = dados.filter(i => gms.toString().includes(i) && i != '')[0];
                                             cam = dados.filter(i => cameras.toString().includes(i) && i != '')[0];
-                                            console.log(linhas[i]);
-                                            console.log(document.getElementById('txt_separador_equipes').value.indexOf(linhas[i]));
                                             document.getElementById('txt_separador_equipes').value = document.getElementById('txt_separador_equipes').value.replace(linhas[i], '');
                                             document.getElementById('txt_separador_equipes').value = document.getElementById('txt_separador_equipes').value.replace(gm, gm + ' ' + cam);
                                         }
