@@ -22,6 +22,25 @@ chrome.storage.local.get("ativa", (data) => {
                 but_buscar_mandado.addEventListener('click', function () { buscar_mandado(); });
             }
         }, 100);
+        setInterval(() => {
+            if (document.querySelector('#copiar_resultados') && document.querySelector('div[dados]') && document.querySelector('div[dados]').innerText.includes('SEM NOVIDADES!')) {
+                const nome = document.querySelector('div[dados]').innerText.split('Nome: ')[1].split('\n')[0].trim();
+                const nome_mae = document.querySelector('div[dados]').innerText.split('mãe: ')[1].split('\n')[0].trim();
+                const data_nascimento = document.querySelector('div[dados]').innerText.split('Nascimento: ')[1].split('\n')[0].trim();
+                if (Array.from(document.querySelectorAll('a')).filter(a => a.innerText == data_nascimento)[0]) {
+                    document.querySelector('div[dados]').innerText = document.querySelector('div[dados]').innerText.replace('SEM NOVIDADES!*\n', '*ATENÇÃO! APÓS CONFERÊNCIA COM A PEÇA, CONDUZIR! ENVIAR IMAGENS DA CONDUÇÃO.*\n\n*MANDADO:*\n' + document.querySelectorAll("#p0-ADVANCED_SEARCH-lista-conteudo div")[9].innerText + '\n');
+                    const row = Array.from(document.querySelectorAll('a')).filter(a => a.innerText == data_nascimento)[0].closest('div.row');
+                    const clone = row.cloneNode(true);
+                    clone.querySelectorAll('p')[0].innerText = nome;
+                    clone.querySelectorAll('p')[1].innerText = nome_mae;
+                    clone.querySelectorAll('p')[2].innerText = data_nascimento;
+                    clone.querySelectorAll('p')[3].innerText = '← CONFERIR OS DADOS';
+                    clone.querySelectorAll('p')[4].innerText = '';
+                    row.insertAdjacentElement('afterend', clone);
+
+                }
+            }
+        }, 100);
         function buscar_mandado() {
             const abrirBuscaAvancada = setInterval(() => {
                 document.querySelector('#advanced-search').click();
@@ -48,7 +67,7 @@ chrome.storage.local.get("ativa", (data) => {
                                 copiar_resultados.setAttribute('id', 'copiar_resultados');
                                 copiar_resultados.setAttribute('style', 'height:150px;width:400px');
                                 copiar_resultados.innerHTML = 'Copiar Resultados';
-                                document.querySelector("#sinesp-body").insertAdjacentElement('beforebegin', copiar_resultados);
+                                document.querySelector("#result").insertAdjacentElement('afterend', copiar_resultados);
                                 let resultado = document.createElement("div");
                                 copiar_resultados.insertAdjacentElement('afterend', resultado);
                                 let enviar_whats = document.createElement("button");
@@ -105,7 +124,7 @@ chrome.storage.local.get("ativa", (data) => {
                                 copiar_resultados.setAttribute('id', 'copiar_resultados');
                                 copiar_resultados.setAttribute('style', 'height:150px;width:400px');
                                 copiar_resultados.innerHTML = 'Copiar Resultados';
-                                document.querySelector("#sinesp-body").insertAdjacentElement('beforebegin', copiar_resultados);
+                                document.querySelector("#result").insertAdjacentElement('afterend', copiar_resultados);
                                 let resultado = document.createElement("div");
                                 copiar_resultados.insertAdjacentElement('afterend', resultado);
                                 chrome.storage.local.get("imagem_consulta", (result) => {
