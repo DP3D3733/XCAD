@@ -21,6 +21,9 @@ chrome.storage.local.get("ativa", (data) => {
                 document.querySelector("#searchContainer").insertAdjacentElement('afterend', but_buscar_mandado);
                 but_buscar_mandado.addEventListener('click', function () { buscar_mandado(); });
             }
+            if (document.querySelector('div[class="alert alert-info"]').innerText.includes('Para habilitar a consulta')) {
+                document.querySelector('div[class="alert alert-info"] a').click();
+            }
         }, 100);
         setInterval(() => {
             if (document.querySelector('#copiar_resultados') && document.querySelector('div[dados]') && document.querySelector('div[dados]').innerText.includes('SEM NOVIDADES!')) {
