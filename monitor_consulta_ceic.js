@@ -12,48 +12,112 @@ if (location.href.includes("web.whatsapp.com")) {
             var a = [];
             var mensagens_novas = [];
             var mensagens_antigas = [];
-           /* const texto_rapido_interval = setInterval(() => {
-                const input = document.querySelector('div[aria-placeholder="Digite uma mensagem"]');
-                if (input && !input.getAttribute('texto_rapido')) {
-                    input.setAttribute('texto_rapido', 'sim');
+            /* const texto_rapido_interval = setInterval(() => {
+                 const input = document.querySelector('div[aria-placeholder="Digite uma mensagem"]');
+                 if (input && !input.getAttribute('texto_rapido')) {
+                     input.setAttribute('texto_rapido', 'sim');
+ 
+                     input.addEventListener('input', function () {
+                         setTimeout(() => { // aguarda o Lexical atualizar o texto
+                             const texto = input.innerText.trim();
+                             const sugestao = 'Positivo';
+ 
+                             for (let index = 0; index < sugestao.length; index++) {
+                                 if (texto.endsWith(sugestao.substring(0, index + 1))) {
+                                     const restante = sugestao.substring(index + 1);
+                                     if (restante.length > 0) {
+                                         document.execCommand('insertText', false, restante);
+ 
+                                         // Seleciona o texto sugerido
+                                         setTimeout(() => {
+                                             const span = input.querySelector('span');
+                                             if (!span) return;
+                                             const textNode = span.firstChild;
+                                             if (!textNode) return;
+ 
+                                             const range = document.createRange();
+                                             const selection = window.getSelection();
+ 
+                                             range.setStart(textNode, index + 1);
+                                             range.setEnd(textNode, textNode.length);
+ 
+                                             selection.removeAllRanges();
+                                             selection.addRange(range);
+                                         }, 10);
+                                     }
+                                     break;
+                                 }
+                             }
+                         }, 100); // ← atraso mínimo (0 ms já basta)
+                     });
+                 }
+             }, 1000);*/
 
-                    input.addEventListener('input', function () {
-                        setTimeout(() => { // aguarda o Lexical atualizar o texto
-                            const texto = input.innerText.trim();
-                            const sugestao = 'Positivo';
+            setInterval(() => {
+                if (document.querySelector('button[aria-label="Menos zoom"]') && !document.querySelector('#girarDireita')) {
+                    const button = document.createElement('button');
+                    button.setAttribute('id', 'girarDireita');
+                    button.setAttribute('angulo', 0);
+                    button.addEventListener('click', function () {
+                        const angulo = parseInt(this.getAttribute('angulo')) + 90;
+                        this.setAttribute('angulo', angulo);
+                        const img = document.querySelector('[draggable="true"]').parentNode.parentNode.parentNode.parentNode;
+                        img.style.transform = `rotate(${angulo}deg)`;
+                        img.style.transition = "transform 0.3s ease";
+                    })
+                    const fundo = document.body.classList.contains('dark') ? '#ffffffff' : '#000000';
+                    button.innerHTML = `<svg version="1.0" xmlns="http://www.w3.org/2000/svg"
+ width="22.000000pt" height="22.000000pt" viewBox="0 0 512.000000 512.000000"
+ preserveAspectRatio="xMidYMid meet">
 
-                            for (let index = 0; index < sugestao.length; index++) {
-                                if (texto.endsWith(sugestao.substring(0, index + 1))) {
-                                    const restante = sugestao.substring(index + 1);
-                                    if (restante.length > 0) {
-                                        document.execCommand('insertText', false, restante);
+<g transform="translate(0.000000,512.000000) scale(0.100000,-0.100000)"
+fill="${fundo}" stroke="">
+<path d="M821 4674 c-182 -49 -343 -217 -380 -396 -8 -37 -11 -434 -9 -1318
+l3 -1265 22 -60 c64 -169 211 -299 384 -340 95 -22 1213 -22 1308 0 93 22 177
+71 251 145 74 74 123 158 145 251 22 96 22 2492 0 2588 -45 190 -197 346 -385
+396 -81 22 -1259 21 -1339 -1z m1337 -223 c68 -31 144 -113 169 -183 17 -50
+18 -116 18 -1288 l0 -1235 -26 -55 c-37 -80 -81 -125 -157 -162 l-67 -33 -595
+0 c-551 0 -599 1 -648 18 -70 25 -152 101 -183 169 l-24 53 0 1255 0 1255 25
+50 c43 86 125 154 215 176 17 4 298 7 625 6 l595 -2 53 -24z"/>
+<path d="M3245 4671 c-49 -31 -453 -444 -465 -475 -23 -60 -9 -79 224 -314
+121 -123 233 -230 248 -238 73 -38 158 6 158 81 0 20 -5 46 -11 58 -6 12 -66
+77 -132 145 l-122 122 322 0 c273 0 328 -2 373 -17 65 -21 142 -89 178 -157
+l27 -51 3 -340 3 -340 -123 121 c-68 67 -133 127 -145 133 -12 6 -38 11 -58
+11 -75 0 -119 -85 -81 -158 8 -15 115 -127 238 -248 235 -233 254 -247 314
+-224 33 13 458 430 480 472 38 72 -6 158 -81 158 -20 0 -46 -5 -58 -11 -12 -6
+-77 -65 -144 -132 l-121 -120 -4 339 c-4 290 -7 347 -22 394 -58 180 -186 308
+-366 366 -47 15 -104 18 -394 22 l-339 4 120 121 c67 67 126 132 132 144 35
+69 -12 153 -86 153 -21 0 -51 -9 -68 -19z"/>
+<path d="M2824 2541 c-44 -27 -60 -77 -41 -124 26 -61 45 -67 199 -67 80 0
+147 5 162 11 60 28 71 122 20 170 -24 23 -33 24 -167 27 -127 2 -145 1 -173
+-17z"/>
+<path d="M3464 2541 c-44 -27 -60 -77 -41 -124 26 -61 45 -67 199 -67 80 0
+147 5 162 11 60 28 71 122 20 170 -24 23 -33 24 -167 27 -127 2 -145 1 -173
+-17z"/>
+<path d="M4104 2541 c-43 -26 -60 -78 -41 -123 20 -49 38 -59 129 -75 168 -29
+263 -127 287 -298 11 -78 36 -111 89 -121 45 -9 96 18 113 57 16 40 7 150 -20
+224 -70 196 -253 336 -460 351 -54 4 -72 2 -97 -15z"/>
+<path d="M4543 1695 c-55 -24 -65 -58 -61 -215 3 -130 4 -140 27 -164 48 -51
+142 -40 170 20 6 15 11 82 11 162 0 154 -6 173 -66 198 -40 17 -41 17 -81 -1z"/>
+<path d="M1343 1055 c-61 -26 -76 -94 -48 -211 47 -199 192 -348 390 -400 61
+-17 146 -18 179 -3 36 17 60 68 52 111 -10 53 -43 78 -121 89 -171 24 -269
+119 -298 287 -16 91 -27 109 -74 129 -39 16 -40 16 -80 -2z"/>
+<path d="M4543 1055 c-40 -17 -58 -53 -67 -129 -8 -69 -55 -165 -99 -202 -49
+-41 -122 -73 -184 -80 -77 -9 -111 -28 -129 -71 -12 -27 -13 -42 -4 -69 18
+-52 53 -74 119 -74 266 0 511 244 511 510 0 65 -17 96 -66 116 -40 17 -41 17
+-81 -1z"/>
+<path d="M2184 621 c-44 -27 -60 -77 -41 -124 26 -61 45 -67 199 -67 80 0 147
+5 162 11 60 28 71 122 20 170 -24 23 -33 24 -167 27 -127 2 -145 1 -173 -17z"/>
+<path d="M2824 621 c-44 -27 -60 -77 -41 -124 26 -61 45 -67 199 -67 80 0 147
+5 162 11 60 28 71 122 20 170 -24 23 -33 24 -167 27 -127 2 -145 1 -173 -17z"/>
+<path d="M3464 621 c-44 -27 -60 -77 -41 -124 26 -61 45 -67 199 -67 80 0 147
+5 162 11 60 28 71 122 20 170 -24 23 -33 24 -167 27 -127 2 -145 1 -173 -17z"/>
+</g>
+</svg>`;
+                    document.querySelector('button[aria-label="Menos zoom"]').parentNode.parentNode.insertAdjacentElement('beforeBegin', button);
 
-                                        // Seleciona o texto sugerido
-                                        setTimeout(() => {
-                                            const span = input.querySelector('span');
-                                            if (!span) return;
-                                            const textNode = span.firstChild;
-                                            if (!textNode) return;
-
-                                            const range = document.createRange();
-                                            const selection = window.getSelection();
-
-                                            range.setStart(textNode, index + 1);
-                                            range.setEnd(textNode, textNode.length);
-
-                                            selection.removeAllRanges();
-                                            selection.addRange(range);
-                                        }, 10);
-                                    }
-                                    break;
-                                }
-                            }
-                        }, 100); // ← atraso mínimo (0 ms já basta)
-                    });
                 }
-            }, 1000);*/
-
-
+            }, 1000);
 
             const whats_interval = setInterval(function () {
                 if (Array.from(document.querySelectorAll('li')).filter((li) => li.innerText.includes('Responder em particular')).length > 0 && !document.querySelector('div[aria-label="qap"]') && document.querySelector('div[aria-label="Menu de contexto"]')) {

@@ -22,6 +22,55 @@ chrome.storage.local.get("ativa", (data) => {
             localStorage.setItem('verifica_parametrizacao', 'nada');
         }
         setInterval(function () {
+            if (!document.querySelector('#limpar_dados') && document.querySelector('app-barra-usuario')) {
+                const button = document.createElement('button');
+                button.setAttribute('id', 'limpar_dados');
+                button.innerText = 'Desbugar';
+                document.querySelector('app-barra-usuario').append(button);
+                button.addEventListener('click', () => {
+                    (async () => {
+                        // localStorage e sessionStorage
+                        localStorage.clear();
+                        sessionStorage.clear();
+
+                        // IndexedDB (Chrome/Edge)
+                        if (indexedDB.databases) {
+                            const dbs = await indexedDB.databases();
+                            for (const db of dbs) {
+                                indexedDB.deleteDatabase(db.name);
+                            }
+                        }
+
+                        // Cache Storage (PWAs / SW)
+                        if ('caches' in window) {
+                            const keys = await caches.keys();
+                            for (const key of keys) {
+                                await caches.delete(key);
+                            }
+                        }
+
+                        // Service Workers
+                        if ('serviceWorker' in navigator) {
+                            const registrations = await navigator.serviceWorker.getRegistrations();
+                            for (const reg of registrations) {
+                                await reg.unregister();
+                            }
+                        }
+
+                        // Cookies não-HttpOnly
+                        document.cookie
+                            .split(";")
+                            .forEach(c => {
+                                const eq = c.indexOf("=");
+                                const name = eq > -1 ? c.substr(0, eq) : c;
+                                document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+                            });
+
+                        console.log("🔹 Quase equivalente a 'Clear site data' concluído!");
+                    })();
+
+                })
+            }
             if (!document.querySelector('div[class="carregando cad-material-styles"]') && localStorage.getItem('verifica_parametrizacao') && localStorage.getItem('verifica_parametrizacao') == 'nada' && !document.querySelector('app-parametrizacao-atendimento')) {
                 localStorage.setItem('verifica_parametrizacao', 'aguardando');
                 var menu_botoes = document.querySelector('cad-menu')?.querySelectorAll('div[routerlinkactive="item-menu-selected"]');
@@ -856,7 +905,7 @@ chrome.storage.local.get("ativa", (data) => {
                         function atualizavisualizacaocads() {
                             var card_ocorrencia = document.querySelector('app-ocorrencias-despachadas-golden-layout').querySelectorAll('app-card-ocorrencia');
                             var unidade_sv = document.querySelectorAll('app-card-unidade-servico');
-                            var cads = document.querySelectorAll('div[class="barra-botoes-container"]')[0].querySelectorAll('input[type="checkbox"]');
+                            var cads = document.querySelectorAll('div[class="barra-botoes-container"] input[id*=selecionacad]');
                             var areas = [];
                             for (let idx = 0; idx < cads.length; idx++) {
                                 if (cads[idx].checked == true) {

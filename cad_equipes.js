@@ -24,6 +24,56 @@ chrome.storage.local.get("ativa", (data) => {
 
 
         setInterval(function () {
+            if (!document.querySelector('#limpar_dados') && document.querySelector('#menu_sinesp')) {
+                const button = document.createElement('button');
+                button.setAttribute('id', 'limpar_dados');
+                button.innerText = 'Desbugar';
+                document.querySelector('#menu_sinesp').append(button);
+                button.addEventListener('click', () => {
+                    (async () => {
+                        // localStorage e sessionStorage
+                        localStorage.clear();
+                        sessionStorage.clear();
+
+                        // IndexedDB (Chrome/Edge)
+                        if (indexedDB.databases) {
+                            const dbs = await indexedDB.databases();
+                            for (const db of dbs) {
+                                indexedDB.deleteDatabase(db.name);
+                            }
+                        }
+
+                        // Cache Storage (PWAs / SW)
+                        if ('caches' in window) {
+                            const keys = await caches.keys();
+                            for (const key of keys) {
+                                await caches.delete(key);
+                            }
+                        }
+
+                        // Service Workers
+                        if ('serviceWorker' in navigator) {
+                            const registrations = await navigator.serviceWorker.getRegistrations();
+                            for (const reg of registrations) {
+                                await reg.unregister();
+                            }
+                        }
+
+                        // Cookies não-HttpOnly
+                        document.cookie
+                            .split(";")
+                            .forEach(c => {
+                                const eq = c.indexOf("=");
+                                const name = eq > -1 ? c.substr(0, eq) : c;
+                                document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+                            });
+
+                        console.log("🔹 Quase equivalente a 'Clear site data' concluído!");
+                    })();
+
+                })
+            }
+
             if (Array.from(document.querySelectorAll('button[botaosecundario]')).filter(botao => botao.innerText == 'Nova Unidade de Serviço')[0]) {
                 Array.from(document.querySelectorAll('button[botaosecundario]')).filter(botao => botao.innerText == 'Nova Unidade de Serviço')[0].style.display = 'none';
             }
@@ -1022,7 +1072,7 @@ chrome.storage.local.get("ativa", (data) => {
                                 var e = [];
                                 var n = [];
                                 for (let index = 0; index < equipes.length; index++) {
-                                    if(eqps.includes(equipes[index])) {
+                                    if (eqps.includes(equipes[index])) {
                                         e.push(index);
                                     }
                                 }
