@@ -1032,9 +1032,13 @@ chrome.storage.local.get("ativa", (data) => {
                     if (texto.includes('Denúncias 153')) {
                         const resumo = texto.split('\n').map(item => item.split('- ')[1]);
                         document.querySelector('div[data-params*="DENÚNCIAS 156POA"] input').value = resumo[0];
+                        document.querySelector('div[data-params*="DENÚNCIAS 156POA"] input').dispatchEvent(new Event('input', { bubbles: true }));
                         document.querySelector('div[data-params*="DENÚNCIAS WATSAPP"] input').value = resumo[1];
+                        document.querySelector('div[data-params*="DENÚNCIAS WATSAPP"] input').dispatchEvent(new Event('input', { bubbles: true }));
                         document.querySelector('div[data-params*="TOTAL DE LIGAÇÕES"] input').value = resumo[2];
+                        document.querySelector('div[data-params*="TOTAL DE LIGAÇÕES"] input').dispatchEvent(new Event('input', { bubbles: true }));
                         document.querySelector('div[data-params*="APOIO SAMU"] input').value = resumo[3];
+                        document.querySelector('div[data-params*="APOIO SAMU"] input').dispatchEvent(new Event('input', { bubbles: true }));
                     }
                 })
             }
