@@ -362,7 +362,7 @@ chrome.storage.local.get("ativa", (data) => {
             if (document.querySelector("input[formcontrolname=horaFato]") && document.querySelector("input[formcontrolname=horaFato]").value == '__:__' && document.querySelector("input[formcontrolname=dataFato]") && document.querySelector("input[formcontrolname=dataFato]").value != '' && document.getElementById('cod_montar_cad').value.match(/\d{2}(\D)\d{2}\1\d{4}/g)) {
                 document.getElementById('cod_montar_cad').dispatchEvent(new Event('input', { bubbles: true }));
             }
-            if (localStorage.getItem("dados_para_o_cad") && document.getElementById('cod_montar_cad') && document.querySelector('app-logradouro-autocomplete input[placeholder="Por Favor Informe ao Menos 3 caracteres"]') && document.querySelector('app-protocolo-tempo-chamado').innerHTML.includes('GCM-POA2025')) {
+            if (localStorage.getItem("dados_para_o_cad") && document.getElementById('cod_montar_cad') && document.querySelector('app-logradouro-autocomplete input[placeholder="Por Favor Informe ao Menos 3 caracteres"]') && document.querySelector('app-protocolo-tempo-chamado').innerHTML.includes('GCM-POA202')) {
                 sessionStorage.setItem('multicads_montar_cad', JSON.stringify(localStorage.getItem("dados_para_o_cad").split('-++-')));
                 localStorage.removeItem("dados_para_o_cad");
             }
@@ -1089,7 +1089,7 @@ chrome.storage.local.get("ativa", (data) => {
                 }
             }
 
-            if (document.querySelector('app-ocorrencias-despachadas-golden-layout') && document.querySelector('app-ocorrencias-nao-despachadas-golden-layout app-card-ocorrencia') && (!document.querySelector('app-ocorrencias-despachadas-golden-layout').innerHTML.includes('GCM-POA2025') || !document.querySelector('app-ocorrencias-nao-despachadas-golden-layout').innerHTML.includes('GCM-POA2025'))) {
+            if (document.querySelector('app-ocorrencias-despachadas-golden-layout') && document.querySelector('app-ocorrencias-nao-despachadas-golden-layout app-card-ocorrencia') && (!document.querySelector('app-ocorrencias-despachadas-golden-layout').innerHTML.includes('GCM-POA202') || !document.querySelector('app-ocorrencias-nao-despachadas-golden-layout').innerHTML.includes('GCM-POA202'))) {
                 document.querySelector("#painelMenuFiltrosOcorrenciasDespachadas div[class*= toggle-switch]").click();
                 if (document.querySelectorAll("#painelMenuFiltrosOcorrenciasDespachadas input[type=checkbox]")[document.querySelectorAll("#painelMenuFiltrosOcorrenciasDespachadas input[type=checkbox]").length - 1].checked == true) {
                     document.querySelectorAll("#painelMenuFiltrosOcorrenciasDespachadas input[type=checkbox]")[document.querySelectorAll("#painelMenuFiltrosOcorrenciasDespachadas input[type=checkbox]").length - 1].click();
@@ -1106,7 +1106,7 @@ chrome.storage.local.get("ativa", (data) => {
                     Array.from(item.querySelectorAll('p[class*=dado-card]')).filter(p => p.innerText.includes('GCM-POA')).forEach(i => { i.style.display = 'none' });
                 })
             }
-            if (document.querySelector('app-ocorrencias-despachadas-golden-layout') && document.querySelector('app-ocorrencias-despachadas-golden-layout').querySelector('app-card-ocorrencia:not(:has(button[acao="Referenciar CAD"]))') && Array.from(document.querySelector('app-ocorrencias-despachadas-golden-layout').querySelector('app-card-ocorrencia:not(:has(button[acao="Referenciar CAD"]))').querySelectorAll('p')).filter((dado) => dado.innerHTML.includes('GCM-POA2025'))[0]) {
+            if (document.querySelector('app-ocorrencias-despachadas-golden-layout') && document.querySelector('app-ocorrencias-despachadas-golden-layout').querySelector('app-card-ocorrencia:not(:has(button[acao="Referenciar CAD"]))') && Array.from(document.querySelector('app-ocorrencias-despachadas-golden-layout').querySelector('app-card-ocorrencia:not(:has(button[acao="Referenciar CAD"]))').querySelectorAll('p')).filter((dado) => dado.innerHTML.includes('GCM-POA202'))[0]) {
                 var cad = document.querySelector('app-ocorrencias-despachadas-golden-layout').querySelector('app-card-ocorrencia:not(:has(button[acao="Referenciar CAD"]))');
                 var botao_referenciar_cad = document.createElement('button');
                 botao_referenciar_cad.setAttribute("class", "mat-mdc-tooltip-trigger button-icon");
@@ -1139,7 +1139,7 @@ chrome.storage.local.get("ativa", (data) => {
                     if (Array.from(cad.querySelectorAll('p')).filter((dado) => dado.innerHTML.includes('Tipo Local'))[0]) {
                         tipo_local = Array.from(cad.querySelectorAll('p')).filter((dado) => dado.innerHTML.includes('Tipo Local'))[0].innerHTML.split('Tipo Local:')[1].trim();
                     }
-                    var n_registro = Array.from(cad.querySelectorAll('p')).filter((dado) => dado.innerHTML.includes('GCM-POA2025'))[0];
+                    var n_registro = Array.from(cad.querySelectorAll('p')).filter((dado) => dado.innerHTML.includes('GCM-POA202'))[0];
                     let ponto_referencia = '';
                     let endereco = cad.querySelectorAll('p')[3].innerText.trim().replaceAll(' ,', ',').replaceAll('/RS', '');
                     if (cad.querySelectorAll('p').length == 8) {
