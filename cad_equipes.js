@@ -68,7 +68,6 @@ chrome.storage.local.get("ativa", (data) => {
                                 document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
                             });
 
-                        console.log("🔹 Quase equivalente a 'Clear site data' concluído!");
                     })();
 
                 })
@@ -1076,7 +1075,6 @@ chrome.storage.local.get("ativa", (data) => {
                                         e.push(index);
                                     }
                                 }
-                                console.log(e);
                                 if (e.length == 1) {
                                     n.push(equipes.join(' '));
                                 } else if (e.length > 1) {
