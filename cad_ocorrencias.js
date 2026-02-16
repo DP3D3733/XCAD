@@ -450,7 +450,9 @@ chrome.storage.local.get("ativa", (data) => {
                     }
                     if (document.querySelectorAll('mat-option').length > 0) {
                         if (document.querySelectorAll('mat-option')[0].parentNode.innerHTML.includes('Averiguado')) {
-                            document.querySelectorAll('mat-option')[2].click();
+                            setTimeout(() => {
+                                Array.from(document.querySelectorAll('mat-option')).find(option => option.innerText.includes('Averiguado'))?.click();
+                            }, 1000);
                         } else if (document.querySelectorAll('mat-option')[0].parentNode.innerHTML.includes('Masculino')) {
                             var sexo = dados.split('Sexo: ')[1].split('\n')[0].trim();
                             var opcoes_sexo = document.querySelectorAll('mat-option');
@@ -697,7 +699,7 @@ chrome.storage.local.get("ativa", (data) => {
                     b.setAttribute("id", "naorepete");
                     document.querySelector('app-finalizar-ocorrencia-modal').append(b);
                     if (natureza_inicial == 'Abordagem a Pessoa Em Atitude Suspeita') {
-                        localStorage.setItem('selecionaopcao', 'input[placeholder="Selecione a Categoria"]-&-Finalizado no Local-&-input[placeholder="Selecione o Motivo"]-&-Averiguação Policial sem Alteração-&-input[placeholder="Selecione a Natureza Final"]-&-CONSULTA AO SISTEMA DE FICHA CRIMINAL-&-input[placeholder="Selecione a Natureza Final"]-&-ABORDAGEM A PESSOA EM ATITUDE SUSPEITA-&-');
+                        localStorage.setItem('selecionaopcao', 'input[placeholder="Selecione a Categoria"]-&-Finalizado no Local-&-input[placeholder="Selecione o Motivo"]-&-Averiguação Policial sem Alteração-&-input[placeholder="Selecione a Natureza Final"]-&-ABORDAGEM A PESSOA EM ATITUDE SUSPEITA-&-');
                     } else if (natureza_inicial == 'Exercício Ilegal de Profissão Ou Atividade') {
                         localStorage.setItem('selecionaopcao', 'input[placeholder="Selecione a Categoria"]-&-Finalizado no Local-&-input[placeholder="Selecione o Motivo"]-&-Averiguação Policial sem Alteração-&-input[placeholder="Selecione a Natureza Final"]-&-EXERCÍCIO ILEGAL DE PROFISSÃO OU ATIVIDADE-&-');
                     } else if (natureza_inicial == 'Assistência Humanitária') {
@@ -705,7 +707,7 @@ chrome.storage.local.get("ativa", (data) => {
                     } else if (natureza_inicial == 'Paciente Alterado') {
                         localStorage.setItem('selecionaopcao', 'input[placeholder="Selecione a Categoria"]-&-Finalizado no Local-&-input[placeholder="Selecione o Motivo"]-&-Averiguação Policial sem Alteração-&-input[placeholder="Selecione a Natureza Final"]-&-COMUNICAÇÃO - ORIENTAÇÃO DAS PARTES-&-input[placeholder="Selecione a Natureza Final"]-&-FUGA DE PACIENTE-&-');
                     } else if (natureza_inicial == 'Apoio Ao Samu') {
-                        localStorage.setItem('selecionaopcao', 'input[placeholder="Selecione a Categoria"]-&-Finalizado no Local-&-input[placeholder="Selecione o Motivo"]-&-Averiguação Policial sem Alteração-&-input[placeholder="Selecione a Natureza Final"]-&-EMERGÊNCIA PSIQUIÁTRICA-&-');
+                        localStorage.setItem('selecionaopcao', 'input[placeholder="Selecione a Categoria"]-&-Finalizado no Local-&-input[placeholder="Selecione o Motivo"]-&-Averiguação Policial sem Alteração-&-input[placeholder="Selecione a Natureza Final"]-&-APOIO AO SAMU-&-');
                     } else if (natureza_inicial == 'Abordagem a Morador de Rua') {
                         localStorage.setItem('selecionaopcao', 'input[placeholder="Selecione a Categoria"]-&-Finalizado no Local-&-input[placeholder="Selecione o Motivo"]-&-Partes Orientadas-&-input[placeholder="Selecione a Natureza Final"]-&-COMUNICAÇÃO - ORIENTAÇÃO DAS PARTES-&-input[placeholder="Selecione a Natureza Final"]-&-ABORDAGEM A MORADOR DE RUA-&-');
                     } else {

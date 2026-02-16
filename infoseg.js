@@ -21,7 +21,7 @@ chrome.storage.local.get("ativa", (data) => {
                 document.querySelector("#searchContainer").insertAdjacentElement('afterend', but_buscar_mandado);
                 but_buscar_mandado.addEventListener('click', function () { buscar_mandado(); });
             }
-            if (document.querySelector('div[class="alert alert-info"]').innerText.includes('Para habilitar a consulta')) {
+            if (document.querySelector('div[class="alert alert-info"]')?.innerText.includes('Para habilitar a consulta')) {
                 document.querySelector('div[class="alert alert-info"] a').click();
             }
         }, 100);
@@ -30,9 +30,10 @@ chrome.storage.local.get("ativa", (data) => {
                 const nome = document.querySelector('div[dados]').innerText.split('Nome: ')[1].split('\n')[0].trim();
                 const nome_mae = document.querySelector('div[dados]').innerText.split('mãe: ')[1].split('\n')[0].trim();
                 const data_nascimento = document.querySelector('div[dados]').innerText.split('Nascimento: ')[1].split('\n')[0].trim();
-                if (Array.from(document.querySelectorAll('a')).filter(a => a.innerText == data_nascimento)[0]) {
+                if (Array.from(document.querySelectorAll('a')).some(a => a.innerText == data_nascimento || a.innerText == nome_mae) || document.querySelector('input[data-servico="SRV_MANDADOS"]').closest('#p0-ADVANCED_SEARCH-0').querySelector('p.form-control-static').innerText.trim() == nome) {
                     document.querySelector('div[dados]').innerText = document.querySelector('div[dados]').innerText.replace('SEM NOVIDADES!*\n', '*ATENÇÃO! APÓS CONFERÊNCIA COM A PEÇA, CONDUZIR! ENVIAR IMAGENS DA CONDUÇÃO.*\n\n*MANDADO:*\n' + document.querySelectorAll("#p0-ADVANCED_SEARCH-lista-conteudo div")[9].innerText + '\n');
-                    const row = Array.from(document.querySelectorAll('a')).filter(a => a.innerText == data_nascimento)[0].closest('div.row');
+                    const row = Array.from(document.querySelectorAll('a')).find(a => a.innerText == data_nascimento || a.innerText == nome_mae).closest('div.row') || document.querySelector('input[data-servico="SRV_MANDADOS"]').closest('#p0-ADVANCED_SEARCH-0').querySelector('p.form-control-static').closest('div.row') || null;
+                    if (!row) return;
                     const clone = row.cloneNode(true);
                     clone.querySelectorAll('p')[0].innerText = nome;
                     clone.querySelectorAll('p')[1].innerText = nome_mae;
@@ -93,10 +94,10 @@ chrome.storage.local.get("ativa", (data) => {
                                         chrome.storage.local.remove('pedido_consulta', function () {
                                             console.log('Removido!');
                                         });
-                                        chrome.storage.local.set({ dados_consulta: '*SEM NOVIDADES!*\n\n' + dados_envolvido }, () => {
+                                        /*chrome.storage.local.set({ dados_consulta: '*SEM NOVIDADES!*\n\n' + dados_envolvido }, () => {
                                             chrome.runtime.sendMessage({ action: "retorna_consulta", data: '' });
                                             clearInterval(apresentarResultado);
-                                        });
+                                        });*/
                                     }
                                 });
                                 document.querySelector('#copiar_resultados').addEventListener('click', function () {
@@ -150,9 +151,9 @@ chrome.storage.local.get("ativa", (data) => {
                                         chrome.storage.local.remove('pedido_consulta', function () {
                                             console.log('Removido!');
                                         });
-                                        chrome.storage.local.set({ dados_consulta: '*ATENÇÃO! CONDUZIR! ENVIAR IMAGENS DA CONDUÇÃO.*\n\n*MANDADO:*\n' + document.querySelector('tbody td').innerText + '\n\n' + dados_envolvido }, () => {
+                                        /*chrome.storage.local.set({ dados_consulta: '*ATENÇÃO! CONDUZIR! ENVIAR IMAGENS DA CONDUÇÃO.*\n\n*MANDADO:*\n' + document.querySelector('tbody td').innerText + '\n\n' + dados_envolvido }, () => {
                                             chrome.runtime.sendMessage({ action: "retorna_consulta", data: '' });
-                                        });
+                                        });*/
                                     }
                                 });
                                 document.querySelector('#copiar_resultados').addEventListener('click', function () {
