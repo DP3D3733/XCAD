@@ -657,7 +657,7 @@ chrome.storage.local.get("ativa", (data) => {
                         if (document.querySelector('app-dados-natureza-ocorrencia').innerText.includes('APOIO AO SAMU')) {
                             document.querySelector('textarea[formcontrolname="relato"]').value = 'A guarnição NUM_NOM_GU  prestou apoio à equipe n.º NUM_EQUIPE_SAMU do Samu, sob responsabilidade da técnica NOME_TÉCNICO_ENFERMAGEM , num atendimento de pessoa em surto. Ação realizada dentro da normalidade.';
                         } else if (document.querySelector('app-dados-natureza-ocorrencia').innerText.includes('ABORDAGEM A PESSOA EM ATITUDE SUSPEITA')) {
-                            document.querySelector('textarea[formcontrolname="relato"]').value = 'A guarnição NUM_NOM_GU realizou uma abordagem onde foi consultada a ficha criminal do indivíduo bem como realizada a revista pessoal.Não tendo sido encontrado nada em seu desfavor, foi liberado. Ação realizada dentro da normalidade.';
+                            document.querySelector('textarea[formcontrolname="relato"]').value = 'A guarnição NUM_NOM_GU realizou uma abordagem onde foi consultada a ficha criminal do indivíduo bem como realizada a revista pessoal. Não tendo sido encontrado nada em seu desfavor, foi liberado. Ação realizada dentro da normalidade.';
                         } else {
                             document.querySelector('textarea[formcontrolname="relato"]').value = 'Ação realizada dentro da normalidade.';
                         }
