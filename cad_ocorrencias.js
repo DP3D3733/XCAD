@@ -65,8 +65,6 @@ chrome.storage.local.get("ativa", (data) => {
                                 const name = eq > -1 ? c.substr(0, eq) : c;
                                 document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
                             });
-
-                        console.log("🔹 Quase equivalente a 'Clear site data' concluído!");
                     })();
 
                 })
@@ -236,6 +234,10 @@ chrome.storage.local.get("ativa", (data) => {
                     sessionStorage.removeItem('multicads_montar_cad');
                 }
             }
+            if(document.querySelector('app-modal-confirmacao')?.innerHTML.includes('Deseja realmente sair do formulário de atendimento')) {
+                const butConfirm = document.querySelector('app-modal-confirmacao [botaoconfirmar]');
+                if(!butConfirm.innerHTML.includes('(Alt + Enter)')) atalho_botao_salvar(butConfirm);
+            }
             if (document.querySelector("app-chamado") && document.querySelector("app-chamado").querySelector("input[formcontrolname=pontoReferencia]") && !document.querySelector("span[class=numeroProtocolo]").innerText.includes('Gerando Protocolo')) {
                 if (document.querySelector('span[class="label-natureza"]').innerText == 'Abandono de Incapaz') {
                     document.querySelector('button[type=submit]').parentNode.style.display = 'none';
@@ -320,7 +322,6 @@ chrome.storage.local.get("ativa", (data) => {
                         sessionStorage.removeItem('multicads_montar_cad');
                         sessionStorage.removeItem('cod_montar_cad');
                         trava_cod_montar_cad = '';
-                        console.log(await window.navigator.clipboard.readText());
                         sessionStorage.setItem('multicads_montar_cad', JSON.stringify((await window.navigator.clipboard.readText()).replaceAll('\r', '').replaceAll('\"', '').replaceAll('"', '').split('-++-')));
                     }
                     document.getElementById('cod_montar_cad').addEventListener('click', function () {
@@ -670,7 +671,15 @@ chrome.storage.local.get("ativa", (data) => {
                 var b = document.createElement("div");
                 b.setAttribute("id", "naorepetealtenter_salvar");
                 document.querySelector('app-edicao-ocorrencia-formulario').append(b);
-                atalho_botao_salvar(document.querySelectorAll('app-edicao-ocorrencia-formulario button[botaoconfirmar]')[3]);
+                atalho_botao_salvar(document.querySelectorAll('app-edicao-ocorrencia-formulario button[botaoconfirmar]')[4]);
+                document.querySelectorAll('app-edicao-ocorrencia-formulario button[botaoconfirmar]')[4].addEventListener('click', () => {
+                    const intervalFecharEdicao = setInterval(() => {
+                        if (document.body.innerHTML.includes('atualizada com sucesso')) {
+                            clearInterval(intervalFecharEdicao);
+                            window.close();
+                        }
+                    }, 100);
+                })
             }
             if (document.querySelector('textarea[formcontrolname="relato"]') && document.querySelector('textarea[formcontrolname="relato"]').value != '' && localStorage.getItem('verifica_relato') && !document.querySelectorAll('button[botaoconfirmar]')[document.querySelectorAll('button[botaoconfirmar]').length - 1].getAttribute('disabled')) {
                 localStorage.setItem('cads_com_relato', localStorage.getItem('cads_com_relato') + ',' + document.querySelector('app-async-data-loading').querySelector('span').innerText.trim());
@@ -852,7 +861,7 @@ chrome.storage.local.get("ativa", (data) => {
                     d.setAttribute("id", "naorepeteselecionacad");
                     if (document.querySelector('div[class="barra-botoes-container"]')) {
                         document.querySelector('div[class="barra-botoes-container"]').append(d);
-                        document.querySelectorAll('div[class="barra-botoes-container"]')[0].innerHTML += '<div style=display:inline-block><input type="checkbox" checked id="selecionacad1" name="selecionacad1" style=display:inline-block /><label style=display:inline-block;user-select:none;cursor:pointer for="selecionacad1">Cad 1</label></div><div style=display:inline-block><input type="checkbox" checked id="selecionacad2" name="cad2" style=display:inline-block /><label style=display:inline-block;user-select:none;cursor:pointer for=selecionacad2>Cad 2</label></div><div style=display:inline-block><input type="checkbox" checked id="selecionacad3" name="cad3" style=display:inline-block /><label style=display:inline-block;user-select:none;cursor:pointer for=selecionacad3>Cad 3</label></div><div style=display:inline-block><input type="checkbox" checked id="selecionacad4" name="cad4" style=display:inline-block /><label style=display:inline-block;user-select:none;cursor:pointer for=selecionacad4>Cad 4</label></div><div style=display:inline-block><input type="checkbox" checked id="selecionacad5" name="cad5" style=display:inline-block /><label style=display:inline-block;user-select:none;cursor:pointer for=selecionacad5>Sem empenho</label></div><div style=display:inline-block><input type="checkbox" checked id="selecionacad6" name="cad6" style=display:inline-block /><label style=display:inline-block;user-select:none;cursor:pointer for=selecionacad6>Somente meus cads</label></div>'
+                        d.innerHTML += '<div style=display:inline-block><input type="checkbox" checked id="selecionacad1" name="selecionacad1" style=display:inline-block /><label style=display:inline-block;user-select:none;cursor:pointer for="selecionacad1">Cad 1</label></div><div style=display:inline-block><input type="checkbox" checked id="selecionacad2" name="cad2" style=display:inline-block /><label style=display:inline-block;user-select:none;cursor:pointer for=selecionacad2>Cad 2</label></div><div style=display:inline-block><input type="checkbox" checked id="selecionacad3" name="cad3" style=display:inline-block /><label style=display:inline-block;user-select:none;cursor:pointer for=selecionacad3>Cad 3</label></div><div style=display:inline-block><input type="checkbox" checked id="selecionacad4" name="cad4" style=display:inline-block /><label style=display:inline-block;user-select:none;cursor:pointer for=selecionacad4>Cad 4</label></div><div style=display:inline-block><input type="checkbox" checked id="selecionacad5" name="cad5" style=display:inline-block /><label style=display:inline-block;user-select:none;cursor:pointer for=selecionacad5>Sem empenho</label></div><div style=display:inline-block><input type="checkbox" checked id="selecionacad6" name="cad6" style=display:inline-block /><label style=display:inline-block;user-select:none;cursor:pointer for=selecionacad6>Somente meus cads</label></div>'
                         if (localStorage.getItem('cadselecionados')) {
                             var cadselecionados = localStorage.getItem('cadselecionados');
                             if (cadselecionados.split('---')[0] == 'true') {
@@ -907,7 +916,7 @@ chrome.storage.local.get("ativa", (data) => {
                         function atualizavisualizacaocads() {
                             var card_ocorrencia = document.querySelector('app-ocorrencias-despachadas-golden-layout').querySelectorAll('app-card-ocorrencia');
                             var unidade_sv = document.querySelectorAll('app-card-unidade-servico');
-                            var cads = document.querySelectorAll('div[class="barra-botoes-container"] input[id*=selecionacad]');
+                            var cads = document.querySelectorAll('input[id*=selecionacad]');
                             var areas = [];
                             for (let idx = 0; idx < cads.length; idx++) {
                                 if (cads[idx].checked == true) {
@@ -1304,7 +1313,8 @@ function atalho_botao_salvar(button) {
         button = document.querySelector('app-distribuicao-chamado button[botaoconfirmar]');
     }
     document.addEventListener('keydown', function (event) {
-        if (event.key === 'Enter' && event.altKey) {
+        const isAltGr = event.getModifierState && event.getModifierState('AltGraph');
+        if (event.key === 'Enter' && (event.altKey || isAltGr)) {
             if (document.querySelector('app-distribuicao-chamado button[botaoconfirmar]')) {
                 button = document.querySelector('app-distribuicao-chamado button[botaoconfirmar]');
                 button.innerHTML += '<span style="font-size:10px">&nbsp;(Alt + Enter)</span>';

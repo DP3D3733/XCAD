@@ -1125,11 +1125,9 @@ chrome.storage.local.get("ativa", (data) => {
                                     let ptr;
                                     const eqpStr = equipes.join(' ');
                                     guardas.forEach(function (guarda) {
-                                        console.log(guarda);
                                         if (eqpStr.includes('GSP ' + guarda) || eqpStr.includes('GSP' + guarda) || eqpStr.includes(guarda + ' GSP') || eqpStr.includes(guarda + 'GSP')) {
                                             gsp = '<td><input value="' + guarda + '" /></td>';
                                         } else if (eqpStr.includes('GMO ' + guarda) || eqpStr.includes('GMO' + guarda) || eqpStr.includes(guarda + ' GMO') || eqpStr.includes(guarda + 'GMO')) {
-                                            console.log('gmo');
                                             gmo = '<td><input value="' + guarda + '" /></td>';
                                         } else {
                                             ptr = '<td><input value="' + guarda + '" /></td>';
