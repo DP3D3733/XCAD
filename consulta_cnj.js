@@ -101,31 +101,22 @@ chrome.storage.local.get("ativa", (data) => {
                 if (pesquisa.includes('Foragido Polícia Penal')) {
                     foragido = 'sim';
                 }
-                if (cpf && cpf.trim() != '' && foragido == '') {
-                    document.querySelector('input[name=numeroCpf]').click();
-                    document.querySelector('input[name=numeroCpf]').value = cpf;
-                    document.querySelector('input[name=numeroCpf]').dispatchEvent(
-                        new Event("input", { bubbles: true, cancelable: true })
-                    );
-                    sessionStorage.setItem('ultima_abordagem', "https://cadweb.sinesp.gov.br/paineis-estatisticos/app/discover#/?_g=(filters:!(('$state':(store:globalState),meta:(alias:!n,disabled:!f,field:envolvidos.listaDocumentos.numeroDocumento,index:cfc8e00b-b566-4aa1-8650-972ed33cc53d,key:envolvidos.listaDocumentos.numeroDocumento,negate:!f,params:(query:'" + cpf.replaceAll(/[/.-]/g, '') + "'),type:phrase),query:(match_phrase:(envolvidos.listaDocumentos.numeroDocumento:'" + cpf.replaceAll(/[/.-]/g, '') + "')))),refreshInterval:(pause:!t,value:60000),time:(from:now-12y,to:now))&_a=(columns:!(logradouro,numero,bairro,pontoReferencia,envolvidos,equipesEmpenhadas,dataHoraFato),filters:!(),grid:(columns:(naturezasFinais:(width:130))),hideChart:!t,index:cfc8e00b-b566-4aa1-8650-972ed33cc53d,interval:auto,query:(language:kuery,query:''),sort:!(!(dataHoraRegistroChamadoUTC,desc)))&ultimaabordagem=sim");
-                } else {
-                    document.querySelector('input[name=nomePessoa]').click();
-                    document.querySelector('input[name=nomePessoa]').value = procurado;
-                    document.querySelector('input[name=nomePessoa]').dispatchEvent(
-                        new Event("input", { bubbles: true, cancelable: true })
-                    );
-                    document.querySelector('input[name=nomeMae]').click();
-                    document.querySelector('input[name=nomeMae]').value = mae;
-                    document.querySelector('input[name=nomeMae]').dispatchEvent(
-                        new Event("input", { bubbles: true, cancelable: true })
-                    );
-                    document.querySelector('input[name=dataNascimento]').click();
-                    document.querySelector('input[name=dataNascimento]').value = dataNascimento;
-                    document.querySelector('input[name=dataNascimento]').dispatchEvent(
-                        new Event("input", { bubbles: true, cancelable: true })
-                    );
-                    sessionStorage.setItem('ultima_abordagem', "https://cadweb.sinesp.gov.br/paineis-estatisticos/app/discover#/?_g=(filters:!(('$state':(store:globalState),meta:(alias:!n,disabled:!f,index:cfc8e00b-b566-4aa1-8650-972ed33cc53d,negate:!f,params:!((meta:(alias:!n,disabled:!f,field:envolvidos.nome,index:cfc8e00b-b566-4aa1-8650-972ed33cc53d,key:envolvidos.nome,negate:!f,params:(query:'" + procurado.normalize('NFD').replaceAll(/[\u0300-\u036f]/g, '').replaceAll(' ', '%20') + "'),type:phrase),query:(match_phrase:(envolvidos.nome:'" + procurado.normalize('NFD').replaceAll(/[\u0300-\u036f]/g, '').replaceAll(' ', '%20') + "'))),(meta:(alias:!n,disabled:!f,field:envolvidos.nomeMae,index:cfc8e00b-b566-4aa1-8650-972ed33cc53d,key:envolvidos.nomeMae,negate:!f,params:(query:'" + mae.normalize('NFD').replaceAll(/[\u0300-\u036f]/g, '').replaceAll(' ', '%20') + "'),type:phrase),query:(match_phrase:(envolvidos.nomeMae:'" + mae.normalize('NFD').replaceAll(/[\u0300-\u036f]/g, '').replaceAll(' ', '%20') + "'))),('$state':(store:appState),meta:(alias:!n,disabled:!f,field:envolvidos.dataNascimento,index:cfc8e00b-b566-4aa1-8650-972ed33cc53d,key:envolvidos.dataNascimento,negate:!f,params:(query:'" + dataNascimento.split('/')[2] + '-' + dataNascimento.split('/')[1] + '-' + dataNascimento.split('/')[0] + "T00:00:00.000Z'),type:phrase),query:(match_phrase:(envolvidos.dataNascimento:'" + dataNascimento.split('/')[2] + '-' + dataNascimento.split('/')[1] + '-' + dataNascimento.split('/')[0] + "T00:00:00.000Z')))),relation:AND,type:combined),query:())),refreshInterval:(pause:!t,value:60000),time:(from:now-12y,to:now))&_a=(columns:!(logradouro,numero,bairro,pontoReferencia,envolvidos,equipesEmpenhadas,dataHoraFato),filters:!(),grid:(columns:(naturezasFinais:(width:130))),hideChart:!t,index:cfc8e00b-b566-4aa1-8650-972ed33cc53d,interval:auto,query:(language:kuery,query:''),sort:!(!(dataHoraRegistroChamadoUTC,desc)))&ultimaabordagem=sim");
-                }
+                document.querySelector('input[name=nomePessoa]').click();
+                document.querySelector('input[name=nomePessoa]').value = procurado;
+                document.querySelector('input[name=nomePessoa]').dispatchEvent(
+                    new Event("input", { bubbles: true, cancelable: true })
+                );
+                document.querySelector('input[name=nomeMae]').click();
+                document.querySelector('input[name=nomeMae]').value = mae;
+                document.querySelector('input[name=nomeMae]').dispatchEvent(
+                    new Event("input", { bubbles: true, cancelable: true })
+                );
+                document.querySelector('input[name=dataNascimento]').click();
+                document.querySelector('input[name=dataNascimento]').value = dataNascimento;
+                document.querySelector('input[name=dataNascimento]').dispatchEvent(
+                    new Event("input", { bubbles: true, cancelable: true })
+                );
+                sessionStorage.setItem('ultima_abordagem', "https://cadweb.sinesp.gov.br/paineis-estatisticos/app/discover#/?_g=(filters:!(('$state':(store:globalState),meta:(alias:!n,disabled:!f,index:cfc8e00b-b566-4aa1-8650-972ed33cc53d,negate:!f,params:!((meta:(alias:!n,disabled:!f,field:envolvidos.nome,index:cfc8e00b-b566-4aa1-8650-972ed33cc53d,key:envolvidos.nome,negate:!f,params:(query:'" + procurado.normalize('NFD').replaceAll(/[\u0300-\u036f]/g, '').replaceAll(' ', '%20') + "'),type:phrase),query:(match_phrase:(envolvidos.nome:'" + procurado.normalize('NFD').replaceAll(/[\u0300-\u036f]/g, '').replaceAll(' ', '%20') + "'))),(meta:(alias:!n,disabled:!f,field:envolvidos.nomeMae,index:cfc8e00b-b566-4aa1-8650-972ed33cc53d,key:envolvidos.nomeMae,negate:!f,params:(query:'" + mae.normalize('NFD').replaceAll(/[\u0300-\u036f]/g, '').replaceAll(' ', '%20') + "'),type:phrase),query:(match_phrase:(envolvidos.nomeMae:'" + mae.normalize('NFD').replaceAll(/[\u0300-\u036f]/g, '').replaceAll(' ', '%20') + "'))),('$state':(store:appState),meta:(alias:!n,disabled:!f,field:envolvidos.dataNascimento,index:cfc8e00b-b566-4aa1-8650-972ed33cc53d,key:envolvidos.dataNascimento,negate:!f,params:(query:'" + dataNascimento.split('/')[2] + '-' + dataNascimento.split('/')[1] + '-' + dataNascimento.split('/')[0] + "T00:00:00.000Z'),type:phrase),query:(match_phrase:(envolvidos.dataNascimento:'" + dataNascimento.split('/')[2] + '-' + dataNascimento.split('/')[1] + '-' + dataNascimento.split('/')[0] + "T00:00:00.000Z')))),relation:AND,type:combined),query:())),refreshInterval:(pause:!t,value:60000),time:(from:now-12y,to:now))&_a=(columns:!(logradouro,numero,bairro,pontoReferencia,envolvidos,equipesEmpenhadas,dataHoraFato),filters:!(),grid:(columns:(naturezasFinais:(width:130))),hideChart:!t,index:cfc8e00b-b566-4aa1-8650-972ed33cc53d,interval:auto,query:(language:kuery,query:''),sort:!(!(dataHoraRegistroChamadoUTC,desc)))&ultimaabordagem=sim");
             }
             if (document.querySelector('input[name=nomePessoa]') && (document.querySelector('input[name=numeroCpf]').value != '' || (document.querySelector('input[name=nomePessoa]').value != '' && document.querySelector('input[name=nomeMae]').value != '' && document.querySelector('input[name=dataNascimento]').value != '')) && sessionStorage.getItem('dados_envolvido') && (!sessionStorage.getItem('dados_envolvido_ja_pesquisados') || !sessionStorage.getItem('dados_envolvido_ja_pesquisados').includes(sessionStorage.getItem('dados_envolvido')))) {
                 sessionStorage.setItem('dados_envolvido_ja_pesquisados', pesquisa);
@@ -187,7 +178,7 @@ chrome.storage.local.get("ativa", (data) => {
                     chrome.storage.local.remove('pedido_consulta', function () {
                         console.log('Removido!');
                     });
-                    chrome.storage.local.set({ dados_consulta: this.nextElementSibling.querySelector('div[dados]').innerHTML.replaceAll('<br>','\n')}, () => {
+                    chrome.storage.local.set({ dados_consulta: this.nextElementSibling.querySelector('div[dados]').innerHTML.replaceAll('<br>', '\n') }, () => {
                         chrome.runtime.sendMessage({ action: "retorna_consulta", data: '' });
                     });
                 });

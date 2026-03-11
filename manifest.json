@@ -170,6 +170,14 @@
       "js": [
         "sentry.js"
       ]
+    },
+    {
+      "matches": [
+        "https://app.wescctech.com.br/chats*"
+      ],
+      "js": [
+        "whu.js"
+      ]
     }
   ],
   "permissions": [

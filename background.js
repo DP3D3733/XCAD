@@ -48,17 +48,21 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         return true;
     }
     if (message.action === "imagem") {
-        chrome.storage.local.set({ imagem_consulta: message.data }, () => {
-            chrome.tabs.query({ currentWindow: true }, (tabs) => {
-                const targetTab = tabs.find(tab => tab.title.includes('Sinesp Infoseg'));
-                if (targetTab) {
-                    chrome.tabs.update(targetTab.id, { active: true }, () => {
-                        chrome.tabs.reload(targetTab.id); // Recarrega a aba após ativá-la
-                    });
-                } else {
-                    chrome.tabs.create({ url: "https://infoseg.sinesp.gov.br/infoseg2/" });
-                }
-            });
+        chrome.storage.local.set({ imagem_consulta: message.data });
+        return true;
+    }
+    if (message.action === "banco") {
+        chrome.tabs.query({ currentWindow: true }, (tabs) => {
+
+            const targetTab = tabs.find(tab => tab.title.includes(message.data));
+            if (targetTab) {
+                chrome.tabs.update(targetTab.id, { active: true }, () => {
+                    chrome.tabs.reload(targetTab.id); // Recarrega a aba após ativá-la
+                });
+            } else {
+                const bancos = { 'Sinesp Infoseg': "https://infoseg.sinesp.gov.br/infoseg2/", 'Portal BNMP': 'https://portalbnmp.pdpj.jus.br/#/pesquisa-peca' }
+                chrome.tabs.create({ url: bancos[message.data] });
+            }
         });
         return true;
     }
@@ -100,7 +104,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         chrome.storage.local.get('imagem_consulta', (data) => {
             sendResponse(data['imagem_consulta']);
             chrome.storage.local.remove('imagem_consulta', (data) => {
-        });
+            });
         });
         return true; // necessário para resposta assíncrona
     }
@@ -152,8 +156,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 const registro = {};
                 registro[docId] = valor;
                 const data_registro = new Date();
-                data_registro.setHours(0,0,0,0)
-                await setDoc(doc(db, "equipes", data_registro.toISOString()), registro,{ merge: true });
+                data_registro.setHours(0, 0, 0, 0)
+                await setDoc(doc(db, "equipes", data_registro.toISOString()), registro, { merge: true });
 
                 sendResponse({ status: "ok" });
             } catch (e) {

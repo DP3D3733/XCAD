@@ -40,29 +40,34 @@ if (sessionStorage.getItem('img_n_repete')) {
     var tb = localStorage.getItem('dados_completos');
     let textarea = document.createElement("span");
     textarea.setAttribute('id', 'txt_resultados');
-    textarea.innerHTML = tb;
+    textarea.innerHTML = '<br><br>' + tb.replaceAll('\n', '<br>');
     document.querySelector('#frmImg').insertAdjacentElement('afterend', textarea);
     let botao_buscar_mandado = document.createElement("button");
     botao_buscar_mandado.setAttribute('id', 'botao_buscar_mandado');
-    botao_buscar_mandado.innerHTML = 'Buscar Mandado';
+    botao_buscar_mandado.innerHTML = 'Buscar Mandado BNMP';
     textarea.insertAdjacentElement('beforebegin', botao_buscar_mandado);
+    let botao_buscar_mandado_Infoseg = document.createElement("button");
+    botao_buscar_mandado_Infoseg.setAttribute('id', 'botao_buscar_mandado_Infoseg');
+    botao_buscar_mandado_Infoseg.innerHTML = 'Buscar Mandado Infoseg';
+    textarea.insertAdjacentElement('beforebegin', botao_buscar_mandado_Infoseg);
     const interval_img = setInterval(() => {
-        if(document.querySelector('img')) {
+        if (document.querySelector('img')) {
             clearInterval(interval_img);
-            imageToBase64(document.querySelector('img'),tb);
+            document.querySelector('#botao_buscar_mandado').addEventListener('click', function (item) {
+                imageToBase64(document.querySelector('img'), tb, 'Portal BNMP');
+            });
+            document.querySelector('#botao_buscar_mandado_Infoseg').addEventListener('click', function (item) {
+                imageToBase64(document.querySelector('img'), tb, 'Sinesp Infoseg');
+            });
         }
     }, 100);
-    document.querySelector('#botao_buscar_mandado').addEventListener('click', function (item) {
-        //window.postMessage({ type: "FROM_PAGE", payload: tb }, "*");
-        //navigator.clipboard.writeText(tb);
-        //window.open("https://portalbnmp.pdpj.jus.br/", "_blank");
-    });
+
 } else {
     document.querySelectorAll('a')[3].click();
     sessionStorage.setItem('img_n_repete', '1');
 }
 
-async function imageToBase64(img,tb) {
+async function imageToBase64(img, tb, banco) {
     return new Promise((resolve, reject) => {
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
@@ -76,8 +81,9 @@ async function imageToBase64(img,tb) {
             try {
                 const dataURL = canvas.toDataURL(); // padrão PNG
                 resolve(dataURL);
-                window.postMessage({ type: "img", payload: dataURL}, "*");
-                window.postMessage({ type: "dados", payload: tb}, "*");
+                window.postMessage({ type: "img", payload: dataURL }, "*");
+                window.postMessage({ type: "dados", payload: tb }, "*");
+                window.postMessage({ type: "banco", payload: banco }, "*");
             } catch (e) {
                 reject(e);
             }

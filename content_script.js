@@ -6,6 +6,9 @@ window.addEventListener("message", (event) => {
   if (event.data.type === "img") {
     chrome.runtime.sendMessage({ action: "imagem", data: event.data.payload });
   }
+  if (event.data.type === "banco") {
+    chrome.runtime.sendMessage({ action: "banco", data: event.data.payload });
+  }
 
   if (event.data.type === "verifica_pedido") {
     chrome.storage.local.get("pedido_consulta", (d) => {

@@ -1,5 +1,5 @@
-const urls = ['discover', 'cad-equipe-web', 'cad-ocorrencia-web', 'portalbnmp', 'consultasintegradas', 'secweb.intra', 'docs.google.com/forms', 'infoseg2', 'whatsapp'];
-const scripts = ['CAD Discover', 'CAD Equipes', 'CAD Ocorrências', 'CNJ', 'Consultas Integradas', 'Consultas Integradas', 'Balanço de Fiscalização', 'InfoSeg', 'WhatsApp'];
+const urls = ['discover', 'cad-equipe-web', 'cad-ocorrencia-web', 'portalbnmp', 'consultasintegradas', 'secweb.intra', 'docs.google.com/forms', 'infoseg2', 'whatsapp','wescctech'];
+const scripts = ['CAD Discover', 'CAD Equipes', 'CAD Ocorrências', 'CNJ', 'Consultas Integradas', 'Consultas Integradas', 'Balanço de Fiscalização', 'InfoSeg', 'WhatsApp','WHU'];
 
 for (let index = 0; index < scripts.length; index++) {
     chrome.storage.local.get([scripts[index]], (data) => {
