@@ -234,9 +234,9 @@ chrome.storage.local.get("ativa", (data) => {
                     sessionStorage.removeItem('multicads_montar_cad');
                 }
             }
-            if(document.querySelector('app-modal-confirmacao')?.innerHTML.includes('Deseja realmente sair do formulário de atendimento')) {
+            if (document.querySelector('app-modal-confirmacao')?.innerHTML.includes('Deseja realmente sair do formulário de atendimento')) {
                 const butConfirm = document.querySelector('app-modal-confirmacao [botaoconfirmar]');
-                if(!butConfirm.innerHTML.includes('(Alt + Enter)')) atalho_botao_salvar(butConfirm);
+                if (!butConfirm.innerHTML.includes('(Alt + Enter)')) atalho_botao_salvar(butConfirm);
             }
             if (document.querySelector("app-chamado") && document.querySelector("app-chamado").querySelector("input[formcontrolname=pontoReferencia]") && !document.querySelector("span[class=numeroProtocolo]").innerText.includes('Gerando Protocolo')) {
                 if (document.querySelector('span[class="label-natureza"]').innerText == 'Abandono de Incapaz') {

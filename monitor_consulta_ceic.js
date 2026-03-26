@@ -120,8 +120,9 @@ l27 -51 3 -340 3 -340 -123 121 c-68 67 -133 127 -145 133 -12 6 -38 11 -58
             }, 1000);
 
             const whats_interval = setInterval(function () {
-                if (Array.from(document.querySelectorAll('li')).filter((li) => li.innerText.includes('Responder em particular')).length > 0 && !document.querySelector('div[aria-label="qap"]') && document.querySelector('div[aria-label="Menu de contexto"]')) {
+                if (document.querySelector('div[aria-label="Responder em particular"]') && !document.querySelector('div[aria-label="qap"]')) {
                     let mensagem = document.querySelector('div[aria-label="Menu de contexto"]').parentNode.parentNode.parentNode.parentNode.innerText;
+                    const horario = mensagem.split('\n')[mensagem.split('\n').length - 1];
                     let gus_extenso = ['CRUZEIRO', 'PARTENON', 'LESTE', 'RESTINGA', 'NORTE', 'BALTAZAR', 'PINHEIRO', 'SUL', 'CENTRO', 'ROMU'];
                     let gus_numero = ['21', '31', '41', '51', '61', '71', '81', '91', 'C1', 'R1', 'PATAM'];
                     let possiveis_gus = [];
@@ -138,8 +139,8 @@ l27 -51 3 -340 3 -340 -123 121 c-68 67 -133 127 -145 133 -12 6 -38 11 -58
                         });
                         possiveis_gus.push('Definir Gu');
                         possiveis_gus.forEach(function (item) {
-                            let but_qap = '<li tabindex="0" class="_aj-r _aj-q _aj-_ false false" data-animate-dropdown-item="true" role="button" style="opacity: 1;"><div class="_aj-z _aj-t _alxo" aria-label="qap" style="">QAP ' + item + '</div></li>';
-                            Array.from(document.querySelectorAll('li')).filter((li) => li.innerText.includes('Responder em particular'))[0].parentNode.insertAdjacentHTML("beforebegin", but_qap);
+                            let but_qap = `<li tabindex="0" class="_aj-r _aj-q _aj-_ false false" data-animate-dropdown-item="true" role="button" style="opacity: 1;"><div class="_aj-z _aj-t _alxo" aria-label="qap" horario="${horario}" style="">QAP ${item}</div></li>`;
+                            document.querySelector('div[aria-label="Responder em particular"]').insertAdjacentHTML("beforebegin", but_qap);
                         });
                     }
 
@@ -148,7 +149,7 @@ l27 -51 3 -340 3 -340 -123 121 c-68 67 -133 127 -145 133 -12 6 -38 11 -58
                     let but_qap = document.querySelector('div[aria-label="qap"]:not([com_event_listener])')
                     but_qap.setAttribute('com_event_listener', '');
                     but_qap.parentNode.addEventListener('click', function () {
-                        let horario = document.querySelector('div[aria-label="Menu de contexto"]').parentNode.parentNode.parentNode.querySelectorAll('span[dir=auto]')[document.querySelector('div[aria-label="Menu de contexto"]').parentNode.parentNode.parentNode.querySelectorAll('span[dir=auto]').length - 1].innerText.replaceAll('Editada', '');
+                        let horario = this.querySelector('div').getAttribute('horario');
                         let gu;
                         if (this.innerText.includes('Definir')) {
                             gu = prompt('Defina a Gu escrevendo: 21, 31, 41, 51, 61, 71, 81, 91, C1, R1 ou P1');
@@ -180,22 +181,27 @@ l27 -51 3 -340 3 -340 -123 121 c-68 67 -133 127 -145 133 -12 6 -38 11 -58
                             }
                             document.querySelector('span[class="notification-badge"]').innerHTML = (sessionStorage.getItem('qap').split('\n').length - 1) + '/11';
                         }
-                        window.dispatchEvent(
-                            new KeyboardEvent("keydown", {
-                                altKey: false,
-                                code: "Escape",
-                                ctrlKey: false,
-                                isComposing: false,
-                                key: "Escape",
-                                location: 0,
-                                metaKey: false,
-                                repeat: false,
-                                shiftKey: false,
-                                which: 27,
-                                charCode: 0,
-                                keyCode: 27,
-                            })
-                        );
+                        const excluirButtonQAPInterval = setInterval(() => {
+                            if (!document.querySelector('div[aria-label="qap"]')) {
+                                clearInterval(excluirButtonQAPInterval);
+                            }
+                            window.dispatchEvent(
+                                new KeyboardEvent("keydown", {
+                                    altKey: false,
+                                    code: "Escape",
+                                    ctrlKey: false,
+                                    isComposing: false,
+                                    key: "Escape",
+                                    location: 0,
+                                    metaKey: false,
+                                    repeat: false,
+                                    shiftKey: false,
+                                    which: 27,
+                                    charCode: 0,
+                                    keyCode: 27,
+                                })
+                            );
+                        }, 1000);
                     });
 
 
