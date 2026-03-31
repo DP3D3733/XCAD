@@ -1333,7 +1333,7 @@ chrome.storage.local.get("ativa", (data) => {
                 equipe = document.querySelector('app-modal-detalhar-equipe').querySelectorAll('strong')[1].innerHTML;
                 componentes = document.querySelector('app-modal-detalhar-equipe').querySelectorAll('div[class="p-card-body"]');
                 for (let i = 0; i < componentes.length; i++) {
-                    document.getElementById('tabela_lista_de_equipes').innerHTML += '<tr><td>' + equipe + '</td><td>' + componentes[i].parentNode.previousSibling.innerHTML.replace('gm ', '') + '</td><td>' + componentes[i].querySelectorAll('strong')[1].parentNode.innerHTML.split('</strong>')[1].trim() + '</td><td>' + componentes[i].querySelectorAll('strong')[4].parentNode.innerHTML.split('</strong>')[1].trim() + '</td><td></td><td></td></tr>';
+                    document.getElementById('tabela_lista_de_equipes').innerHTML += '<tr><td>' + equipe + '</td><td>' + componentes[i].querySelectorAll('strong')[1].parentNode.innerHTML.split('</strong>')[1].trim().split(' ')[0] + '</td><td>' + componentes[i].parentNode.previousSibling.innerHTML.replace('gm ', '') + '</td><td>' + componentes[i].querySelectorAll('strong')[4].parentNode.innerHTML.split('</strong>')[1].trim() + '</td><td></td><td></td></tr>';
                 }
                 componentes = '';
                 if (parseInt(localStorage.getItem('lista_equipes_número')) != -1) {
