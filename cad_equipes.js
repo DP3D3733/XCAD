@@ -237,7 +237,7 @@ chrome.storage.local.get("ativa", (data) => {
             }
             if (localStorage.getItem('edita_equipe_pega_equipe') && document.querySelector('app-modal-detalhar-equipe')) {
                 var selects = document.querySelector('#checkbox').querySelectorAll('select');
-                var componentes = document.querySelector('app-modal-detalhar-equipe').querySelectorAll('div[class="modal-material-subtitulo"]');
+                var componentes = document.querySelectorAll('app-modal-detalhar-equipe div:has(> div.modal-material-subtitulo)');
                 var gmo = [];
                 var ptr = [];
                 var operador = [];
@@ -249,15 +249,16 @@ chrome.storage.local.get("ativa", (data) => {
                 selects[9].querySelectorAll('option')[0].selected = true;
                 selects[10].querySelectorAll('option')[0].selected = true;
                 componentes.forEach(function (pessoa) {
+                    const numeroGuarda = Array.from(pessoa.querySelectorAll('strong')).find(dado => dado.innerText == "Nome Funcional:").parentNode.innerText.replace(/\D/g, "");
                     if (pessoa.parentNode.innerHTML.includes('Patrulheiro')) {
-                        ptr.push(pessoa.innerHTML.trim().split(' ')[1]);
+                        ptr.push(numeroGuarda);
                     } else if (pessoa.parentNode.innerHTML.includes('Motorista')) {
-                        gmo.push(pessoa.innerHTML.trim().split(' ')[1]);
+                        gmo.push(numeroGuarda);
                     } else if (pessoa.parentNode.innerHTML.includes('Operador')) {
-                        operador.push(pessoa.innerHTML.trim().split(' ')[1]);
+                        operador.push(numeroGuarda);
                     } else {
                         selects[4].querySelectorAll('option').forEach(function (op) {
-                            if (op.value == pessoa.innerHTML.trim().split(' ')[1]) {
+                            if (op.value == numeroGuarda) {
                                 op.selected = true;
                             }
                         })
@@ -338,88 +339,88 @@ chrome.storage.local.get("ativa", (data) => {
                 }
 
             }
-            if (localStorage.getItem('editar_equipe') && localStorage.getItem('processo_edicao') == 'inserir_pessoas' && document.querySelector('app-modal-editar-equipe') && document.querySelector('cad-table') && document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').value == '') {
+            if (localStorage.getItem('editar_equipe') && localStorage.getItem('processo_edicao') == 'inserir_pessoas' && document.querySelector('app-modal-editar-equipe') && document.querySelector('cad-table') && document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value == '') {
                 if (document.querySelector('app-modal-editar-equipe').querySelector('ul')) {
-                    if (!document.querySelector('app-modal-editar-equipe').querySelector('ul').innerHTML.includes(' ' + localStorage.getItem('editar_equipe').split('-')[3] + ' ') && localStorage.getItem('editar_equipe').split('-')[3] != ' ') {
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').value = localStorage.getItem('editar_equipe').split('-')[3];
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    } else if (!document.querySelector('app-modal-editar-equipe').querySelector('ul').innerHTML.includes(' ' + localStorage.getItem('editar_equipe').split('-')[4] + ' ') && localStorage.getItem('editar_equipe').split('-')[4] != ' ') {
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').value = localStorage.getItem('editar_equipe').split('-')[4];
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    } else if (!document.querySelector('app-modal-editar-equipe').querySelector('ul').innerHTML.includes(' ' + localStorage.getItem('editar_equipe').split('-')[5] + ' ') && localStorage.getItem('editar_equipe').split('-')[5] != ' ') {
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').value = localStorage.getItem('editar_equipe').split('-')[5];
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    } else if (!document.querySelector('app-modal-editar-equipe').querySelector('ul').innerHTML.includes(' ' + localStorage.getItem('editar_equipe').split('-')[6] + ' ') && localStorage.getItem('editar_equipe').split('-')[6] != ' ') {
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').value = localStorage.getItem('editar_equipe').split('-')[6];
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    } else if (!document.querySelector('app-modal-editar-equipe').querySelector('ul').innerHTML.includes(' ' + localStorage.getItem('editar_equipe').split('-')[7] + ' ') && localStorage.getItem('editar_equipe').split('-')[7] != ' ') {
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').value = localStorage.getItem('editar_equipe').split('-')[7];
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    } else if (!document.querySelector('app-modal-editar-equipe').querySelector('ul').innerHTML.includes(' ' + localStorage.getItem('editar_equipe').split('-')[8] + ' ') && localStorage.getItem('editar_equipe').split('-')[8] != ' ') {
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').value = localStorage.getItem('editar_equipe').split('-')[8];
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    } else if (!document.querySelector('app-modal-editar-equipe').querySelector('ul').innerHTML.includes(' ' + localStorage.getItem('editar_equipe').split('-')[9] + ' ') && localStorage.getItem('editar_equipe').split('-')[9] != ' ') {
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').value = localStorage.getItem('editar_equipe').split('-')[9];
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    } else if (document.querySelector("#sel_area_edit_equip").value == 'COGM' && !document.querySelector('app-modal-editar-equipe').querySelector('ul').innerHTML.includes(' ' + localStorage.getItem('editar_equipe').split('-')[10] + ' ') && localStorage.getItem('editar_equipe').split('-')[10] != ' ') {
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').value = localStorage.getItem('editar_equipe').split('-')[10];
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    } else if (document.querySelector("#sel_area_edit_equip").value == 'COGM' && !document.querySelector('app-modal-editar-equipe').querySelector('ul').innerHTML.includes(' ' + localStorage.getItem('editar_equipe').split('-')[11] + ' ') && localStorage.getItem('editar_equipe').split('-')[11] != ' ') {
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').value = localStorage.getItem('editar_equipe').split('-')[11];
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    } else if (document.querySelector("#sel_area_edit_equip").value == 'COGM' && !document.querySelector('app-modal-editar-equipe').querySelector('ul').innerHTML.includes(' ' + localStorage.getItem('editar_equipe').split('-')[12] + ' ') && localStorage.getItem('editar_equipe').split('-')[12] != ' ') {
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').value = localStorage.getItem('editar_equipe').split('-')[12];
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    } else if (document.querySelector("#sel_area_edit_equip").value == 'COGM' && !document.querySelector('app-modal-editar-equipe').querySelector('ul').innerHTML.includes(' ' + localStorage.getItem('editar_equipe').split('-')[14] + ' ') && localStorage.getItem('editar_equipe').split('-')[13] != ' ') {
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').value = localStorage.getItem('editar_equipe').split('-')[13];
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    } else if (document.querySelector("#sel_area_edit_equip").value == 'COGM' && !document.querySelector('app-modal-editar-equipe').querySelector('ul').innerHTML.includes(' ' + localStorage.getItem('editar_equipe').split('-')[15] + ' ') && localStorage.getItem('editar_equipe').split('-')[14] != ' ') {
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').value = localStorage.getItem('editar_equipe').split('-')[14];
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    } else if (document.querySelector("#sel_area_edit_equip").value == 'COGM' && !document.querySelector('app-modal-editar-equipe').querySelector('ul').innerHTML.includes(' ' + localStorage.getItem('editar_equipe').split('-')[15] + ' ') && localStorage.getItem('editar_equipe').split('-')[15] != ' ') {
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').value = localStorage.getItem('editar_equipe').split('-')[15];
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    } else if (document.querySelector("#sel_area_edit_equip").value == 'COGM' && !document.querySelector('app-modal-editar-equipe').querySelector('ul').innerHTML.includes(' ' + localStorage.getItem('editar_equipe').split('-')[16] + ' ') && localStorage.getItem('editar_equipe').split('-')[16] != ' ') {
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').value = localStorage.getItem('editar_equipe').split('-')[16];
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').dispatchEvent(new Event('input', { bubbles: true }));
+                    if (!Array.from(document.querySelectorAll('app-modal-editar-equipe ul li span.titulo')).find(pessoa => pessoa.innerText.includes(localStorage.getItem('editar_equipe').split('-')[3])) && localStorage.getItem('editar_equipe').split('-')[3] != ' ') {
+                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[3];
+                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
+                    } else if (!Array.from(document.querySelectorAll('app-modal-editar-equipe ul li span.titulo')).find(pessoa => pessoa.innerText.includes(localStorage.getItem('editar_equipe').split('-')[4])) && localStorage.getItem('editar_equipe').split('-')[4] != ' ') {
+                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[4];
+                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
+                    } else if (!Array.from(document.querySelectorAll('app-modal-editar-equipe ul li span.titulo')).find(pessoa => pessoa.innerText.includes(localStorage.getItem('editar_equipe').split('-')[5])) && localStorage.getItem('editar_equipe').split('-')[5] != ' ') {
+                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[5];
+                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
+                    } else if (!Array.from(document.querySelectorAll('app-modal-editar-equipe ul li span.titulo')).find(pessoa => pessoa.innerText.includes(localStorage.getItem('editar_equipe').split('-')[6])) && localStorage.getItem('editar_equipe').split('-')[6] != ' ') {
+                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[6];
+                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
+                    } else if (!Array.from(document.querySelectorAll('app-modal-editar-equipe ul li span.titulo')).find(pessoa => pessoa.innerText.includes(localStorage.getItem('editar_equipe').split('-')[7])) && localStorage.getItem('editar_equipe').split('-')[7] != ' ') {
+                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[7];
+                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
+                    } else if (!Array.from(document.querySelectorAll('app-modal-editar-equipe ul li span.titulo')).find(pessoa => pessoa.innerText.includes(localStorage.getItem('editar_equipe').split('-')[8])) && localStorage.getItem('editar_equipe').split('-')[8] != ' ') {
+                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[8];
+                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
+                    } else if (!Array.from(document.querySelectorAll('app-modal-editar-equipe ul li span.titulo')).find(pessoa => pessoa.innerText.includes(localStorage.getItem('editar_equipe').split('-')[9])) && localStorage.getItem('editar_equipe').split('-')[9] != ' ') {
+                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[9];
+                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
+                    } else if (document.querySelector("#sel_area_edit_equip").value == 'COGM' && !Array.from(document.querySelectorAll('app-modal-editar-equipe ul li span.titulo')).find(pessoa => pessoa.innerText.includes(localStorage.getItem('editar_equipe').split('-')[10])) && localStorage.getItem('editar_equipe').split('-')[10] != ' ') {
+                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[10];
+                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
+                    } else if (document.querySelector("#sel_area_edit_equip").value == 'COGM' && !Array.from(document.querySelectorAll('app-modal-editar-equipe ul li span.titulo')).find(pessoa => pessoa.innerText.includes(localStorage.getItem('editar_equipe').split('-')[11])) && localStorage.getItem('editar_equipe').split('-')[11] != ' ') {
+                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[11];
+                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
+                    } else if (document.querySelector("#sel_area_edit_equip").value == 'COGM' && !Array.from(document.querySelectorAll('app-modal-editar-equipe ul li span.titulo')).find(pessoa => pessoa.innerText.includes(localStorage.getItem('editar_equipe').split('-')[12])) && localStorage.getItem('editar_equipe').split('-')[12] != ' ') {
+                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[12];
+                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
+                    } else if (document.querySelector("#sel_area_edit_equip").value == 'COGM' && !Array.from(document.querySelectorAll('app-modal-editar-equipe ul li span.titulo')).find(pessoa => pessoa.innerText.includes(localStorage.getItem('editar_equipe').split('-')[13])) && localStorage.getItem('editar_equipe').split('-')[13] != ' ') {
+                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[13];
+                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
+                    } else if (document.querySelector("#sel_area_edit_equip").value == 'COGM' && !Array.from(document.querySelectorAll('app-modal-editar-equipe ul li span.titulo')).find(pessoa => pessoa.innerText.includes(localStorage.getItem('editar_equipe').split('-')[14])) && localStorage.getItem('editar_equipe').split('-')[14] != ' ') {
+                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[14];
+                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
+                    } else if (document.querySelector("#sel_area_edit_equip").value == 'COGM' && !Array.from(document.querySelectorAll('app-modal-editar-equipe ul li span.titulo')).find(pessoa => pessoa.innerText.includes(localStorage.getItem('editar_equipe').split('-')[15])) && localStorage.getItem('editar_equipe').split('-')[15] != ' ') {
+                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[15];
+                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
+                    } else if (document.querySelector("#sel_area_edit_equip").value == 'COGM' && !Array.from(document.querySelectorAll('app-modal-editar-equipe ul li span.titulo')).find(pessoa => pessoa.innerText.includes(localStorage.getItem('editar_equipe').split('-')[16])) && localStorage.getItem('editar_equipe').split('-')[16] != ' ') {
+                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[16];
+                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
                     } else {
                         localStorage.setItem('processo_edicao', 'inserir_funcoes');
                         localStorage.setItem('clicando_na_funcao', 'nao');
                         localStorage.setItem('qual_gm', '0');
                     }
                 } else if (localStorage.getItem('editar_equipe').split('-')[3] != ' ') {
-                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').value = localStorage.getItem('editar_equipe').split('-')[3];
-                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').dispatchEvent(new Event('input', { bubbles: true }));
+                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[3];
+                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
                 } else if (localStorage.getItem('editar_equipe').split('-')[4] != ' ') {
-                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').value = localStorage.getItem('editar_equipe').split('-')[4];
-                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').dispatchEvent(new Event('input', { bubbles: true }));
+                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[4];
+                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
                 } else if (localStorage.getItem('editar_equipe').split('-')[5] != ' ') {
-                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').value = localStorage.getItem('editar_equipe').split('-')[5];
-                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').dispatchEvent(new Event('input', { bubbles: true }));
+                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[5];
+                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
                 } else if (localStorage.getItem('editar_equipe').split('-')[6] != ' ') {
-                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').value = localStorage.getItem('editar_equipe').split('-')[6];
-                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').dispatchEvent(new Event('input', { bubbles: true }));
+                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[6];
+                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
                 } else if (localStorage.getItem('editar_equipe').split('-')[7] != ' ') {
-                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').value = localStorage.getItem('editar_equipe').split('-')[7];
-                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').dispatchEvent(new Event('input', { bubbles: true }));
+                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[7];
+                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
                 } else if (localStorage.getItem('editar_equipe').split('-')[8] != ' ') {
-                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').value = localStorage.getItem('editar_equipe').split('-')[8];
-                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').dispatchEvent(new Event('input', { bubbles: true }));
+                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[8];
+                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
                 } else if (localStorage.getItem('editar_equipe').split('-')[9] != ' ') {
-                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').value = localStorage.getItem('editar_equipe').split('-')[9];
-                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').dispatchEvent(new Event('input', { bubbles: true }));
+                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[9];
+                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
                 }
 
             }
-            if (localStorage.getItem('editar_equipe') && localStorage.getItem('processo_edicao') == 'inserir_pessoas' && document.querySelector('app-modal-editar-equipe') && document.querySelector('cad-table') && document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').value != '' && document.querySelector('cad-table').querySelectorAll('tr').length < 5) {
-                if (!document.querySelector('app-modal-editar-equipe').querySelector('div[class*="fx-group"]').innerHTML.includes(' ' + document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').value + ' ')) {
+            if (localStorage.getItem('editar_equipe') && localStorage.getItem('processo_edicao') == 'inserir_pessoas' && document.querySelector('app-modal-editar-equipe') && document.querySelector('cad-table') && document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value != '' && document.querySelector('cad-table').querySelectorAll('tr').length < 5) {
+                if (!document.querySelector('app-modal-editar-equipe').querySelector('div[class*="fx-group"]').innerHTML.includes(' ' + document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value + ' ')) {
                     if (document.querySelector('app-modal-editar-equipe').querySelector('button[title="Vincular"]')) {
                         document.querySelector('app-modal-editar-equipe').querySelector('button[title="Vincular"]').click();
-                        document.querySelector('app-modal-editar-equipe').querySelector('div[class*="fx-group"]').innerHTML += ' ' + document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').value + ' ';
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').value = '';
+                        document.querySelector('app-modal-editar-equipe').querySelector('div[class*="fx-group"]').innerHTML += ' ' + document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value + ' ';
+                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = '';
                     }
                 } else {
-                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nome"]').value = '';
+                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = '';
                 }
             }
             if (localStorage.getItem('processo_edicao') == 'inserir_funcoes' && localStorage.getItem('clicando_na_funcao') && document.querySelector('app-modal-editar-equipe') && document.querySelector('app-modal-editar-equipe').querySelectorAll("li:not([data-feito])").length > 0 && !document.querySelector('mat-option')) {
@@ -431,7 +432,7 @@ chrome.storage.local.get("ativa", (data) => {
                 } else {
                     item.querySelector('input').click();
                 }
-                if (equipe.indexOf(item.innerHTML.split('gm ')[1].split('-')[0].trim()) == 3) {
+                if (equipe.indexOf(item.querySelectorAll('span.titulo')[1].innerText.split(' ')[0]) == 3) {
                     item.querySelector('input').click();
                     localStorage.setItem('clicando_na_funcao', 'Supervisor');
                 } else if (document.querySelector("#sel_area_edit_equip").value == 'COGM') {
@@ -439,7 +440,7 @@ chrome.storage.local.get("ativa", (data) => {
                         item.querySelector('input').click();
                         localStorage.setItem('clicando_na_funcao', 'Operador');
                     }
-                } else if (equipe.indexOf(item.innerHTML.split('gm ')[1].split('-')[0].trim()) == 4 || equipe.indexOf(item.innerHTML.split('gm ')[1].split('-')[0].trim()) == 5 || equipe.indexOf(item.innerHTML.split('gm ')[1].split('-')[0].trim()) == 6) {
+                } else if (equipe.indexOf(item.querySelectorAll('span.titulo')[1].innerText.split(' ')[0]) == 4 || equipe.indexOf(item.querySelectorAll('span.titulo')[1].innerText.split(' ')[0]) == 5 || equipe.indexOf(item.querySelectorAll('span.titulo')[1].innerText.split(' ')[0]) == 6) {
                     item.querySelector('input').click();
                     localStorage.setItem('clicando_na_funcao', 'Motorista');
                 } else {
@@ -713,25 +714,25 @@ chrome.storage.local.get("ativa", (data) => {
                 }
             };
 
-            if (document.querySelector('input[name=column-filter-nome]')) {
+            if (document.querySelector('input[name=column-filter-nomeFuncional]')) {
                 if (document.querySelector("div[id='naorepete_editar_equipe']")) {
                 } else {
                     var b = document.createElement("div");
                     b.setAttribute("id", "naorepete_editar_equipe");
                     document.querySelector('app-modal-editar-equipe').append(b);
 
-                    document.querySelector('input[name=column-filter-nome]').addEventListener('keydown', function (event) {
-                        if (event.key === 'Enter' && document.querySelector('input[name=column-filter-nome]').value.length == 3) {
+                    document.querySelector('input[name=column-filter-nomeFuncional]').addEventListener('keydown', function (event) {
+                        if (event.key === 'Enter' && document.querySelector('input[name=column-filter-nomeFuncional]').value.length == 3) {
                             document.querySelectorAll('button[title=Vincular]')[0].click();
-                            var n_gm = document.querySelector('input[name=column-filter-nome]').value;
+                            var n_gm = document.querySelector('input[name=column-filter-nomeFuncional]').value;
                             setTimeout(() => {
                                 var pessoas_equipe = document.querySelectorAll('.titulo');
                                 pessoas_equipe.forEach(function (pessoa) {
                                     if (pessoa.innerHTML.includes(n_gm)) {
                                         pessoa.parentNode.parentNode.querySelector('mat-select').click();
                                         document.querySelectorAll('mat-option')[8].click();
-                                        document.querySelector('input[name=column-filter-nome]').focus();
-                                        document.querySelector('input[name=column-filter-nome]').value = '';
+                                        document.querySelector('input[name=column-filter-nomeFuncional]').focus();
+                                        document.querySelector('input[name=column-filter-nomeFuncional]').value = '';
                                     }
                                 });
                             }, "1000");
@@ -875,8 +876,8 @@ chrome.storage.local.get("ativa", (data) => {
                         });
                         var eqps = ['A1', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12', 'C13', 'C14', 'C15', 'R1', 'R2', 'R3', 'R4', 'R5', 'P1', 'P2', '21', '22', '31', '32', '41', '42', '51', '52', '61', '62', '71', '72', '81', '82', '91', '92', 'COGM'];
                         var vtrs_placa = new Map();
-                        vtrs_placa.set('4B35', '0125'); vtrs_placa.set('1470', '0118'); vtrs_placa.set('4G47', '0122'); vtrs_placa.set('4B58', '0124'); vtrs_placa.set('1468', '0218'); vtrs_placa.set('4E96', '0222'); vtrs_placa.set('3D36', '0224'); vtrs_placa.set('0283', '0283'); vtrs_placa.set('0301', '0301'); vtrs_placa.set('0305', '0305'); vtrs_placa.set('1469', '0318'); vtrs_placa.set('4E69', '0322'); vtrs_placa.set('3D37', '0324'); vtrs_placa.set('1471', '0418'); vtrs_placa.set('4E64', '0422'); vtrs_placa.set('3D50', '0424'); vtrs_placa.set('1473', '0518'); vtrs_placa.set('4G77', '0522'); vtrs_placa.set('2F38', '0524'); vtrs_placa.set('1467', '0618'); vtrs_placa.set('4E77', '0622'); vtrs_placa.set('4E57', '0722'); vtrs_placa.set('8J14', '0819'); vtrs_placa.set('4G14', '0822'); vtrs_placa.set('0906', '0906'); vtrs_placa.set('8J11', '0919'); vtrs_placa.set('4E85', '0922'); vtrs_placa.set('0F11', '0f11'); vtrs_placa.set('8J26', '1019'); vtrs_placa.set('4F34', '1022'); vtrs_placa.set('9A14', '1119'); vtrs_placa.set('4E88', '1122'); vtrs_placa.set('4G49', '1222'); vtrs_placa.set('1B67', '1267'); vtrs_placa.set('8J15', '1319'); vtrs_placa.set('4G36', '1322'); vtrs_placa.set('2J01', '1419'); vtrs_placa.set('4F48', '1422'); vtrs_placa.set('2J13', '1519'); vtrs_placa.set('4F75', '1522'); vtrs_placa.set('2J14', '1619'); vtrs_placa.set('4F19', '1622'); vtrs_placa.set('1667', '1667'); vtrs_placa.set('2J15', '1719'); vtrs_placa.set('4E76', '1722'); vtrs_placa.set('2J10', '1819'); vtrs_placa.set('4G61', '1822'); vtrs_placa.set('2J11', '1919'); vtrs_placa.set('4E61', '1922'); vtrs_placa.set('1G13', '1g13'); vtrs_placa.set('1I54', '1i54'); vtrs_placa.set('1I84', '1i84'); vtrs_placa.set('1J04', '1j04'); vtrs_placa.set('2J07', '2019'); vtrs_placa.set('4F60', '2022'); vtrs_placa.set('2048', '2048'); vtrs_placa.set('2J03', '2119'); vtrs_placa.set('2J05', '2219'); vtrs_placa.set('2240', '2240'); vtrs_placa.set('2241', '2241'); vtrs_placa.set('2253', '2253'); vtrs_placa.set('2254', '2254'); vtrs_placa.set('2J08', '2319'); vtrs_placa.set('2J12', '2419'); vtrs_placa.set('2420', '2420'); vtrs_placa.set('2J09', '2519'); vtrs_placa.set('2J02', '2619'); vtrs_placa.set('2747', '2747'); vtrs_placa.set('0287', '287'); vtrs_placa.set('0294', '294'); vtrs_placa.set('2975', '2975'); vtrs_placa.set('2A47', '2a47'); vtrs_placa.set('2A58', '2a58'); vtrs_placa.set('2A67', '2a67'); vtrs_placa.set('2A76', '2a76'); vtrs_placa.set('2B31', '2b31'); vtrs_placa.set('2B44', '2b44'); vtrs_placa.set('2B49', '2b49'); vtrs_placa.set('2B67', '2b67'); vtrs_placa.set('2B72', '2b72'); vtrs_placa.set('2B76', '2b76'); vtrs_placa.set('2B85', '2b85'); vtrs_placa.set('2B93', '2b93'); vtrs_placa.set('2B94', '2b94'); vtrs_placa.set('3376', '3376'); vtrs_placa.set('3377', '3377'); vtrs_placa.set('3378', '3378'); vtrs_placa.set('3379', '3379'); vtrs_placa.set('3380', '3380'); vtrs_placa.set('3742', '3742'); vtrs_placa.set('3753', '3753'); vtrs_placa.set('3761', '3761'); vtrs_placa.set('3766', '3766'); vtrs_placa.set('3770', '3770'); vtrs_placa.set('3932', '3932'); vtrs_placa.set('3942', '3942'); vtrs_placa.set('3948', '3948'); vtrs_placa.set('3953', '3953'); vtrs_placa.set('3955', '3955'); vtrs_placa.set('4267', '4267'); vtrs_placa.set('4339', '4339'); vtrs_placa.set('5255', '5255'); vtrs_placa.set('5G09', '5g09'); vtrs_placa.set('6017', '6017'); vtrs_placa.set('6046', '6046'); vtrs_placa.set('6077', '6077'); vtrs_placa.set('6085', '6085'); vtrs_placa.set('6094', '6094'); vtrs_placa.set('6103', '6103'); vtrs_placa.set('6108', '6108'); vtrs_placa.set('6121', '6121'); vtrs_placa.set('6126', '6126'); vtrs_placa.set('6915', '6915'); vtrs_placa.set('6950', '6950'); vtrs_placa.set('6959', '6959'); vtrs_placa.set('6965', '6965'); vtrs_placa.set('6972', '6972'); vtrs_placa.set('1466', '0718'); vtrs_placa.set('7259', '7259'); vtrs_placa.set('7280', '7280'); vtrs_placa.set('7285', '7285'); vtrs_placa.set('7337', '7337'); vtrs_placa.set('0734', '734'); vtrs_placa.set('7429', '7429'); vtrs_placa.set('7554', '7554'); vtrs_placa.set('7D34', '7d34'); vtrs_placa.set('7H22', '7h22'); vtrs_placa.set('7H23', '7h23'); vtrs_placa.set('7H25', '7h25'); vtrs_placa.set('7H29', '7h29'); vtrs_placa.set('7H32', '7h32'); vtrs_placa.set('7H38', '7h38'); vtrs_placa.set('8163', '8163'); vtrs_placa.set('8299', '8299'); vtrs_placa.set('8401', '8401'); vtrs_placa.set('8408', '8408'); vtrs_placa.set('8970', '8970'); vtrs_placa.set('9028', '9028'); vtrs_placa.set('9051', '9051'); vtrs_placa.set('9077', '9077'); vtrs_placa.set('9132', '9132'); vtrs_placa.set('9133', '9133'); vtrs_placa.set('9134', '9134'); vtrs_placa.set('9135', '9135'); vtrs_placa.set('9473', '9473'); vtrs_placa.set('9882', '9882'); vtrs_placa.set('9894', '9894'); vtrs_placa.set('9908', '9908'); vtrs_placa.set('9J14', 'Izf9j14'); vtrs_placa.set('9E63', 'Micro'); vtrs_placa.set('ICRO', 'Micro 03');
-                        var vtrs = ['1000', ['0125', '0819', '0524', '0911', '0919', 1019, 1119, 1919, '2b31', '2a47', '1319'], '1100', ['0224', '0324'], '1200', ['0122', '1022', '1122', '1222', '1419', '1422', '2b49', '2b76', '2b67', '1919', '1622', '1522', '1322', '1i54', '2a76', '2b44', '2b85', '2b93', '2a57', '2a67', '2a58', '2319'], '200', ['0222', 2519], '300', [2119, '0322'], '400', ['0422', 2219], '500', ['0522', 1619], '600', ['0418', '0718', '2019', '2J07', '0622'], '700', ['0722', 2019], '800', [1719, '0822'], '900', ['1922', '0922', '1519', '4E85']];
+                        vtrs_placa.set('4B35', '0125'); vtrs_placa.set('3I25', '0225'); vtrs_placa.set('3I15', '0325'); vtrs_placa.set('1470', '0118'); vtrs_placa.set('4G47', '0122'); vtrs_placa.set('4B58', '0124'); vtrs_placa.set('1468', '0218'); vtrs_placa.set('4E96', '0222'); vtrs_placa.set('3D36', '0224'); vtrs_placa.set('0283', '0283'); vtrs_placa.set('0301', '0301'); vtrs_placa.set('0305', '0305'); vtrs_placa.set('1469', '0318'); vtrs_placa.set('4E69', '0322'); vtrs_placa.set('3D37', '0324'); vtrs_placa.set('1471', '0418'); vtrs_placa.set('4E64', '0422'); vtrs_placa.set('3D50', '0424'); vtrs_placa.set('1473', '0518'); vtrs_placa.set('4G77', '0522'); vtrs_placa.set('2F38', '0524'); vtrs_placa.set('1467', '0618'); vtrs_placa.set('4E77', '0622'); vtrs_placa.set('4E57', '0722'); vtrs_placa.set('8J14', '0819'); vtrs_placa.set('4G14', '0822'); vtrs_placa.set('0906', '0906'); vtrs_placa.set('8J11', '0919'); vtrs_placa.set('4E85', '0922'); vtrs_placa.set('0F11', '0f11'); vtrs_placa.set('8J26', '1019'); vtrs_placa.set('4F34', '1022'); vtrs_placa.set('9A14', '1119'); vtrs_placa.set('4E88', '1122'); vtrs_placa.set('4G49', '1222'); vtrs_placa.set('1B67', '1267'); vtrs_placa.set('8J15', '1319'); vtrs_placa.set('4G36', '1322'); vtrs_placa.set('2J01', '1419'); vtrs_placa.set('4F48', '1422'); vtrs_placa.set('2J13', '1519'); vtrs_placa.set('4F75', '1522'); vtrs_placa.set('2J14', '1619'); vtrs_placa.set('4F19', '1622'); vtrs_placa.set('1667', '1667'); vtrs_placa.set('2J15', '1719'); vtrs_placa.set('4E76', '1722'); vtrs_placa.set('2J10', '1819'); vtrs_placa.set('4G61', '1822'); vtrs_placa.set('2J11', '1919'); vtrs_placa.set('4E61', '1922'); vtrs_placa.set('1G13', '1g13'); vtrs_placa.set('1I54', '1i54'); vtrs_placa.set('1I84', '1i84'); vtrs_placa.set('1J04', '1j04'); vtrs_placa.set('2J07', '2019'); vtrs_placa.set('4F60', '2022'); vtrs_placa.set('2048', '2048'); vtrs_placa.set('2J03', '2119'); vtrs_placa.set('2J05', '2219'); vtrs_placa.set('2240', '2240'); vtrs_placa.set('2241', '2241'); vtrs_placa.set('2253', '2253'); vtrs_placa.set('2254', '2254'); vtrs_placa.set('2J08', '2319'); vtrs_placa.set('2J12', '2419'); vtrs_placa.set('2420', '2420'); vtrs_placa.set('2J09', '2519'); vtrs_placa.set('2J02', '2619'); vtrs_placa.set('2747', '2747'); vtrs_placa.set('0287', '287'); vtrs_placa.set('0294', '294'); vtrs_placa.set('2975', '2975'); vtrs_placa.set('2A47', '2a47'); vtrs_placa.set('2A58', '2a58'); vtrs_placa.set('2A67', '2a67'); vtrs_placa.set('2A76', '2a76'); vtrs_placa.set('2B31', '2b31'); vtrs_placa.set('2B44', '2b44'); vtrs_placa.set('2B49', '2b49'); vtrs_placa.set('2B67', '2b67'); vtrs_placa.set('2B72', '2b72'); vtrs_placa.set('2B76', '2b76'); vtrs_placa.set('2B85', '2b85'); vtrs_placa.set('2B93', '2b93'); vtrs_placa.set('2B94', '2b94'); vtrs_placa.set('3376', '3376'); vtrs_placa.set('3377', '3377'); vtrs_placa.set('3378', '3378'); vtrs_placa.set('3379', '3379'); vtrs_placa.set('3380', '3380'); vtrs_placa.set('3742', '3742'); vtrs_placa.set('3753', '3753'); vtrs_placa.set('3761', '3761'); vtrs_placa.set('3766', '3766'); vtrs_placa.set('3770', '3770'); vtrs_placa.set('3932', '3932'); vtrs_placa.set('3942', '3942'); vtrs_placa.set('3948', '3948'); vtrs_placa.set('3953', '3953'); vtrs_placa.set('3955', '3955'); vtrs_placa.set('4267', '4267'); vtrs_placa.set('4339', '4339'); vtrs_placa.set('5255', '5255'); vtrs_placa.set('5G09', '5g09'); vtrs_placa.set('6017', '6017'); vtrs_placa.set('6046', '6046'); vtrs_placa.set('6077', '6077'); vtrs_placa.set('6085', '6085'); vtrs_placa.set('6094', '6094'); vtrs_placa.set('6103', '6103'); vtrs_placa.set('6108', '6108'); vtrs_placa.set('6121', '6121'); vtrs_placa.set('6126', '6126'); vtrs_placa.set('6915', '6915'); vtrs_placa.set('6950', '6950'); vtrs_placa.set('6959', '6959'); vtrs_placa.set('6965', '6965'); vtrs_placa.set('6972', '6972'); vtrs_placa.set('1466', '0718'); vtrs_placa.set('7259', '7259'); vtrs_placa.set('7280', '7280'); vtrs_placa.set('7285', '7285'); vtrs_placa.set('7337', '7337'); vtrs_placa.set('0734', '734'); vtrs_placa.set('7429', '7429'); vtrs_placa.set('7554', '7554'); vtrs_placa.set('7D34', '7d34'); vtrs_placa.set('7H22', '7h22'); vtrs_placa.set('7H23', '7h23'); vtrs_placa.set('7H25', '7h25'); vtrs_placa.set('7H29', '7h29'); vtrs_placa.set('7H32', '7h32'); vtrs_placa.set('7H38', '7h38'); vtrs_placa.set('8163', '8163'); vtrs_placa.set('8299', '8299'); vtrs_placa.set('8401', '8401'); vtrs_placa.set('8408', '8408'); vtrs_placa.set('8970', '8970'); vtrs_placa.set('9028', '9028'); vtrs_placa.set('9051', '9051'); vtrs_placa.set('9077', '9077'); vtrs_placa.set('9132', '9132'); vtrs_placa.set('9133', '9133'); vtrs_placa.set('9134', '9134'); vtrs_placa.set('9135', '9135'); vtrs_placa.set('9473', '9473'); vtrs_placa.set('9882', '9882'); vtrs_placa.set('9894', '9894'); vtrs_placa.set('9908', '9908'); vtrs_placa.set('9J14', 'Izf9j14'); vtrs_placa.set('9E63', 'Micro'); vtrs_placa.set('ICRO', 'Micro 03');
+                        var vtrs = ['1000', ['0125', '0225', '0325', '0819', '0524', '0911', '0919', 1019, 1119, 1919, '2b31', '2a47', '1319'], '1100', ['0224', '0324'], '1200', ['0122', '1022', '1122', '1222', '1419', '1422', '2b49', '2b76', '2b67', '1919', '1622', '1522', '1322', '1i54', '2a76', '2b44', '2b85', '2b93', '2a57', '2a67', '2a58', '2319'], '200', ['0222', 2519], '300', [2119, '0322'], '400', ['0422', 2219], '500', ['0522', 1619], '600', ['0418', '0718', '2019', '2J07', '0622'], '700', ['0722', 2019], '800', [1719, '0822'], '900', ['1922', '0922', '1519', '4E85']];
                         var cameras = ['Dia', ['1000', [1302, 1303, 1304, 1305, 1306, 1307, 1308, 1309, 1310, 1311, 1312, 1313, 1314, 1315, 1316, 1317, 1318, 1319, 1320, 1341, 1342, 1343, 1346, 1344, 1345, 1347, 1348, 1349, 1350], '1100', [1417, 1222, 1227, 1226, 1221], '1200', [1241, 1242, 1243, 1244, 1245, 1246, 1248, 1249, 1250, 1251, 1252, 1253, 1254, 1255, 1256, 1257, 1258, 1259, 1260, 1261, 1262, 1263, 1264, 1265, 1266, 1267, 1268, 1269, 1270, 1271, 1272, 1273, 1274, 1275, 1276, 1277, 1278, 1279, 1280, 1365], '200', [1389, 1397, 1398, 1399, 1400, 1401, 1402, 1403, 1404], '300', [1233, 1234, 1235, 1236, 1237, 1238, 1239, 1240], '400', [1351, 1352, 1353, 1354, 1355, 1356, 1357, 1358, 1458, 1460], '500', [1389, 1390, 1391, 1392, 1393, 1394, 1395, 1396], '600', [1454, 1455, 1456, 1457, 1459, 1460, 1469], '700', [1445, 1446, 1447, 1448, 1449, 1450, 1451, 1452], '800', [1381, 1382, 1383, 1384, 1385, 1386, 1387, 1388], '900', [1405, 1406, 1407, 1409, 1408, 1409, 1410, 1411, 1412]]];
                         var gms;
                         if (!localStorage.getItem('atualizacao_pessoas') || localStorage.getItem('atualizacao_pessoas') != new Date().getDate()) {
@@ -895,7 +896,8 @@ chrome.storage.local.get("ativa", (data) => {
                                     resultados.forEach(element => {
                                         for (let index = 0; index < areas.length; index++) {
                                             if (areas[index] == element[4]) {
-                                                dados[index].push(element[0])
+                                                const gm = element[0].toString().length == 2 ? `0${element[0]}` : element[0];
+                                                dados[index].push(gm);
                                             }
                                         }
                                     });

@@ -120,7 +120,7 @@ l27 -51 3 -340 3 -340 -123 121 c-68 67 -133 127 -145 133 -12 6 -38 11 -58
             }, 1000);
 
             const whats_interval = setInterval(function () {
-                if (document.querySelector('div[aria-label="Responder em particular"]') && !document.querySelector('div[aria-label="qap"]')) {
+                if (document.querySelector('[aria-label="Responder em particular"]') && !document.querySelector('div[aria-label="qap"]')) {
                     let mensagem = document.querySelector('div[aria-label="Menu de contexto"]').parentNode.parentNode.parentNode.parentNode.innerText;
                     const horario = mensagem.split('\n')[mensagem.split('\n').length - 1];
                     let gus_extenso = ['CRUZEIRO', 'PARTENON', 'LESTE', 'RESTINGA', 'NORTE', 'BALTAZAR', 'PINHEIRO', 'SUL', 'CENTRO', 'ROMU'];
@@ -140,7 +140,7 @@ l27 -51 3 -340 3 -340 -123 121 c-68 67 -133 127 -145 133 -12 6 -38 11 -58
                         possiveis_gus.push('Definir Gu');
                         possiveis_gus.forEach(function (item) {
                             let but_qap = `<li tabindex="0" class="_aj-r _aj-q _aj-_ false false" data-animate-dropdown-item="true" role="button" style="opacity: 1;"><div class="_aj-z _aj-t _alxo" aria-label="qap" horario="${horario}" style="">QAP ${item}</div></li>`;
-                            document.querySelector('div[aria-label="Responder em particular"]').insertAdjacentHTML("beforebegin", but_qap);
+                            document.querySelector('[aria-label="Responder em particular"]').insertAdjacentHTML("beforebegin", but_qap);
                         });
                     }
 
@@ -201,7 +201,7 @@ l27 -51 3 -340 3 -340 -123 121 c-68 67 -133 127 -145 133 -12 6 -38 11 -58
                                     keyCode: 27,
                                 })
                             );
-                        }, 1000);
+                        }, 200);
                     });
 
 
