@@ -134,7 +134,7 @@ chrome.webNavigation.onHistoryStateUpdated.addListener((details) => {
 });
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-import { getFirestore, collection, addDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBag5uPzTK0sXx3nBzjGhmlmSCySO3u3_U",
@@ -167,5 +167,26 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         }
     })();
     return true; // <- IMPORTANTE: garante que o canal fica aberto até o sendResponse
+});
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action == "atualizar_qths") {
+
+        const docRef = doc(db, "dados_fixos", "qth");
+
+        getDoc(docRef)
+            .then(docSnap => {
+                if (docSnap.exists()) {
+                    sendResponse({ dados: docSnap.data() });
+                } else {
+                    sendResponse({ dados: "Não há tabela de QTH!" });
+                }
+            })
+            .catch(error => {
+                sendResponse({ status: "erro", error: error.message });
+            });
+
+        return true;
+    }
 });
 
