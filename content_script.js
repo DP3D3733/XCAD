@@ -18,3 +18,6 @@ window.addEventListener("message", (event) => {
     })
   }
 });
+const script = document.createElement("script");
+script.src = chrome.runtime.getURL("sentry.js");
+document.documentElement.appendChild(script);
