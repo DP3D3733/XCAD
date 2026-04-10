@@ -5,19 +5,12 @@ sessionStorage.removeItem('multicads_montar_cad');
 sessionStorage.removeItem('cod_montar_cad');
 
 chrome.runtime.sendMessage({ action: "atualizar_qths" }, (response_atualizar_qths) => {
-    if(!response_atualizar_qths?.dados?.qth) return;
+    if (!response_atualizar_qths?.dados?.qth) return;
     const qths = response_atualizar_qths?.dados?.qth;
     const qthsLimpos = qths.split('-++-').map(qth => {
-        qthSemCorte = `<option>${qth.split('-()-')[1]}.-.${qth.split('-()-')[4]}.-.${qth.split('-()-')[2]}</option>`; //no máximo 100 caracteres
-        if(qthSemCorte.length > 100) {
-            qth = `<option>${qth.split('-()-')[1]}.-.${qth.split('-()-')[4].substring(0, qthSemCorte.length-100)}.-.${qth.split('-()-')[2]}</option>`;
-        } else {
-            qth = `<option>${qth.split('-()-')[1]}.-.${qth.split('-()-')[4]}.-.${qth.split('-()-')[2]}</option>`;
-        }
-        
-        return qth
+        return `<option>${qth.split('-()-')[1]}.-.${qth.split('-()-')[4]}.-.${qth.split('-()-')[2]}</option>`;
     }).join("");
-    localStorage.setItem('qths',qthsLimpos);
+    localStorage.setItem('qths', qthsLimpos);
 });
 
 chrome.storage.local.get("ativa", (data) => {
@@ -197,6 +190,7 @@ chrome.storage.local.get("ativa", (data) => {
                 document.querySelector('mat-checkbox[formcontrolname="calcularDistanciasRA"]').querySelector('input').click();
             }
             if (document.querySelector('div:not([n_repete]) > input[formcontrolname="pontoReferencia"]')) {
+                document.querySelector('div:not([n_repete]) > input[formcontrolname="pontoReferencia"]').setAttribute('maxlength', '400');
                 document.querySelector('div:not([n_repete]) > input[formcontrolname="pontoReferencia"]').addEventListener('input', function () {
                     var ponto_referencia = this;
                     if (ponto_referencia.value.includes('.-.')) {

@@ -979,7 +979,7 @@ chrome.storage.local.get("ativa", (data) => {
                                         if (check_componente && check_componente.ariaChecked == 'false') {
                                             check_componente.click();
                                         } else if (!check_componente) {
-                                            campo_da_equipe.querySelector('div[aria-label="Outro:"]').click();
+                                            campo_da_equipe.querySelector('div[data-answer-value="__other_option__"]').click();
                                             campo_da_equipe.querySelectorAll('input')[1].value = item.split('\t')[1] + ' ' + item.split('\t')[2];
                                             campo_da_equipe.querySelectorAll('input')[1].dispatchEvent(new Event('input', { bubbles: true }));
                                         }
