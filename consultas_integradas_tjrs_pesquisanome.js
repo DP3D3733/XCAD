@@ -49,10 +49,12 @@ setTimeout(() => {
             if (d_abrd[i].replace(/\D/g, '').length == 10) {
                 document.querySelector('#tr_rg').click();
                 document.querySelector('input[name=N10_rg]').value = d_abrd[i];
+                guardarPesquisa()
                 document.querySelector('#frmRg').submit();
             } else if (d_abrd[i].replace(/\D/g, '').length == 11) {
                 document.querySelector('#tr_cpf').click();
                 document.querySelector('input[name=N_cpf]').value = d_abrd[i];
+                guardarPesquisa()
                 document.querySelector('#frmCpf').submit();
             } else {
                 a += d_abrd[i] + '<br>';
@@ -62,6 +64,12 @@ setTimeout(() => {
         document.querySelector('#CriteriosGerais').parentNode.insertBefore(d_abrd_lista, document.querySelector('#CriteriosGerais'));
     }
     but_cola_e_pesquisa.addEventListener("click", wait);
+
+    document.querySelectorAll('input').forEach(input => {
+        input.addEventListener('input', () => {
+            guardarPesquisa();
+        })
+    })
 
 }, "1000");
 
@@ -99,14 +107,17 @@ function consultar(pesquisa) {
             if (pesquisan.length == 10) {
                 document.querySelector('#tr_rg').click();
                 document.querySelector('input[name=N10_rg]').value = pesquisan;
+                guardarPesquisa()
                 document.querySelector('#frmRg').submit();
             } else if (pesquisan.length == 11) {
                 document.querySelector('#tr_cpf').click();
                 document.querySelector('input[name=N_cpf]').value = pesquisan;
+                guardarPesquisa()
                 document.querySelector('#frmCpf').submit();
             }
         } else {
             document.querySelector('input[name=A66_nome]').value = pesquisa;
+            guardarPesquisa()
             document.querySelector('#frmNome').submit();
         }
     }
@@ -123,4 +134,8 @@ window.addEventListener("message", (event) => {
         consultar(event.data.data);
     }
 });
+
+function guardarPesquisa() {
+    localStorage.setItem('pesquisaAtual', document.querySelector('input[name=N10_rg]').value + document.querySelector('input[name=N_cpf]').value + document.querySelector('input[name=A66_nome]').value);
+}
 

@@ -56,8 +56,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
             const targetTab = tabs.find(tab => tab.title.includes(message.data));
             if (targetTab) {
-                chrome.tabs.update(targetTab.id, { active: true }, () => {
-                    chrome.tabs.reload(targetTab.id); // Recarrega a aba após ativá-la
+                const url = new URL(targetTab.url);
+                const rootUrl = url.origin; // pega só a raiz (https://site.com)
+
+                chrome.tabs.update(targetTab.id, {
+                    active: true,
+                    url: rootUrl // vai direto pra raiz
                 });
             } else {
                 const bancos = { 'Sinesp Infoseg': "https://infoseg.sinesp.gov.br/infoseg2/", 'Portal BNMP': 'https://portalbnmp.pdpj.jus.br/#/pesquisa-peca' }
