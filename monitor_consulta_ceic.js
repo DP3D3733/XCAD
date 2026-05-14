@@ -122,7 +122,7 @@ l27 -51 3 -340 3 -340 -123 121 c-68 67 -133 127 -145 133 -12 6 -38 11 -58
             const whats_interval = setInterval(function () {
                 if (document.querySelector('[aria-label="Responder em particular"]') && !document.querySelector('div[aria-label="qap"]')) {
                     let mensagem = document.querySelector('div[aria-label="Menu de contexto"]').parentNode.parentNode.parentNode.parentNode.innerText;
-                    const horario = mensagem.split('\n')[mensagem.split('\n').length - 1];
+                    const horario = mensagem.split('\n')[mensagem.split('\n').length - 1].substr(-5);
                     let gus_extenso = ['CRUZEIRO', 'PARTENON', 'LESTE', 'RESTINGA', 'NORTE', 'BALTAZAR', 'PINHEIRO', 'SUL', 'CENTRO', 'ROMU'];
                     let gus_numero = ['21', '31', '41', '51', '61', '71', '81', '91', 'C1', 'R1', 'PATAM'];
                     let possiveis_gus = [];

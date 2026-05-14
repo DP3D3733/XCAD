@@ -802,7 +802,6 @@ chrome.storage.local.get("ativa", (data) => {
                 let gu = document.querySelector('app-modal-editar-equipe input[formcontrolname="nome"]').value;
                 let membros = Array.from(document.querySelectorAll('app-modal-editar-equipe ul li')).map(li => `${li.querySelector('span.titulo').innerText.split(' -')[0].trim()}-++-${li.querySelector('input').value}`);
                 if (membros.length > 0) {
-
                     sessionStorage.setItem('equipe_firebase', `${(new Date()).getTime()}|${gu}-()-${document.querySelector('#nomeUsuario').innerText}-()-${membros}`);
                 }
             }
@@ -1019,7 +1018,7 @@ chrome.storage.local.get("ativa", (data) => {
 
                             document.getElementById('sel_area_edit_equip').dispatchEvent(new Event('change', { bubbles: true }));
 
-                            document.getElementById('botao_gerar_lista_de_equipes').addEventListener('click', function () {
+                            document.getElementById('botao_gerar_lista_de_equipes').addEventListener('click', async function () {
                                 var tabela_lista_de_equipes = document.createElement("table");
                                 tabela_lista_de_equipes.setAttribute("id", "tabela_lista_de_equipes");
                                 tabela_lista_de_equipes.setAttribute("class", "mat-focus-indicator mat-raised-button mat-button-base mat-botao-secundario");
@@ -1034,10 +1033,41 @@ chrome.storage.local.get("ativa", (data) => {
                                 document.getElementById('botao_copiar_lista_equipes').addEventListener('click', function () {
                                     Tabela.selecionarTabela(document.getElementById('tabela_lista_de_equipes'));
                                 });
-                                localStorage.setItem('lista_equipes_número', document.querySelectorAll('svg[class="iconeServico ng-star-inserted"]').length);
-                                localStorage.setItem('lista_equipes_empenhadas', document.querySelectorAll('svg[class="iconeEmpenhada ng-star-inserted"]').length);
-                                localStorage.setItem('lista_equipamentos', parseInt(document.querySelectorAll('app-equipamentos-mini-card').length));
-                                localStorage.setItem('lista_equipes_pronto', 'sim');
+                                try {
+                                    const response = await fetch(
+                                        "https://cadweb.sinesp.gov.br/cad-equipe-servico/unidade-servico/listar?numPagina=1&registrosPorPagina=50&propriedadeOrdenacao=nome&direcaoOrdenacao=ASC&propriedadeOrdenacaoGrupo=naoAgrupar&direcaoOrdenacaoGrupo=ASC&situacao=IN&situacao=ES&situacao=EP&situacao=PO",
+                                        {
+                                            credentials: "include"
+                                        }
+                                    );
+
+                                    if (!response.ok) {
+                                        throw new Error(`Erro HTTP: ${response.status}`);
+                                    }
+
+                                    const dados = await response.json();
+
+                                    dados.resultados.forEach(unidade => {
+                                        unidade.equipeEmServico.pessoas.forEach(pessoa => {
+                                            const equipe = unidade.equipeEmServico.nome;
+                                            const nrFuncional = pessoa.nomeFuncional.split(' ')[0];
+                                            const nomeFuncional = pessoa.nomeFuncional.replace(nrFuncional + ' ','');
+                                            const funcao = pessoa.nomeFuncao;
+                                            const vtrs = unidade.equipamentos
+                                                        .filter(equipamento => equipamento.tipoEquipamento.descricaoClasse == 'Viatura')
+                                                        .map(equipamento => `${equipamento.prefixo} - ${equipamento.placa}`)
+                                                        .join(' - ');
+                                            const cameras = unidade.equipamentos
+                                                        .filter(equipamento => equipamento.tipoEquipamento.descricaoClasse == 'Material')
+                                                        .map(equipamento => `${equipamento.prefixo}`)
+                                                        .join(' - ');
+                                            document.querySelector('#tabela_lista_de_equipes tbody').innerHTML += `<tr><td>${equipe}</td><td>${nrFuncional}</td><td>${nomeFuncional}</td><td>${funcao}</td><td>${vtrs}</td><td>${cameras}</td>`;
+                                        })
+                                    })
+                                }
+                                catch (erro) {
+                                    console.error("Erro ao buscar unidades:", erro);
+                                }
                             });
                             document.getElementById('checkbox').querySelector('select').addEventListener('change', function () {
                                 var valor = this.value;
