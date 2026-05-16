@@ -169,6 +169,110 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 sendResponse({ status: "erro", error: e.message });
             }
         }
+        if (message.action == 'atualizar_efetivo') {
+            try {
+                const data_registro = new Date();
+                data_registro.setHours(0, 0, 0, 0);
+
+                await setDoc(doc(db, "efetivo", "efetivo"), {
+                    "atualização": data_registro,
+                    "dados": message.data
+                });
+
+                sendResponse({ status: "ok" });
+            } catch (e) {
+                console.error("Erro Firebase:", e);
+                sendResponse({ dados: message.data, status: "erro", error: e.message });
+            }
+        }
+        if (message.action == 'atualizar_banco_local_efetivo') {
+            try {
+                const data_registro = new Date();
+                data_registro.setHours(0, 0, 0, 0);
+
+
+                const response = await getDoc(doc(db, "efetivo", "efetivo"));
+                const dados = response.data();
+                if (data_registro.getDate() != dados["atualização"].toDate().getDate()) {
+                    chrome.tabs.query(
+                        {},
+                        tabs => {
+
+                            let targetTab = tabs.find(tab =>
+                                tab.url?.includes(
+                                    "sentry.procempa.com.br"
+                                )
+                            );
+
+                            if (targetTab) {
+
+                                enviarMensagem(targetTab.id);
+
+                                chrome.tabs.update(
+                                    targetTab.id,
+                                    { active: true }
+                                );
+
+                                return;
+                            }
+
+                            chrome.tabs.create(
+                                {
+                                    url:
+                                        "https://sentry.procempa.com.br/web/",
+                                    active: true
+                                },
+                                novaTab => {
+
+                                    const listener = (
+                                        tabId,
+                                        info
+                                    ) => {
+
+                                        if (
+                                            tabId === novaTab.id &&
+                                            info.status === "complete"
+                                        ) {
+
+                                            chrome.tabs.onUpdated
+                                                .removeListener(listener);
+
+                                            enviarMensagem(
+                                                novaTab.id
+                                            );
+
+                                        }
+
+                                    };
+
+                                    chrome.tabs.onUpdated
+                                        .addListener(listener);
+
+                                }
+                            );
+
+                        }
+                    );
+
+                    function enviarMensagem(tabId) {
+
+                        chrome.tabs.sendMessage(
+                            tabId,
+                            {
+                                action:
+                                    "enviarNovaAtualizacaoEfetivo"
+                            }
+                        );
+
+                    }
+                }
+
+                sendResponse({ dados: dados.dados });
+            } catch (e) {
+                console.error("Erro Firebase:", e);
+                sendResponse({ dados: message.data, status: "erro", error: e.message });
+            }
+        }
     })();
     return true; // <- IMPORTANTE: garante que o canal fica aberto até o sendResponse
 });

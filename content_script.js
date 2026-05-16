@@ -17,6 +17,20 @@ window.addEventListener("message", (event) => {
       }
     })
   }
+  if (event.data.type === "atualizar_efetivo") {
+    console.log(event.data.data)
+    chrome.runtime.sendMessage({ action: "atualizar_efetivo", data: event.data.data }, response => {
+      if (chrome.runtime.lastError) {
+        console.error("Erro na mensagem:", chrome.runtime.lastError.message);
+      } else {
+        sessionStorage.setItem('efetivoAtualizado', 'sim');
+      }
+    });
+  }
+  if (event.data.type === "enviarNovaAtualizacaoEfetivo") {
+    sessionStorage.removeItem('efetivoAtualizado');
+    window.reload();
+  }
 });
 const script = document.createElement("script");
 script.src = chrome.runtime.getURL("sentry.js");

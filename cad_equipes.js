@@ -793,29 +793,30 @@ chrome.storage.local.get("ativa", (data) => {
                     });
                 }
             }
-            setInterval(() => {
+            if (document.querySelector('app-modal-editar-equipe') && !document.querySelector('app-modal-editar-equipe #atualizaEquipeFirebase')) {
+                const buttonConfirmarOriginal = document.querySelector('app-modal-editar-equipe button[botaoconfirmar]');
 
-            }, 1000);
+                const buttonConfirmarAlterado = buttonConfirmarOriginal.cloneNode(true);
 
+                buttonConfirmarAlterado.setAttribute('id', 'atualizaEquipeFirebase');
+                buttonConfirmarOriginal.style.display = 'none';
+                buttonConfirmarOriginal.after(buttonConfirmarAlterado);
 
-            if (document.querySelector('app-modal-editar-equipe') && document.querySelector('app-modal-editar-equipe input[formcontrolname="nome"]') && document.querySelector('app-modal-editar-equipe input[formcontrolname="nome"]').value != '') {
-                let gu = document.querySelector('app-modal-editar-equipe input[formcontrolname="nome"]').value;
-                let membros = Array.from(document.querySelectorAll('app-modal-editar-equipe ul li')).map(li => `${li.querySelector('span.titulo').innerText.split(' -')[0].trim()}-++-${li.querySelector('input').value}`);
-                if (membros.length > 0) {
-                    sessionStorage.setItem('equipe_firebase', `${(new Date()).getTime()}|${gu}-()-${document.querySelector('#nomeUsuario').innerText}-()-${membros}`);
-                }
-            }
-            if ((!document.querySelector('app-modal-editar-equipe') || (localStorage.getItem('editar_equipe') && document.querySelector('app-modal-editar-equipamentos'))) && sessionStorage.getItem('equipe_firebase')) {
-
-                chrome.runtime.sendMessage({ action: "atualizar_equipes", payload: sessionStorage.getItem('equipe_firebase') }, response => {
-
-                    if (chrome.runtime.lastError) {
-                        console.error("Erro na mensagem:", chrome.runtime.lastError.message);
-                    } else {
-                        console.log("Resposta do background:", response);
+                buttonConfirmarAlterado.addEventListener('click', () => {
+                    let gu = document.querySelector('app-modal-editar-equipe input[formcontrolname="nome"]').value;
+                    let membros = Array.from(document.querySelectorAll('app-modal-editar-equipe ul li')).map(li => `${li.querySelectorAll('span.titulo')[1].innerText.split(' -')[0].trim()}-++-${li.querySelector('input').value}`);
+                    if (membros.length > 0) {
+                        const dados = `${(new Date()).getTime()}|${gu}-()-${document.querySelector('#nomeUsuario').innerText}-()-${membros}`;
+                        chrome.runtime.sendMessage({ action: "atualizar_equipes", payload: dados }, response => {
+                            if (chrome.runtime.lastError) {
+                                console.error("Erro na mensagem:", chrome.runtime.lastError.message);
+                            } else {
+                                console.log("Resposta do background:", response);
+                                buttonConfirmarOriginal.click();
+                            }
+                        });
                     }
                 });
-                sessionStorage.removeItem('equipe_firebase');
             }
             if (document.querySelector('app-modal-editar-equipamentos')) {
                 let area = document.querySelector('app-modal-editar-equipamentos strong').innerText.split('#')[0].trim();
@@ -880,22 +881,17 @@ chrome.storage.local.get("ativa", (data) => {
                         var cameras = ['Dia', ['1000', [1302, 1303, 1304, 1305, 1306, 1307, 1308, 1309, 1310, 1311, 1312, 1313, 1314, 1315, 1316, 1317, 1318, 1319, 1320, 1341, 1342, 1343, 1346, 1344, 1345, 1347, 1348, 1349, 1350], '1100', [1417, 1222, 1227, 1226, 1221], '1200', [1241, 1242, 1243, 1244, 1245, 1246, 1248, 1249, 1250, 1251, 1252, 1253, 1254, 1255, 1256, 1257, 1258, 1259, 1260, 1261, 1262, 1263, 1264, 1265, 1266, 1267, 1268, 1269, 1270, 1271, 1272, 1273, 1274, 1275, 1276, 1277, 1278, 1279, 1280, 1365], '200', [1389, 1397, 1398, 1399, 1400, 1401, 1402, 1403, 1404], '300', [1233, 1234, 1235, 1236, 1237, 1238, 1239, 1240], '400', [1351, 1352, 1353, 1354, 1355, 1356, 1357, 1358, 1458, 1460], '500', [1389, 1390, 1391, 1392, 1393, 1394, 1395, 1396], '600', [1454, 1455, 1456, 1457, 1459, 1460, 1469], '700', [1445, 1446, 1447, 1448, 1449, 1450, 1451, 1452], '800', [1381, 1382, 1383, 1384, 1385, 1386, 1387, 1388], '900', [1405, 1406, 1407, 1409, 1408, 1409, 1410, 1411, 1412]]];
                         var gms;
                         if (!localStorage.getItem('atualizacao_pessoas') || localStorage.getItem('atualizacao_pessoas') != new Date().getDate()) {
-                            const planilhaURL = "https://docs.google.com/spreadsheets/d/1xr8d6jwh70JBprPBHvZIHHfNdYJO-1UvEgAh9Jh5Ri4/gviz/tq?tqx=out:json&gid=1239289971"; // Substitua com seu ID e gid
-                            let resultados = '';
                             let dados = [[], [], [], [], [], [], [], [], [], [], [], []];
-                            let areas = ['CRUZEIRO', 'PARTENON', 'LESTE', 'RESTINGA', 'NORTE', 'EIXO BALTAZAR', 'PINHEIRO', 'EIXO SUL', 'ROMU', 'CENTRO', 'PATAM', 'COGM'];
-
-                            fetch(planilhaURL)
-                                .then(response => response.text())
-                                .then(dataText => {
-                                    // A resposta vem com texto JS, não JSON puro. Precisamos "limpar"
-                                    const jsonData = JSON.parse(dataText.substring(47).slice(0, -2)); // Remove prefixo e sufixo da resposta
-                                    const rows = jsonData.table.rows;
-                                    resultados = rows.map(row => row.c.map(cell => cell ? cell.v : null));
-                                    resultados.forEach(element => {
+                            let areas = ['Subintendência Regional Cruzeiro', 'Subintendência Regional Partenon', 'Subintendência Regional Leste', 'Subintendência Regional Restinga', 'Subintendência Regional Norte', 'Subintendência Regional Eixo Baltazar', 'Subintendência Regional Pinheiro', 'Subintendência Regional Eixo Sul', 'Subintendência da Ronda Ostensiva Municipal', 'Subintendência Regional Centro', 'Subintendência Regional Patam', 'Central de Operações da Guarda Civil Metropolitana'];
+                            chrome.runtime.sendMessage({ action: "atualizar_banco_local_efetivo" }, response => {
+                                if (chrome.runtime.lastError) {
+                                    console.error("Erro na mensagem:", chrome.runtime.lastError.message);
+                                } else {
+                                    response.dados.forEach(element => {
+                                        console.log(element["lotacao"]);
                                         for (let index = 0; index < areas.length; index++) {
-                                            if (areas[index] == element[4]) {
-                                                const gm = element[0].toString().length == 2 ? `0${element[0]}` : element[0];
+                                            if (areas[index] == element["lotacao"]) {
+                                                const gm = element.nomeFuncional.replace(/\D/g, "");
                                                 dados[index].push(gm);
                                             }
                                         }
@@ -904,12 +900,11 @@ chrome.storage.local.get("ativa", (data) => {
                                     localStorage.setItem('gms', JSON.stringify(gms));
                                     localStorage.setItem('atualizacao_pessoas', new Date().getDate());
                                     gms = JSON.parse(localStorage.getItem('gms'));
-                                    window.location.reload();
+                                    atualizarUuid();
+                                }
+                            });
 
-                                })
-                                .catch(error => {
-                                    console.error("Erro ao carregar dados da planilha:", error);
-                                });
+
                         } else {
                             gms = JSON.parse(localStorage.getItem('gms'));
                         }
@@ -1051,16 +1046,16 @@ chrome.storage.local.get("ativa", (data) => {
                                         unidade.equipeEmServico.pessoas.forEach(pessoa => {
                                             const equipe = unidade.equipeEmServico.nome;
                                             const nrFuncional = pessoa.nomeFuncional.split(' ')[0];
-                                            const nomeFuncional = pessoa.nomeFuncional.replace(nrFuncional + ' ','');
+                                            const nomeFuncional = pessoa.nomeFuncional.replace(nrFuncional + ' ', '');
                                             const funcao = pessoa.nomeFuncao;
                                             const vtrs = unidade.equipamentos
-                                                        .filter(equipamento => equipamento.tipoEquipamento.descricaoClasse == 'Viatura')
-                                                        .map(equipamento => `${equipamento.prefixo} - ${equipamento.placa}`)
-                                                        .join(' - ');
+                                                .filter(equipamento => equipamento.tipoEquipamento.descricaoClasse == 'Viatura')
+                                                .map(equipamento => `${equipamento.prefixo} - ${equipamento.placa}`)
+                                                .join(' - ');
                                             const cameras = unidade.equipamentos
-                                                        .filter(equipamento => equipamento.tipoEquipamento.descricaoClasse == 'Material')
-                                                        .map(equipamento => `${equipamento.prefixo}`)
-                                                        .join(' - ');
+                                                .filter(equipamento => equipamento.tipoEquipamento.descricaoClasse == 'Material')
+                                                .map(equipamento => `${equipamento.prefixo}`)
+                                                .join(' - ');
                                             document.querySelector('#tabela_lista_de_equipes tbody').innerHTML += `<tr><td>${equipe}</td><td>${nrFuncional}</td><td>${nomeFuncional}</td><td>${funcao}</td><td>${vtrs}</td><td>${cameras}</td>`;
                                         })
                                     })
@@ -1224,33 +1219,94 @@ chrome.storage.local.get("ativa", (data) => {
                                 });
                                 document.querySelector('#div_separador_equipes').querySelector('tbody').querySelectorAll('button').forEach(function (item) {
                                     item.addEventListener('click', function () {
-                                        localStorage.setItem('processo_edicao', 'excluir_pessoas');
-                                        var unidade_servico = '';
-                                        var editar_equipe_modal = '';
-                                        document.querySelectorAll('app-equipe-mini-card').forEach(function (it) {
-                                            if (it.querySelector('span').innerHTML == item.parentNode.parentNode.querySelectorAll('input')[0].value + ' - ' + item.parentNode.parentNode.querySelector('select').value) {
-                                                unidade_servico = it.parentNode.parentNode.parentNode.parentNode;
-                                                editar_equipe_modal = it;
-                                            }
-                                        });
-                                        var selects = item.parentNode.parentNode.querySelectorAll('input, select');
-                                        localStorage.setItem('editar_equipe', selects[0].value + '-' + Array.from(document.querySelectorAll('app-unidade-servico-card')).indexOf(unidade_servico) + '-' + selects[1].value + '-' + selects[2].value + '-' + selects[3].value + '-' + selects[4].value + '-' + selects[5].value + '-' + selects[6].value + '-' + selects[7].value + '-' + selects[8].value + '-' + selects[9].value + '-' + selects[10].value + '-' + selects[11].value + '-' + selects[12].value + '-' + selects[13].value + '-' + selects[14].value + '-' + selects[15].value)
 
-                                        if (unidade_servico.querySelector('button[title="Iniciar Serviço"]')) {
-                                            editar_equipe_modal.querySelectorAll('button')[1].click();
-                                        } else if (unidade_servico.querySelector('button[title="Encerrar Serviço"]')) {
-                                            unidade_servico.querySelector('button[title="Encerrar Serviço"]').click();
-                                        } else {
-                                            if (localStorage.getItem('inserir_multiplas_equipes') && parseInt(localStorage.getItem('inserir_multiplas_equipes')) > -1) {
-                                                localStorage.setItem('inserir_multiplas_equipes', parseInt(localStorage.getItem('inserir_multiplas_equipes')) - 1);
-                                                document.querySelector('#div_separador_equipes').querySelector('tbody').querySelectorAll('button')[parseInt(localStorage.getItem('inserir_multiplas_equipes'))].click();
-                                            } else {
-                                                localStorage.removeItem('inserir_multiplas_equipes');
-                                                localStorage.removeItem('editar_equipe');
+                                        const dados = Array.from(item.closest('tr').querySelectorAll('input,select')).map(campo => campo.value);
+                                        const nomeEquipe = `${dados[0]} - ${dados[1]}`;
+                                        const uuidUnidades = localStorage.getItem('unidadeServico-uuid').split(';');
+                                        const uuidFuncoes = localStorage.getItem('funcoes-uuid').split(';');
+                                        const uuidGms = localStorage.getItem('gms-uuid').split(';');
+                                        const uuidEquipes = localStorage.getItem('equipes-uuid').split(';');
+                                        const dadosDaEquipe = {};
+                                        dadosDaEquipe["nomeEquipe"] = `${dados[0]} - ${dados[1]}`;
+                                        dadosDaEquipe["uuidUnidadeServico"] = uuidUnidades.find(unidade => unidade.split(',')[0] == dados[0]).split(',')[1];
+                                        dadosDaEquipe["uuidEquipe"] = uuidEquipes.find(equipe => equipe.split(',')[0] == nomeEquipe).split(',')[1];
+                                        const pessoas = [];
+                                        for (let index = 2; index < 9; index++) {
+                                            if (dados[index].trim() != '') {
+                                                const pessoaUuid = uuidGms.find(pessoa => pessoa.split(',')[0] == dados[index].trim()).split(',')[1];
+                                                let funcaoUuid;
+                                                if (index == 2) {
+                                                    funcaoUuid = uuidFuncoes.find(pessoa => pessoa.split(',')[0] == 'Supervisor').split(',')[1];
+                                                }
+                                                if (index >= 3 && index <= 5) {
+                                                    funcaoUuid = uuidFuncoes.find(pessoa => pessoa.split(',')[0] == 'Motorista').split(',')[1];
+                                                }
+                                                if (index > 5) {
+                                                    funcaoUuid = uuidFuncoes.find(pessoa => pessoa.split(',')[0] == 'Patrulheiro').split(',')[1];
+                                                }
+                                                pessoas.push({
+                                                    uuid: pessoaUuid,
+                                                    pessoa: pessoaUuid,
+                                                    funcao: funcaoUuid
+                                                })
                                             }
+
                                         }
+                                        dadosDaEquipe["pessoas"] = pessoas;
+                                        editarEquipe(dadosDaEquipe);
+                                        /*
+                                         dadosDaEquipe = {
+                                            uuidUnidadeServico:onwefonwefon-wepfkbwefkjwbef-wekfjbnwekfjwebnf,
+                                            uuidEquipe:wergnerkgnerçknlerg-ekgrjberklgbekrgb-ergjnergjkerg,
+                                            nomeEquipe: 'A1 - Dia',
+                                            pessoas: [
+                                                {
+                                                    uuid: "e6aa2f44-a2bd-4157-b105-99caf979f5ae",
+                                                    pessoa: "e6aa2f44-a2bd-4157-b105-99caf979f5ae",
+                                                    funcao: "820f1b74-4345-43ce-aa76-86df3d3317dd"
+                                                },
+                                                {
+                                                    uuid: "d580c7dd-7546-49c8-bab0-bb8d2c01bb65",
+                                                    pessoa: "d580c7dd-7546-49c8-bab0-bb8d2c01bb65",
+                                                    funcao: "820f1b74-4345-43ce-aa76-86df3d3317dd"
+                                                },
+                                                {
+                                                    uuid: "385b6ad0-3ab8-4059-81d7-f887197a1c75",
+                                                    pessoa: "385b6ad0-3ab8-4059-81d7-f887197a1c75",
+                                                    funcao: "820f1b74-4345-43ce-aa76-86df3d3317dd"
+                                                }
+                                            ]
+                                         }
+                                         */
 
+                                        /* localStorage.setItem('processo_edicao', 'excluir_pessoas');
+                                         var unidade_servico = '';
+                                         var editar_equipe_modal = '';
+                                         document.querySelectorAll('app-equipe-mini-card').forEach(function (it) {
+                                             if (it.querySelector('span').innerHTML == item.parentNode.parentNode.querySelectorAll('input')[0].value + ' - ' + item.parentNode.parentNode.querySelector('select').value) {
+                                                 unidade_servico = it.parentNode.parentNode.parentNode.parentNode;
+                                                 editar_equipe_modal = it;
+                                             }
+                                         });
+                                         var selects = item.parentNode.parentNode.querySelectorAll('input, select');
+                                         localStorage.setItem('editar_equipe', selects[0].value + '-' + Array.from(document.querySelectorAll('app-unidade-servico-card')).indexOf(unidade_servico) + '-' + selects[1].value + '-' + selects[2].value + '-' + selects[3].value + '-' + selects[4].value + '-' + selects[5].value + '-' + selects[6].value + '-' + selects[7].value + '-' + selects[8].value + '-' + selects[9].value + '-' + selects[10].value + '-' + selects[11].value + '-' + selects[12].value + '-' + selects[13].value + '-' + selects[14].value + '-' + selects[15].value)
+ 
+                                         if (unidade_servico.querySelector('button[title="Iniciar Serviço"]')) {
+                                             editar_equipe_modal.querySelectorAll('button')[1].click();
+                                         } else if (unidade_servico.querySelector('button[title="Encerrar Serviço"]')) {
+                                             unidade_servico.querySelector('button[title="Encerrar Serviço"]').click();
+                                         } else {
+                                             if (localStorage.getItem('inserir_multiplas_equipes') && parseInt(localStorage.getItem('inserir_multiplas_equipes')) > -1) {
+                                                 localStorage.setItem('inserir_multiplas_equipes', parseInt(localStorage.getItem('inserir_multiplas_equipes')) - 1);
+                                                 document.querySelector('#div_separador_equipes').querySelector('tbody').querySelectorAll('button')[parseInt(localStorage.getItem('inserir_multiplas_equipes'))].click();
+                                             } else {
+                                                 localStorage.removeItem('inserir_multiplas_equipes');
+                                                 localStorage.removeItem('editar_equipe');
+                                             }
+                                         }
+ */
                                     });
+
                                 });
                                 document.querySelector('#div_separador_equipes').querySelector('thead').querySelector('button').addEventListener('click', function () {
                                     localStorage.setItem('inserir_multiplas_equipes', document.querySelector('#div_separador_equipes').querySelector('tbody').querySelectorAll('button').length - 2);
@@ -1322,88 +1378,116 @@ chrome.storage.local.get("ativa", (data) => {
                     }
                 }
             }, "1000");
-            if (localStorage.getItem('lista_equipes_pronto') && localStorage.getItem('lista_equipes_pronto') == 'sim') {
-                if (parseInt(localStorage.getItem('lista_equipes_número')) > -1) {
-                    if (parseInt(localStorage.getItem('lista_equipes_número')) % 2 != 0) {
-                        document.querySelectorAll('svg[class="iconeServico ng-star-inserted"]')[parseInt(localStorage.getItem('lista_equipes_número'))].parentNode.parentNode.parentNode.querySelector('button[title="Detalhar"]').click();
-                        localStorage.setItem('lista_equipes_pronto', 'nao');
-                    } else {
-                        localStorage.setItem('lista_equipes_número', parseInt(localStorage.getItem('lista_equipes_número')) - 1);
-                    }
-                } else if (parseInt(localStorage.getItem('lista_equipes_empenhadas')) > -1) {
-                    if (parseInt(localStorage.getItem('lista_equipes_empenhadas')) % 2 != 0) {
-                        document.querySelectorAll('svg[class="iconeEmpenhada ng-star-inserted"]')[parseInt(localStorage.getItem('lista_equipes_empenhadas'))].parentNode.parentNode.parentNode.querySelector('button[title="Detalhar"]').click();
-                        localStorage.setItem('lista_equipes_pronto', 'nao');
-                    } else {
-                        localStorage.setItem('lista_equipes_empenhadas', parseInt(localStorage.getItem('lista_equipes_empenhadas')) - 1);
-                    }
-                } else if (parseInt(localStorage.getItem('lista_equipamentos')) > -1) {
-                    if (document.querySelectorAll('app-equipamentos-mini-card')[parseInt(localStorage.getItem('lista_equipamentos'))]) {
-                        document.querySelectorAll('app-equipamentos-mini-card')[parseInt(localStorage.getItem('lista_equipamentos'))].querySelector('button[title="Detalhar"]').click();
-                        localStorage.setItem('lista_equipes_pronto', 'nao');
-                    }
-                    localStorage.setItem('lista_equipamentos', parseInt(localStorage.getItem('lista_equipamentos')) - 1);
-                } else {
-                    var BOM = "\uFEFF";
-                    var htmltabel = document.getElementById('tabela_lista_de_equipes');
-                    var html = htmltabel.outerHTML;
-                    var downbutton = document.createElement("div");
-                    downbutton.setAttribute('id', 'download_excel');
-                    downbutton.setAttribute('class', 'cancel-btn');
-                    downbutton.setAttribute('style', "margin-right:1%;display:inline-block");
-                    document.querySelector('#botao_copiar_lista_equipes').parentNode.insertBefore(downbutton, document.querySelector('#botao_copiar_lista_equipes'));
-                    downbutton.innerHTML = 'Download em Excel';
-                    document.querySelector('#download_excel').addEventListener('click', function () {
-                        window.open('data:application/vnd.ms-excel,' + encodeURI(BOM + html));
-                    });
-                    localStorage.removeItem('lista_equipes_pronto');
-                }
-            }
-            if (document.querySelector('app-modal-detalhar-equipe') && localStorage.getItem('lista_equipes_pronto') == 'nao') {
-                equipe = document.querySelector('app-modal-detalhar-equipe').querySelectorAll('strong')[1].innerHTML;
-                componentes = document.querySelector('app-modal-detalhar-equipe').querySelectorAll('div[class="p-card-body"]');
-                for (let i = 0; i < componentes.length; i++) {
-                    document.getElementById('tabela_lista_de_equipes').innerHTML += '<tr><td>' + equipe + '</td><td>' + componentes[i].querySelectorAll('strong')[1].parentNode.innerHTML.split('</strong>')[1].trim().split(' ')[0] + '</td><td>' + componentes[i].parentNode.previousSibling.innerHTML.replace('gm ', '') + '</td><td>' + componentes[i].querySelectorAll('strong')[4].parentNode.innerHTML.split('</strong>')[1].trim() + '</td><td></td><td></td></tr>';
-                }
-                componentes = '';
-                if (parseInt(localStorage.getItem('lista_equipes_número')) != -1) {
-                    localStorage.setItem('lista_equipes_número', parseInt(localStorage.getItem('lista_equipes_número')) - 1);
-                } else {
-                    localStorage.setItem('lista_equipes_empenhadas', parseInt(localStorage.getItem('lista_equipes_empenhadas')) - 1);
-                }
-                document.querySelector('app-modal-detalhar-equipe').querySelector('button').click();
-                localStorage.setItem('lista_equipes_pronto', 'sim');
-            }
-            if (document.querySelector('app-modal-detalhar-equipamentos') && localStorage.getItem('lista_equipes_pronto') == 'nao') {
-                var gu = document.querySelector('app-modal-detalhar-equipamentos').querySelector('strong').innerHTML.split('- ')[1].split(' ')[0];
-                var dados = document.getElementById('tabela_lista_de_equipes').querySelectorAll('tr');
-                equipamentos = document.querySelector('app-modal-detalhar-equipamentos').querySelectorAll('div[class="modal-material-subtitulo"]');
-                vtr = '';
-                cam = '';
-                for (let i = 0; i < dados.length; i++) {
-                    if (dados[i].querySelector('td') && dados[i].querySelector('td').innerHTML.includes(gu)) {
-                        for (let idx = 0; idx < equipamentos.length; idx++) {
-                            if (equipamentos[idx].innerHTML.trim().length > 4) {
-                                cam += ' - ' + equipamentos[idx].innerHTML.trim();
-                            } else {
-                                vtr += ' - ' + equipamentos[idx].innerHTML.trim() + ' - ' + Array.from(equipamentos[idx].parentNode.querySelectorAll('strong')).filter(item => item.innerText == 'Placa:')[0].parentNode.innerText.split(' ')[1];
-                            }
-                        }
-
-                        if (cam != '') {
-                            dados[i].querySelectorAll('td')[5].innerHTML = cam.substring(3, cam.length);
-                            cam = '';
-                        }
-                        if (vtr != '') {
-                            dados[i].querySelectorAll('td')[4].innerHTML = vtr.substring(3, vtr.length);
-                            vtr = '';
-                        }
-                    }
-                }
-                document.querySelector('app-modal-detalhar-equipamentos').querySelector('button').click();
-                localStorage.setItem('lista_equipes_pronto', 'sim');
-            }
 
         }, 100);
     });
 });
+
+async function atualizarUuid() {
+    const pessoasRequisicao = await fetch( //atualiza Uuidpessoas
+        "https://cadweb.sinesp.gov.br/cad-equipe-servico/pessoa/listarPaginado?numPagina=1&registrosPorPagina=1000&propriedadeOrdenacao=nome&direcaoOrdenacao=ASC&situacao=A",
+        {
+            credentials: "include"
+        }
+    );
+
+    if (!pessoasRequisicao.ok) {
+        throw new Error(`Erro HTTP: ${pessoasRequisicao.status}`);
+        return;
+    }
+    const pessoasResultado = await pessoasRequisicao.json();
+    localStorage.setItem('gms-uuid', pessoasResultado.resultados.map(pessoa => pessoa.nomeFuncional.replace(/\D/g, "") + ',' + pessoa.uuid).join(';'))
+
+    const funcoesRequisicao = await fetch( //atualiza Uuidfuncoes
+        "https://cadweb.sinesp.gov.br/cad-equipe-servico/funcao/listar?agencias=ff6a74e0-22ee-4abb-b057-4552307d013e&situacao=A&numPagina=1&registrosPorPagina=999",
+        {
+            credentials: "include"
+        }
+    );
+
+    if (!funcoesRequisicao.ok) {
+        throw new Error(`Erro HTTP: ${funcoesRequisicao.status}`);
+        return;
+    }
+    const funcoesResposta = await funcoesRequisicao.json();
+    localStorage.setItem('funcoes-uuid', funcoesResposta.resultados.map(funcao => funcao.nome + ',' + funcao.uuid).join(';'))
+
+    const unidadeServicoRequisicao = await fetch(
+        "https://cadweb.sinesp.gov.br/cad-equipe-servico/unidade-servico/listar?numPagina=1&registrosPorPagina=50&propriedadeOrdenacao=nome&direcaoOrdenacao=ASC&propriedadeOrdenacaoGrupo=naoAgrupar&direcaoOrdenacaoGrupo=ASC&situacao=AT&situacao=IN&situacao=ES&situacao=EP&situacao=PO",
+        {
+            credentials: "include"
+        }
+    );
+
+    if (!unidadeServicoRequisicao.ok) {
+        throw new Error(`Erro HTTP: ${unidadeServicoRequisicao.status}`);
+        return;
+    }
+    const unidadeServicoResposta = await unidadeServicoRequisicao.json();
+    localStorage.setItem('unidadeServico-uuid', unidadeServicoResposta.resultados.map(unidade => unidade.nome.split(' - ')[1] + ',' + unidade.uuid).join(';'));
+    localStorage.setItem('equipes-uuid', unidadeServicoResposta.resultados.map(unidade => unidade.equipes.map(equipe => `${equipe.nome},${equipe.uuid}`).join(';')).join(';'));
+
+
+
+    window.location.reload();
+}
+
+async function editarEquipe(dadosDaEquipe) {
+    /*
+     dadosDaEquipe = {
+        uuidUnidadeServico:onwefonwefon-wepfkbwefkjwbef-wekfjbnwekfjwebnf,
+        nomeEquipe: 'A1 - Dia',
+        pessoas: [
+            {
+                uuid: "e6aa2f44-a2bd-4157-b105-99caf979f5ae",
+                pessoa: "e6aa2f44-a2bd-4157-b105-99caf979f5ae",
+                funcao: "820f1b74-4345-43ce-aa76-86df3d3317dd"
+            },
+            {
+                uuid: "d580c7dd-7546-49c8-bab0-bb8d2c01bb65",
+                pessoa: "d580c7dd-7546-49c8-bab0-bb8d2c01bb65",
+                funcao: "820f1b74-4345-43ce-aa76-86df3d3317dd"
+            },
+            {
+                uuid: "385b6ad0-3ab8-4059-81d7-f887197a1c75",
+                pessoa: "385b6ad0-3ab8-4059-81d7-f887197a1c75",
+                funcao: "820f1b74-4345-43ce-aa76-86df3d3317dd"
+            }
+        ]
+     }
+     */
+    const body = {
+        uuid: dadosDaEquipe.uuidEquipe,
+        nome: dadosDaEquipe.nomeEquipe,
+        telefone: "",
+        pessoas: dadosDaEquipe.pessoas,
+
+    };
+
+    const response = await fetch(
+        `https://cadweb.sinesp.gov.br/cad-equipe-servico/unidade-servico/${dadosDaEquipe.uuidUnidadeServico}/equipe/alterar`,
+        {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            body: JSON.stringify(body)
+        }
+    );
+
+    if (!response.ok) {
+
+        const texto = await response.text();
+
+        console.error(texto);
+
+        throw new Error(
+            `Erro HTTP: ${response.status}`
+        );
+
+    }
+
+    console.log("editado");
+}
