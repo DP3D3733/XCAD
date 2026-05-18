@@ -15,14 +15,12 @@ chrome.storage.local.get("ativa", (data) => {
                 versao = `<span style="margin-right:30px;color: #d3d4d9">XCAD <strong>vv1.5.6</strong>, por GM 842 Calebe.</span>`;
             });
 
-        var unidade_servico = '';
-        sessionStorage.setItem('concluir_encarramento_uniade_sv', '');
-        localStorage.removeItem('editar_equipe');
 
 
 
-
-
+        setTimeout(() => {
+            selecionar50();
+        }, 2000);
         setInterval(function () {
             if (!document.querySelector('#limpar_dados') && document.querySelector('#menu_sinesp')) {
                 const button = document.createElement('button');
@@ -84,15 +82,6 @@ chrome.storage.local.get("ativa", (data) => {
             })
 
 
-            if (document.querySelectorAll('app-modal-editar-equipamentos').length > 1) {
-                document.querySelectorAll('app-modal-editar-equipamentos')[1].querySelector('button[fecharmodal]').click();
-            }
-
-            if (document.querySelectorAll('app-modal-editar-equipe').length > 1) {
-                document.querySelectorAll('app-modal-editar-equipe')[1].querySelector('button[fecharmodal]').click();
-            }
-
-
             if (versao && document.querySelector('cad-breadcrumb div') && !document.querySelector('cad-breadcrumb div').innerHTML.includes(versao)) {
                 document.querySelector('cad-breadcrumb div').innerHTML += versao;
             }
@@ -103,616 +92,10 @@ chrome.storage.local.get("ativa", (data) => {
                     }
                 });
             }
-            if (localStorage.getItem('cards_selecionados')) {
-                if (document.querySelector("div[id='naorepete-card']")) {
-                } else {
-                    var valor = localStorage.getItem('cards_selecionados');
-                    if (document.querySelector('#checkbox')) {
-                        document.querySelector('#checkbox').querySelector('select').value = localStorage.getItem('cards_selecionados');
-                    }
-                    localStorage.setItem('cards_selecionados', valor);
-                    var cards = document.querySelectorAll('app-unidade-servico-card');
-                    if (valor == 'Todas') {
-                        cards.forEach(function (item) {
-                            item.style.display = '';
-                        });
-                    } else {
-                        cards.forEach(function (item) {
-                            if (item.querySelector('span').innerHTML.includes(valor)) {
-                                item.style.display = '';
-                            } else {
-                                item.style.display = 'none';
-                            }
-
-                        });
-
-                    }
-                }
-            }
-
-            if (localStorage.getItem('encerra_sv') && document.querySelector('button[title="Encerrar Serviço"]')) {
-                if (document.querySelector("div[id='naorepete-encerrasv']")) {
-                } else {
-                    var c = document.createElement("div");
-                    document.querySelector('body').append(c);
-                    c.setAttribute("id", "naorepete-encerrasv");
-                    document.querySelector('button[title="Encerrar Serviço"]').click();
-                }
-            }
-
-            if (localStorage.getItem('encerra_sv') && document.querySelector('app-modal-wrapper')) {
-                if (document.querySelector("div[id='naorepete_encerra_sv_botao_sim']")) {
-                } else {
-                    c = document.createElement("div");
-                    c.setAttribute("id", "naorepete_encerra_sv_botao_sim");
-                    document.querySelector('app-modal-wrapper').append(c);
-                    if (document.querySelector('app-modal-wrapper').innerHTML.includes('Encerrar o Serviço ?')) {
-                        document.querySelector('app-modal-wrapper').querySelectorAll('button')[1].click();
-                    }
-
-                }
-            }
-
-            if (localStorage.getItem('editar_equipe')) {
-                document.querySelectorAll('button').forEach(function (botao) {
-                    if (botao.style.display == '') {
-                        botao.style.display = 'none';
-                    }
-                });
-            }
-            if (!localStorage.getItem('editar_equipe')) {
-                document.querySelectorAll('button').forEach(function (botao) {
-                    if (botao.style.display == 'none' && botao.innerHTML != 'Nova Unidade de Serviço' && botao.innerHTML != 'Alterar' && botao.title != 'Incluir Equipe') {
-                        botao.style.display = '';
-                    }
-                });
-            }
-            if (localStorage.getItem('editar_equipe') && document.querySelector('app-modal-wrapper')) {
-                if (document.querySelector("div[id='naorepete_inicia_sv_botao_sim']")) {
-                } else {
-                    c = document.createElement("div");
-                    c.setAttribute("id", "naorepete_inicia_sv_botao_sim");
-                    document.querySelector('app-modal-wrapper').append(c);
-                    if (document.querySelector('app-modal-wrapper').innerHTML.includes('Iniciar Serviço')) {
-                        localStorage.removeItem('editar_equipe');
-                        document.querySelector('app-modal-wrapper').querySelectorAll('button')[1].click();
-                        if (localStorage.getItem('inserir_multiplas_equipes') && parseInt(localStorage.getItem('inserir_multiplas_equipes')) > -1) {
-                            document.querySelector('#div_separador_equipes').querySelector('tbody').querySelectorAll('button')[parseInt(localStorage.getItem('inserir_multiplas_equipes'))].click();
-                            localStorage.setItem('inserir_multiplas_equipes', parseInt(localStorage.getItem('inserir_multiplas_equipes')) - 1);
-                        } else {
-                            localStorage.removeItem('inserir_multiplas_equipes');
-                        }
-                    }
-                }
-            }
-
-            if (localStorage.getItem('encerra_sv') && document.querySelector('div[class="mat-mdc-snack-bar-label mdc-snackbar__label"]')) {
-                if (document.querySelector("div[id='naorepete_mat-simple-snack-bar-content']")) {
-                } else {
-                    c = document.createElement("div");
-                    c.setAttribute("id", "naorepete_mat-simple-snack-bar-content");
-                    document.querySelector('body').append(c);
-                    if (document.querySelector('div[class="mat-mdc-snack-bar-label mdc-snackbar__label"]').innerHTML.includes('serviço encerrado com sucesso.')) {
-                        location.reload();
-                    }
-
-                }
-            }
-
-            if (localStorage.getItem('encerra_sv') && document.querySelector('app-unidade-servico-card') && !document.querySelector('button[title="Encerrar Serviço"]')) {
-                //localStorage.removeItem('encerra_sv');
-            }
-            /*  if(document.querySelectorAll('span[class="mat-button-wrapper"]').length > 30 && document.querySelectorAll('span[class="mat-button-wrapper"]')[30].innerHTML == 'Novo Equipamento') {
-                document.querySelectorAll('span[class="mat-button-wrapper"]')[30].click();
-            }*/
-            if (localStorage.getItem('camera') && document.getElementById('agencia')) {
-                if (localStorage.getItem('camera') && !document.getElementById('agencia').innerHTML.includes('Guarda Municipal de Porto Alegre') && !document.querySelector('span[class="mat-option-text"]')) {
-                    document.getElementById('agencia').click();
-                } else if (localStorage.getItem('camera') && document.querySelector('span[class="mat-option-text"]') && document.querySelector('span[class="mat-option-text"]').innerHTML.includes('Guarda Municipal de Porto Alegre')) {
-                    document.querySelector('span[class="mat-option-text"]').click();
-                } else if (localStorage.getItem('camera') && !document.getElementById('tipoEquipamento').innerHTML.includes('Câmera Corporal') && !document.querySelector('span[class="mat-option-text"]')) {
-                    document.getElementById('tipoEquipamento').click();
-                } else if (localStorage.getItem('camera') && document.querySelectorAll('mat-option').length > 2) {
-                    document.querySelectorAll('mat-option')[1].click();
-                } else if (localStorage.getItem('camera')) {
-                    var prefixo = localStorage.getItem('camera').split('-');
-                    document.querySelector('input[formcontrolname="prefixo"]').value = prefixo.shift();
-                    document.querySelector('input[formcontrolname="prefixo"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    if (prefixo.length > -1) {
-                        var a = '';
-                        prefixo.forEach(function (item) {
-                            a += item + '-';
-                        });
-                        localStorage.setItem('camera', a);
-                    } else {
-                        localStorage.removeItem('camera');
-                    }
-
-                    document.querySelectorAll('button')[2].click();
-                }
-            }
-
-            if (localStorage.getItem('trava_encerra_sv') && !document.querySelector('mat-dialog-container')) {
-                localStorage.setItem('trava_encerra_sv', 'nao');
-            }
-            if (localStorage.getItem('edita_equipe_pega_equipe') && document.querySelector('app-modal-detalhar-equipe')) {
-                var selects = document.querySelector('#checkbox').querySelectorAll('select');
-                var componentes = document.querySelectorAll('app-modal-detalhar-equipe div:has(> div.modal-material-subtitulo)');
-                var gmo = [];
-                var ptr = [];
-                var operador = [];
-                selects[4].querySelectorAll('option')[0].selected = true;
-                selects[5].querySelectorAll('option')[0].selected = true;
-                selects[6].querySelectorAll('option')[0].selected = true;
-                selects[7].querySelectorAll('option')[0].selected = true;
-                selects[8].querySelectorAll('option')[0].selected = true;
-                selects[9].querySelectorAll('option')[0].selected = true;
-                selects[10].querySelectorAll('option')[0].selected = true;
-                componentes.forEach(function (pessoa) {
-                    const numeroGuarda = Array.from(pessoa.querySelectorAll('strong')).find(dado => dado.innerText == "Nome Funcional:").parentNode.innerText.replace(/\D/g, "");
-                    if (pessoa.parentNode.innerHTML.includes('Patrulheiro')) {
-                        ptr.push(numeroGuarda);
-                    } else if (pessoa.parentNode.innerHTML.includes('Motorista')) {
-                        gmo.push(numeroGuarda);
-                    } else if (pessoa.parentNode.innerHTML.includes('Operador')) {
-                        operador.push(numeroGuarda);
-                    } else {
-                        selects[4].querySelectorAll('option').forEach(function (op) {
-                            if (op.value == numeroGuarda) {
-                                op.selected = true;
-                            }
-                        })
-                    }
-                });
-                for (let i = 0; i < gmo.length; i++) {
-                    selects[i + 5].querySelectorAll('option').forEach(function (op) {
-                        if (op.value == gmo[i]) {
-                            op.selected = true;
-                        }
-                    })
-                }
-                for (let i = 0; i < ptr.length; i++) {
-                    selects[i + 8].querySelectorAll('option').forEach(function (op) {
-                        if (op.value == ptr[i]) {
-                            op.selected = true;
-                        }
-                    })
-                }
-                for (let i = 0; i < operador.length; i++) {
-                    selects[i + 5].querySelectorAll('option').forEach(function (option) {
-                        if (option.value == operador[i]) {
-                            option.selected = true;
-                        }
-                    })
-                }
-                document.querySelector('app-modal-detalhar-equipe').querySelector('button').click();
-                if (!document.querySelectorAll('app-unidade-servico-card')[parseInt(document.querySelector('#sel_equipe_edit_equip').value)].innerHTML.includes('Sem equipamentos cadastrados') && document.querySelector("#sel_area_edit_equip").value != 'COGM') {
-                    document.querySelectorAll('app-unidade-servico-card')[parseInt(document.querySelector('#sel_equipe_edit_equip').value)].querySelector('app-equipamentos-mini-card').querySelector('button').click();
-                } else {
-                    localStorage.removeItem('edita_equipe_pega_equipe');
-                }
-
-            }
-            if (localStorage.getItem('editar_equipe') && document.querySelector('app-modal-editar-equipe') && document.querySelector('app-modal-editar-equipe').querySelector('ul')) {
-                setTimeout(() => {
-                    if (localStorage.getItem('processo_edicao') == 'excluir_pessoas') {
-                        if (document.querySelector('app-modal-editar-equipe').querySelectorAll('button[title="Excluir"]').length > 0) {
-                            document.querySelector('app-modal-editar-equipe').querySelectorAll('button[title="Excluir"]').forEach(function (a) {
-                                a.click();
-                                localStorage.setItem('processo_edicao', 'inserir_pessoas');
-                            });
-                        }
-                    }
-                }, "1000");
-
-            }
-            if (localStorage.getItem('processo_edicao') == 'excluir_pessoas' && document.querySelector('app-modal-wrapper') && document.querySelector('app-modal-wrapper').innerHTML.includes('Encerrar o Serviço ?')) {
-                if (document.querySelector("div[id='naorepete_encerra_sv_botao_sim']")) {
-                } else {
-                    c = document.createElement("div");
-                    c.setAttribute("id", "naorepete_encerra_sv_botao_sim");
-                    document.querySelector('app-modal-wrapper').append(c);
-                    if (document.querySelector('app-modal-wrapper').innerHTML.includes('Encerrar o Serviço ?')) {
-                        document.querySelector('app-modal-wrapper').querySelectorAll('button')[1].click();
-                    }
-
-                }
-            }
-            if (localStorage.getItem('processo_edicao') == 'excluir_pessoas' && document.querySelector('div[matsnackbarlabel]') && document.querySelector('div[matsnackbarlabel]').innerText.includes('encerrado com sucesso') && document.querySelectorAll('app-unidade-servico-card')[parseInt(localStorage.getItem('editar_equipe').split('-')[1])] && sessionStorage.getItem('concluir_encarramento_uniade_sv') != 'sim') {
-                for (let i = 0; i < document.querySelectorAll('app-unidade-servico-card')[parseInt(localStorage.getItem('editar_equipe').split('-')[1])].querySelectorAll('app-equipe-mini-card').length; i++) {
-                    if (document.querySelectorAll('app-unidade-servico-card')[parseInt(localStorage.getItem('editar_equipe').split('-')[1])].querySelectorAll('app-equipe-mini-card')[i].querySelector('span').innerHTML.includes(document.querySelectorAll('select')[3].value)) {
-                        document.querySelectorAll('app-unidade-servico-card')[parseInt(localStorage.getItem('editar_equipe').split('-')[1])].querySelectorAll('app-equipe-mini-card')[i].querySelectorAll('button')[1].click();
-                        setTimeout(() => {
-                            sessionStorage.setItem('concluir_encarramento_uniade_sv', 'nao');
-                        }, 2000);
-                        sessionStorage.setItem('concluir_encarramento_uniade_sv', 'sim');
-                    }
-                };
-            }
-            if (localStorage.getItem('editar_equipe') && localStorage.getItem('processo_edicao') == 'inserir_pessoas' && document.querySelector('app-modal-editar-equipe') && !document.querySelector('cad-table')) {
-                if (document.querySelector('app-modal-editar-equipe').querySelector('div[class="acoes-card ng-star-inserted"]').innerHTML.includes('Vincular Pessoas')) {
-                    document.querySelector('app-modal-editar-equipe').querySelector('div[class="acoes-card ng-star-inserted"]').click();
-                    if (document.querySelector('app-modal-editar-equipe').querySelector('div[class="row-actions"]')) {
-                        document.querySelector('app-modal-editar-equipe').querySelector('div[class="row-actions"]').querySelector('button').click();
-                        sessionStorage.setItem('concluir_encarramento_uniade_sv', 'nao');
-                    }
-                }
-
-            }
-            if (localStorage.getItem('editar_equipe') && localStorage.getItem('processo_edicao') == 'inserir_pessoas' && document.querySelector('app-modal-editar-equipe') && document.querySelector('cad-table') && document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value == '') {
-                if (document.querySelector('app-modal-editar-equipe').querySelector('ul')) {
-                    if (!Array.from(document.querySelectorAll('app-modal-editar-equipe ul li span.titulo')).find(pessoa => pessoa.innerText.includes(localStorage.getItem('editar_equipe').split('-')[3])) && localStorage.getItem('editar_equipe').split('-')[3] != ' ') {
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[3];
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    } else if (!Array.from(document.querySelectorAll('app-modal-editar-equipe ul li span.titulo')).find(pessoa => pessoa.innerText.includes(localStorage.getItem('editar_equipe').split('-')[4])) && localStorage.getItem('editar_equipe').split('-')[4] != ' ') {
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[4];
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    } else if (!Array.from(document.querySelectorAll('app-modal-editar-equipe ul li span.titulo')).find(pessoa => pessoa.innerText.includes(localStorage.getItem('editar_equipe').split('-')[5])) && localStorage.getItem('editar_equipe').split('-')[5] != ' ') {
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[5];
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    } else if (!Array.from(document.querySelectorAll('app-modal-editar-equipe ul li span.titulo')).find(pessoa => pessoa.innerText.includes(localStorage.getItem('editar_equipe').split('-')[6])) && localStorage.getItem('editar_equipe').split('-')[6] != ' ') {
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[6];
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    } else if (!Array.from(document.querySelectorAll('app-modal-editar-equipe ul li span.titulo')).find(pessoa => pessoa.innerText.includes(localStorage.getItem('editar_equipe').split('-')[7])) && localStorage.getItem('editar_equipe').split('-')[7] != ' ') {
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[7];
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    } else if (!Array.from(document.querySelectorAll('app-modal-editar-equipe ul li span.titulo')).find(pessoa => pessoa.innerText.includes(localStorage.getItem('editar_equipe').split('-')[8])) && localStorage.getItem('editar_equipe').split('-')[8] != ' ') {
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[8];
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    } else if (!Array.from(document.querySelectorAll('app-modal-editar-equipe ul li span.titulo')).find(pessoa => pessoa.innerText.includes(localStorage.getItem('editar_equipe').split('-')[9])) && localStorage.getItem('editar_equipe').split('-')[9] != ' ') {
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[9];
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    } else if (document.querySelector("#sel_area_edit_equip").value == 'COGM' && !Array.from(document.querySelectorAll('app-modal-editar-equipe ul li span.titulo')).find(pessoa => pessoa.innerText.includes(localStorage.getItem('editar_equipe').split('-')[10])) && localStorage.getItem('editar_equipe').split('-')[10] != ' ') {
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[10];
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    } else if (document.querySelector("#sel_area_edit_equip").value == 'COGM' && !Array.from(document.querySelectorAll('app-modal-editar-equipe ul li span.titulo')).find(pessoa => pessoa.innerText.includes(localStorage.getItem('editar_equipe').split('-')[11])) && localStorage.getItem('editar_equipe').split('-')[11] != ' ') {
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[11];
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    } else if (document.querySelector("#sel_area_edit_equip").value == 'COGM' && !Array.from(document.querySelectorAll('app-modal-editar-equipe ul li span.titulo')).find(pessoa => pessoa.innerText.includes(localStorage.getItem('editar_equipe').split('-')[12])) && localStorage.getItem('editar_equipe').split('-')[12] != ' ') {
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[12];
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    } else if (document.querySelector("#sel_area_edit_equip").value == 'COGM' && !Array.from(document.querySelectorAll('app-modal-editar-equipe ul li span.titulo')).find(pessoa => pessoa.innerText.includes(localStorage.getItem('editar_equipe').split('-')[13])) && localStorage.getItem('editar_equipe').split('-')[13] != ' ') {
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[13];
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    } else if (document.querySelector("#sel_area_edit_equip").value == 'COGM' && !Array.from(document.querySelectorAll('app-modal-editar-equipe ul li span.titulo')).find(pessoa => pessoa.innerText.includes(localStorage.getItem('editar_equipe').split('-')[14])) && localStorage.getItem('editar_equipe').split('-')[14] != ' ') {
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[14];
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    } else if (document.querySelector("#sel_area_edit_equip").value == 'COGM' && !Array.from(document.querySelectorAll('app-modal-editar-equipe ul li span.titulo')).find(pessoa => pessoa.innerText.includes(localStorage.getItem('editar_equipe').split('-')[15])) && localStorage.getItem('editar_equipe').split('-')[15] != ' ') {
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[15];
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    } else if (document.querySelector("#sel_area_edit_equip").value == 'COGM' && !Array.from(document.querySelectorAll('app-modal-editar-equipe ul li span.titulo')).find(pessoa => pessoa.innerText.includes(localStorage.getItem('editar_equipe').split('-')[16])) && localStorage.getItem('editar_equipe').split('-')[16] != ' ') {
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[16];
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    } else {
-                        localStorage.setItem('processo_edicao', 'inserir_funcoes');
-                        localStorage.setItem('clicando_na_funcao', 'nao');
-                        localStorage.setItem('qual_gm', '0');
-                    }
-                } else if (localStorage.getItem('editar_equipe').split('-')[3] != ' ') {
-                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[3];
-                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
-                } else if (localStorage.getItem('editar_equipe').split('-')[4] != ' ') {
-                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[4];
-                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
-                } else if (localStorage.getItem('editar_equipe').split('-')[5] != ' ') {
-                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[5];
-                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
-                } else if (localStorage.getItem('editar_equipe').split('-')[6] != ' ') {
-                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[6];
-                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
-                } else if (localStorage.getItem('editar_equipe').split('-')[7] != ' ') {
-                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[7];
-                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
-                } else if (localStorage.getItem('editar_equipe').split('-')[8] != ' ') {
-                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[8];
-                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
-                } else if (localStorage.getItem('editar_equipe').split('-')[9] != ' ') {
-                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = localStorage.getItem('editar_equipe').split('-')[9];
-                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').dispatchEvent(new Event('input', { bubbles: true }));
-                }
-
-            }
-            if (localStorage.getItem('editar_equipe') && localStorage.getItem('processo_edicao') == 'inserir_pessoas' && document.querySelector('app-modal-editar-equipe') && document.querySelector('cad-table') && document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value != '' && document.querySelector('cad-table').querySelectorAll('tr').length < 5) {
-                if (!document.querySelector('app-modal-editar-equipe').querySelector('div[class*="fx-group"]').innerHTML.includes(' ' + document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value + ' ')) {
-                    if (document.querySelector('app-modal-editar-equipe').querySelector('button[title="Vincular"]')) {
-                        document.querySelector('app-modal-editar-equipe').querySelector('button[title="Vincular"]').click();
-                        document.querySelector('app-modal-editar-equipe').querySelector('div[class*="fx-group"]').innerHTML += ' ' + document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value + ' ';
-                        document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = '';
-                    }
-                } else {
-                    document.querySelector('app-modal-editar-equipe').querySelector('input[name="column-filter-nomeFuncional"]').value = '';
-                }
-            }
-            if (localStorage.getItem('processo_edicao') == 'inserir_funcoes' && localStorage.getItem('clicando_na_funcao') && document.querySelector('app-modal-editar-equipe') && document.querySelector('app-modal-editar-equipe').querySelectorAll("li:not([data-feito])").length > 0 && !document.querySelector('mat-option')) {
-                var equipe = localStorage.getItem('editar_equipe').split('-');
-                var item = document.querySelector('app-modal-editar-equipe').querySelector("li:not([data-feito])");
-                item.dataset.feito = 'feito';
-                if (item.querySelector('button[aria-label="Limpar"]')) {
-                    item.querySelector('button[aria-label="Limpar"]').click();
-                } else {
-                    item.querySelector('input').click();
-                }
-                if (equipe.indexOf(item.querySelectorAll('span.titulo')[1].innerText.split(' ')[0]) == 3) {
-                    item.querySelector('input').click();
-                    localStorage.setItem('clicando_na_funcao', 'Supervisor');
-                } else if (document.querySelector("#sel_area_edit_equip").value == 'COGM') {
-                    for (let i = 4; i < equipe.length; i++) {
-                        item.querySelector('input').click();
-                        localStorage.setItem('clicando_na_funcao', 'Operador');
-                    }
-                } else if (equipe.indexOf(item.querySelectorAll('span.titulo')[1].innerText.split(' ')[0]) == 4 || equipe.indexOf(item.querySelectorAll('span.titulo')[1].innerText.split(' ')[0]) == 5 || equipe.indexOf(item.querySelectorAll('span.titulo')[1].innerText.split(' ')[0]) == 6) {
-                    item.querySelector('input').click();
-                    localStorage.setItem('clicando_na_funcao', 'Motorista');
-                } else {
-                    item.querySelector('input').click();
-                    localStorage.setItem('clicando_na_funcao', 'Patrulheiro');
-                }
-            }
-            if (localStorage.getItem('processo_edicao') == 'inserir_funcoes' && localStorage.getItem('clicando_na_funcao') && document.querySelector('mat-option')) {
-                var funcao_xpath = document.evaluate("//mat-option[contains(.,'" + localStorage.getItem('clicando_na_funcao') + "')]", document, null, XPathResult.ANY_TYPE, null);
-                var funcao_opt = funcao_xpath.iterateNext();
-                if (funcao_opt) {
-                    funcao_opt.click();
-                }
-            }
-            if (localStorage.getItem('processo_edicao') == 'inserir_funcoes' && localStorage.getItem('clicando_na_funcao') && document.querySelector('app-modal-editar-equipe') && document.querySelector('app-modal-editar-equipe').querySelectorAll("li:not([data-feito])").length == 0 && !document.querySelector('mat-option')) {
-                localStorage.removeItem('clicando_na_funcao');
-                if (document.querySelector("#sel_area_edit_equip").value == 'COGM') {
-                    localStorage.setItem('processo_edicao', 'encerrar_edicao');
-                    document.querySelector('app-modal-editar-equipe').querySelector('button.confirm-btn').click();
-                } else {
-                    localStorage.setItem('processo_edicao', 'excluir_equipamentos');
-                    document.querySelector('app-modal-editar-equipe').querySelector('button.confirm-btn').click();
-
-                    if (document.querySelectorAll('app-unidade-servico-card')[parseInt(localStorage.getItem('editar_equipe').split('-')[1])]) {
-                        if (document.querySelectorAll('app-unidade-servico-card')[parseInt(localStorage.getItem('editar_equipe').split('-')[1])].innerHTML.includes('Sem equipamentos cadastrados')) {
-                            document.querySelectorAll('app-unidade-servico-card')[parseInt(localStorage.getItem('editar_equipe').split('-')[1])].querySelector('button[title="Incluir Equipamentos"]').click();
-                        } else {
-                            document.querySelectorAll('app-unidade-servico-card')[parseInt(localStorage.getItem('editar_equipe').split('-')[1])].querySelector('app-equipamentos-mini-card').querySelector('button[title="Editar"]').click();
-                        }
-                    }
-                }
-            }
-            if (localStorage.getItem('processo_edicao') == 'excluir_equipamentos' && !document.querySelector('app-modal-editar-equipe') && !document.querySelector('app-modal-editar-equipamentos') && (!equipamentos || equipamentos != 'a')) {
-                var equipamentos = 'a';
-                if (document.querySelectorAll('app-unidade-servico-card')[parseInt(localStorage.getItem('editar_equipe').split('-')[1])]) {
-                    if (document.querySelectorAll('app-unidade-servico-card')[parseInt(localStorage.getItem('editar_equipe').split('-')[1])].innerHTML.includes('Sem equipamentos cadastrados')) {
-                        document.querySelectorAll('app-unidade-servico-card')[parseInt(localStorage.getItem('editar_equipe').split('-')[1])].querySelector('button[title="Incluir Equipamentos"]').click();
-                    } else {
-                        document.querySelectorAll('app-unidade-servico-card')[parseInt(localStorage.getItem('editar_equipe').split('-')[1])].querySelector('app-equipamentos-mini-card').querySelector('button[title="Editar"]').click();
-                    }
-                }
-            }
-            if (localStorage.getItem('editar_equipe') && document.querySelector('app-modal-editar-equipamentos') && localStorage.getItem('processo_edicao') == 'excluir_equipamentos') {
-                setTimeout(() => {
-                    if (localStorage.getItem('processo_edicao') == 'excluir_equipamentos') {
-                        if (document.querySelector('app-modal-editar-equipamentos').querySelectorAll('em[title="Excluir"]').length > 0) {
-                            localStorage.setItem('processo_edicao', 'inserir_equipamentos');
-                            document.querySelector('app-modal-editar-equipamentos').querySelectorAll('em[title="Excluir"]').forEach(function (a) {
-                                a.click();
-                            });
-                        } else {
-                            localStorage.setItem('processo_edicao', 'inserir_equipamentos');
-                        }
-                    }
-                }, "1000");
-
-            }
-            if (localStorage.getItem('editar_equipe') && localStorage.getItem('processo_edicao') == 'inserir_equipamentos' && document.querySelector('app-modal-editar-equipamentos') && !document.querySelector('cad-table')) {
-                if (document.querySelector('app-modal-editar-equipamentos').innerHTML.includes('Fechar Pesquisa')) {
-                    document.querySelector('app-modal-editar-equipamentos').querySelectorAll('button')[3].click();
-                } else {
-                    document.querySelector('app-modal-editar-equipamentos').querySelector('button[botaoconfirmar]').click();
-                }
-            }
-            if (localStorage.getItem('editar_equipe') && localStorage.getItem('processo_edicao') == 'inserir_equipamentos' && document.querySelector('app-modal-editar-equipamentos') && document.querySelector('cad-table') && document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]') && document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').value == '') {
-                document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-nomeTipoEquipamento"]').value = 'a';
-                document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-nomeTipoEquipamento"]').dispatchEvent(new Event('input', { bubbles: true }));
-                if (document.querySelector('app-modal-editar-equipamentos').querySelector('ul')) {
-                    if (!document.querySelector('app-modal-editar-equipamentos').querySelector('ul').innerHTML.includes(' ' + localStorage.getItem('editar_equipe').split('-')[10].toLowerCase()) && localStorage.getItem('editar_equipe').split('-')[10] != ' ') {
-                        if (!/[a-zA-Z]/.test(localStorage.getItem('editar_equipe').split('-')[10])) {
-                            document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-nomeTipoEquipamento"]').value = 'Automóvel';
-                            document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-nomeTipoEquipamento"]').dispatchEvent(new Event('input', { bubbles: true }));
-                        }
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').value = localStorage.getItem('editar_equipe').split('-')[10];
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').dispatchEvent(new Event('input', { bubbles: true }));
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').value = localStorage.getItem('editar_equipe').split('-')[10];
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    } else if (!document.querySelector('app-modal-editar-equipamentos').querySelector('ul').innerHTML.includes(' ' + localStorage.getItem('editar_equipe').split('-')[11].toLowerCase()) && localStorage.getItem('editar_equipe').split('-')[11] != ' ') {
-                        if (!/[a-zA-Z]/.test(localStorage.getItem('editar_equipe').split('-')[11])) {
-                            document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-nomeTipoEquipamento"]').value = 'Automóvel';
-                            document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-nomeTipoEquipamento"]').dispatchEvent(new Event('input', { bubbles: true }));
-                        }
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').value = localStorage.getItem('editar_equipe').split('-')[11];
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').dispatchEvent(new Event('input', { bubbles: true }));
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').value = localStorage.getItem('editar_equipe').split('-')[11];
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    } else if (!document.querySelector('app-modal-editar-equipamentos').querySelector('ul').innerHTML.includes(' ' + localStorage.getItem('editar_equipe').split('-')[12].toLowerCase()) && localStorage.getItem('editar_equipe').split('-')[12] != ' ') {
-                        if (!/[a-zA-Z]/.test(localStorage.getItem('editar_equipe').split('-')[12])) {
-                            document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-nomeTipoEquipamento"]').value = 'Automóvel';
-                            document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-nomeTipoEquipamento"]').dispatchEvent(new Event('input', { bubbles: true }));
-                        }
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').value = localStorage.getItem('editar_equipe').split('-')[12];
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').dispatchEvent(new Event('input', { bubbles: true }));
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').value = localStorage.getItem('editar_equipe').split('-')[12];
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    } else if (!document.querySelector('app-modal-editar-equipamentos').querySelector('ul').innerHTML.includes('00' + localStorage.getItem('editar_equipe').split('-')[13].toLowerCase()) && localStorage.getItem('editar_equipe').split('-')[13] != ' ') {
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-nomeTipoEquipamento"]').value = 'Câmera Corporal';
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-nomeTipoEquipamento"]').dispatchEvent(new Event('input', { bubbles: true }));
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').value = '00' + localStorage.getItem('editar_equipe').split('-')[13];
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').dispatchEvent(new Event('input', { bubbles: true }));
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').value = '00' + localStorage.getItem('editar_equipe').split('-')[13];
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    } else if (!document.querySelector('app-modal-editar-equipamentos').querySelector('ul').innerHTML.includes('00' + localStorage.getItem('editar_equipe').split('-')[14].toLowerCase()) && localStorage.getItem('editar_equipe').split('-')[14] != ' ') {
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-nomeTipoEquipamento"]').value = 'Câmera Corporal';
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-nomeTipoEquipamento"]').dispatchEvent(new Event('input', { bubbles: true }));
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').value = '00' + localStorage.getItem('editar_equipe').split('-')[14];
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').dispatchEvent(new Event('input', { bubbles: true }));
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').value = '00' + localStorage.getItem('editar_equipe').split('-')[14];
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    } else if (!document.querySelector('app-modal-editar-equipamentos').querySelector('ul').innerHTML.includes('00' + localStorage.getItem('editar_equipe').split('-')[15].toLowerCase()) && localStorage.getItem('editar_equipe').split('-')[15] != ' ') {
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-nomeTipoEquipamento"]').value = 'Câmera Corporal';
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-nomeTipoEquipamento"]').dispatchEvent(new Event('input', { bubbles: true }));
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').value = '00' + localStorage.getItem('editar_equipe').split('-')[15];
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').dispatchEvent(new Event('input', { bubbles: true }));
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').value = '00' + localStorage.getItem('editar_equipe').split('-')[15];
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    } else if (!document.querySelector('app-modal-editar-equipamentos').querySelector('ul').innerHTML.includes('00' + localStorage.getItem('editar_equipe').split('-')[16].toLowerCase()) && localStorage.getItem('editar_equipe').split('-')[16] != ' ') {
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-nomeTipoEquipamento"]').value = 'Câmera Corporal';
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-nomeTipoEquipamento"]').dispatchEvent(new Event('input', { bubbles: true }));
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').value = '00' + localStorage.getItem('editar_equipe').split('-')[16];
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').dispatchEvent(new Event('input', { bubbles: true }));
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').value = '00' + localStorage.getItem('editar_equipe').split('-')[16];
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    } else {
-                        localStorage.setItem('processo_edicao', 'encerrar_edicao');
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('button[class="confirm-btn"]').click();
-                    }
-                } else if (localStorage.getItem('editar_equipe').split('-')[10] != ' ') {
-                    if (!/[a-zA-Z]/.test(localStorage.getItem('editar_equipe').split('-')[10])) {
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-nomeTipoEquipamento"]').value = 'Automóvel';
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-nomeTipoEquipamento"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    }
-                    document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').value = localStorage.getItem('editar_equipe').split('-')[10];
-                    document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').value = localStorage.getItem('editar_equipe').split('-')[10];
-                    document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').dispatchEvent(new Event('input', { bubbles: true }));
-                } else if (localStorage.getItem('editar_equipe').split('-')[11] != ' ') {
-                    if (!/[a-zA-Z]/.test(localStorage.getItem('editar_equipe').split('-')[11])) {
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-nomeTipoEquipamento"]').value = 'Automóvel';
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-nomeTipoEquipamento"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    }
-                    document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').value = localStorage.getItem('editar_equipe').split('-')[11];
-                    document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').value = localStorage.getItem('editar_equipe').split('-')[11];
-                    document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').dispatchEvent(new Event('input', { bubbles: true }));
-                } else if (localStorage.getItem('editar_equipe').split('-')[12] != ' ') {
-                    if (!/[a-zA-Z]/.test(localStorage.getItem('editar_equipe').split('-')[12])) {
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-nomeTipoEquipamento"]').value = 'Automóvel';
-                        document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-nomeTipoEquipamento"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    }
-                    document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').value = localStorage.getItem('editar_equipe').split('-')[12];
-                    document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').value = localStorage.getItem('editar_equipe').split('-')[12];
-                    document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').dispatchEvent(new Event('input', { bubbles: true }));
-                } else if (localStorage.getItem('editar_equipe').split('-')[13] != ' ') {
-                    document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-nomeTipoEquipamento"]').value = 'Câmera Corporal';
-                    document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-nomeTipoEquipamento"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').value = '00' + localStorage.getItem('editar_equipe').split('-')[13];
-                    document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').value = '00' + localStorage.getItem('editar_equipe').split('-')[13];
-                    document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').dispatchEvent(new Event('input', { bubbles: true }));
-                } else if (localStorage.getItem('editar_equipe').split('-')[14] != ' ') {
-                    document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-nomeTipoEquipamento"]').value = 'Câmera Corporal';
-                    document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-nomeTipoEquipamento"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').value = '00' + localStorage.getItem('editar_equipe').split('-')[14];
-                    document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').value = '00' + localStorage.getItem('editar_equipe').split('-')[14];
-                    document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').dispatchEvent(new Event('input', { bubbles: true }));
-                } else if (localStorage.getItem('editar_equipe').split('-')[15] != ' ') {
-                    document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-nomeTipoEquipamento"]').value = 'Câmera Corporal';
-                    document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-nomeTipoEquipamento"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').value = '00' + localStorage.getItem('editar_equipe').split('-')[15];
-                    document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').value = '00' + localStorage.getItem('editar_equipe').split('-')[15];
-                    document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').dispatchEvent(new Event('input', { bubbles: true }));
-                } else if (localStorage.getItem('editar_equipe').split('-')[16] != ' ') {
-                    document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-nomeTipoEquipamento"]').value = 'Câmera Corporal';
-                    document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-nomeTipoEquipamento"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').value = '00' + localStorage.getItem('editar_equipe').split('-')[16];
-                    document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').dispatchEvent(new Event('input', { bubbles: true }));
-                    document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').value = '00' + localStorage.getItem('editar_equipe').split('-')[16];
-                    document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').dispatchEvent(new Event('input', { bubbles: true }));
-                }
-
-            }
-            if (localStorage.getItem('editar_equipe') && localStorage.getItem('processo_edicao') == 'inserir_equipamentos' && document.querySelector('app-modal-editar-equipamentos') && document.querySelector('cad-table') && document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]') && document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').value != '' && document.querySelector('cad-table').querySelectorAll('tr').length < 5) {
-                if (!document.querySelector('app-modal-editar-equipamentos').querySelector('div[class*="fx-group"]').innerHTML.includes(' ' + document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').value + ' ')) {
-                    if (document.querySelector('app-modal-editar-equipamentos').querySelector('button[title="Vincular"]')) {
-                        document.querySelectorAll('cad-table tbody tr').forEach(function (linha) {
-                            if (linha.querySelectorAll('td')[1].innerText == document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').value) {
-                                document.querySelector('app-modal-editar-equipamentos').querySelector('button[title="Vincular"]').click();
-                                document.querySelector('app-modal-editar-equipamentos').querySelector('div[class*="fx-group"]').innerHTML += ' ' + document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').value + ' ';
-                                document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').value = '';
-                            }
-                        });
-                    }
-                } else {
-                    document.querySelector('app-modal-editar-equipamentos').querySelector('input[name="column-filter-prefixo"]').value = '';
-                }
-            }
             function triggerMouseEvent(node, eventType) {
                 var clickEvent = new Event(eventType, { bubbles: true, cancelable: true });
                 node.dispatchEvent(clickEvent);
             }
-            if (localStorage.getItem('editar_equipe') && localStorage.getItem('processo_edicao') == 'encerrar_edicao' && document.querySelector('div[class="mat-mdc-snack-bar-label mdc-snackbar__label"]') && document.querySelectorAll('app-unidade-servico-card')[parseInt(localStorage.getItem('editar_equipe').split('-')[1])]) {
-                document.querySelectorAll('app-unidade-servico-card')[parseInt(localStorage.getItem('editar_equipe').split('-')[1])].querySelectorAll('app-equipe-mini-card').forEach(function (item) {
-                    if (item.innerHTML.includes(localStorage.getItem('editar_equipe').split('-')[2])) {
-                        var targetNode = item.querySelector('svg');
-                        triggerMouseEvent(targetNode, "mouseover");
-                        triggerMouseEvent(targetNode, "mousedown");
-                        triggerMouseEvent(targetNode, "mouseup");
-                        triggerMouseEvent(targetNode, "click");
-                        item.parentNode.parentNode.parentNode.querySelector('button[title="Iniciar Serviço"]').click();
-                    }
-                });
-            }
-
-            if (localStorage.getItem('edita_equipe_pega_equipe') && document.querySelector('app-modal-detalhar-equipamentos')) {
-                selects = document.querySelector('#checkbox').querySelectorAll('select');
-                equipamentos = document.querySelector('app-modal-detalhar-equipamentos').querySelectorAll('div[class="modal-material-subtitulo"]');
-                var vtr = [];
-                var cam = [];
-                selects[11].querySelectorAll('option')[0].selected = true;
-                selects[12].querySelectorAll('option')[0].selected = true;
-                selects[13].querySelectorAll('option')[0].selected = true;
-                selects[14].querySelectorAll('option')[0].selected = true;
-                selects[15].querySelectorAll('option')[0].selected = true;
-                selects[16].querySelectorAll('option')[0].selected = true;
-                selects[17].querySelectorAll('option')[0].selected = true;
-                equipamentos.forEach(function (eqp) {
-                    if (eqp.parentNode.innerHTML.includes('Câmera Corporal')) {
-                        cam.push(eqp.innerHTML.trim().slice(2));
-                    } else {
-                        vtr.push(eqp.innerHTML.trim());
-                    }
-                });
-                for (let i = 0; i < vtr.length; i++) {
-                    selects[i + 11].querySelectorAll('option').forEach(function (op) {
-                        if (op.value == vtr[i]) {
-                            op.selected = true;
-                        }
-                    })
-                }
-                for (let i = 0; i < cam.length; i++) {
-                    selects[i + 14].querySelectorAll('option').forEach(function (op) {
-                        if (op.value == cam[i]) {
-                            op.selected = true;
-                        }
-                    })
-                }
-                document.querySelector('app-modal-detalhar-equipamentos').querySelector('button').click();
-                localStorage.removeItem('edita_equipe_pega_equipe');
-            }
-            if (document.querySelectorAll('app-unidade-servico-card').length > 20 && parseInt(localStorage.getItem('encerra_sv')) > -1 && localStorage.getItem('trava_encerra_sv') == 'nao') {
-                var but_encerrar_sv = parseInt(localStorage.getItem('encerra_sv')) - 1;
-                document.querySelectorAll('button[title="Encerrar Serviço"]')[0].click();
-                localStorage.setItem('encerra_sv', but_encerrar_sv);
-                localStorage.setItem('trava_encerra_sv', 'sim');
-            }
-            if (document.querySelector('app-consultar-unidade-servico') && document.querySelector("mat-select[formcontrolname=registrosPorPagina]")) {
-                if (document.querySelector("div[id='naorepete']")) {
-                } else {
-                    a = document.createElement("div");
-                    a.setAttribute("id", "naorepete");
-                    document.querySelector('app-consultar-unidade-servico').append(a);
-                    document.querySelector("mat-select[formcontrolname=registrosPorPagina]").click();
-                    setTimeout(() => {
-                        document.querySelectorAll('mat-option')[4].click();
-                        document.querySelector("#sel_area_edit_equip").focus();
-                    }, "1000");
-                }
-            };
 
             if (document.querySelector('input[name=column-filter-nomeFuncional]')) {
                 if (document.querySelector("div[id='naorepete_editar_equipe']")) {
@@ -811,7 +194,6 @@ chrome.storage.local.get("ativa", (data) => {
                             if (chrome.runtime.lastError) {
                                 console.error("Erro na mensagem:", chrome.runtime.lastError.message);
                             } else {
-                                console.log("Resposta do background:", response);
                                 buttonConfirmarOriginal.click();
                             }
                         });
@@ -874,6 +256,9 @@ chrome.storage.local.get("ativa", (data) => {
                             localStorage.removeItem('atualizacao_pessoas');
                             window.location.reload();
                         });
+                        document.getElementById('editar_equipe_but').addEventListener('click', () => enviarDadosEdicaoEquipe(document.getElementById('editar_equipe_but'))
+                        );
+
                         var eqps = ['A1', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12', 'C13', 'C14', 'C15', 'R1', 'R2', 'R3', 'R4', 'R5', 'P1', 'P2', '21', '22', '31', '32', '41', '42', '51', '52', '61', '62', '71', '72', '81', '82', '91', '92', 'COGM'];
                         var vtrs_placa = new Map();
                         vtrs_placa.set('4B35', '0125'); vtrs_placa.set('3I25', '0225'); vtrs_placa.set('3I15', '0325'); vtrs_placa.set('1470', '0118'); vtrs_placa.set('4G47', '0122'); vtrs_placa.set('4B58', '0124'); vtrs_placa.set('1468', '0218'); vtrs_placa.set('4E96', '0222'); vtrs_placa.set('3D36', '0224'); vtrs_placa.set('0283', '0283'); vtrs_placa.set('0301', '0301'); vtrs_placa.set('0305', '0305'); vtrs_placa.set('1469', '0318'); vtrs_placa.set('4E69', '0322'); vtrs_placa.set('3D37', '0324'); vtrs_placa.set('1471', '0418'); vtrs_placa.set('4E64', '0422'); vtrs_placa.set('3D50', '0424'); vtrs_placa.set('1473', '0518'); vtrs_placa.set('4G77', '0522'); vtrs_placa.set('2F38', '0524'); vtrs_placa.set('1467', '0618'); vtrs_placa.set('4E77', '0622'); vtrs_placa.set('4E57', '0722'); vtrs_placa.set('8J14', '0819'); vtrs_placa.set('4G14', '0822'); vtrs_placa.set('0906', '0906'); vtrs_placa.set('8J11', '0919'); vtrs_placa.set('4E85', '0922'); vtrs_placa.set('0F11', '0f11'); vtrs_placa.set('8J26', '1019'); vtrs_placa.set('4F34', '1022'); vtrs_placa.set('9A14', '1119'); vtrs_placa.set('4E88', '1122'); vtrs_placa.set('4G49', '1222'); vtrs_placa.set('1B67', '1267'); vtrs_placa.set('8J15', '1319'); vtrs_placa.set('4G36', '1322'); vtrs_placa.set('2J01', '1419'); vtrs_placa.set('4F48', '1422'); vtrs_placa.set('2J13', '1519'); vtrs_placa.set('4F75', '1522'); vtrs_placa.set('2J14', '1619'); vtrs_placa.set('4F19', '1622'); vtrs_placa.set('1667', '1667'); vtrs_placa.set('2J15', '1719'); vtrs_placa.set('4E76', '1722'); vtrs_placa.set('2J10', '1819'); vtrs_placa.set('4G61', '1822'); vtrs_placa.set('2J11', '1919'); vtrs_placa.set('4E61', '1922'); vtrs_placa.set('1G13', '1g13'); vtrs_placa.set('1I54', '1i54'); vtrs_placa.set('1I84', '1i84'); vtrs_placa.set('1J04', '1j04'); vtrs_placa.set('2J07', '2019'); vtrs_placa.set('4F60', '2022'); vtrs_placa.set('2048', '2048'); vtrs_placa.set('2J03', '2119'); vtrs_placa.set('2J05', '2219'); vtrs_placa.set('2240', '2240'); vtrs_placa.set('2241', '2241'); vtrs_placa.set('2253', '2253'); vtrs_placa.set('2254', '2254'); vtrs_placa.set('2J08', '2319'); vtrs_placa.set('2J12', '2419'); vtrs_placa.set('2420', '2420'); vtrs_placa.set('2J09', '2519'); vtrs_placa.set('2J02', '2619'); vtrs_placa.set('2747', '2747'); vtrs_placa.set('0287', '287'); vtrs_placa.set('0294', '294'); vtrs_placa.set('2975', '2975'); vtrs_placa.set('2A47', '2a47'); vtrs_placa.set('2A58', '2a58'); vtrs_placa.set('2A67', '2a67'); vtrs_placa.set('2A76', '2a76'); vtrs_placa.set('2B31', '2b31'); vtrs_placa.set('2B44', '2b44'); vtrs_placa.set('2B49', '2b49'); vtrs_placa.set('2B67', '2b67'); vtrs_placa.set('2B72', '2b72'); vtrs_placa.set('2B76', '2b76'); vtrs_placa.set('2B85', '2b85'); vtrs_placa.set('2B93', '2b93'); vtrs_placa.set('2B94', '2b94'); vtrs_placa.set('3376', '3376'); vtrs_placa.set('3377', '3377'); vtrs_placa.set('3378', '3378'); vtrs_placa.set('3379', '3379'); vtrs_placa.set('3380', '3380'); vtrs_placa.set('3742', '3742'); vtrs_placa.set('3753', '3753'); vtrs_placa.set('3761', '3761'); vtrs_placa.set('3766', '3766'); vtrs_placa.set('3770', '3770'); vtrs_placa.set('3932', '3932'); vtrs_placa.set('3942', '3942'); vtrs_placa.set('3948', '3948'); vtrs_placa.set('3953', '3953'); vtrs_placa.set('3955', '3955'); vtrs_placa.set('4267', '4267'); vtrs_placa.set('4339', '4339'); vtrs_placa.set('5255', '5255'); vtrs_placa.set('5G09', '5g09'); vtrs_placa.set('6017', '6017'); vtrs_placa.set('6046', '6046'); vtrs_placa.set('6077', '6077'); vtrs_placa.set('6085', '6085'); vtrs_placa.set('6094', '6094'); vtrs_placa.set('6103', '6103'); vtrs_placa.set('6108', '6108'); vtrs_placa.set('6121', '6121'); vtrs_placa.set('6126', '6126'); vtrs_placa.set('6915', '6915'); vtrs_placa.set('6950', '6950'); vtrs_placa.set('6959', '6959'); vtrs_placa.set('6965', '6965'); vtrs_placa.set('6972', '6972'); vtrs_placa.set('1466', '0718'); vtrs_placa.set('7259', '7259'); vtrs_placa.set('7280', '7280'); vtrs_placa.set('7285', '7285'); vtrs_placa.set('7337', '7337'); vtrs_placa.set('0734', '734'); vtrs_placa.set('7429', '7429'); vtrs_placa.set('7554', '7554'); vtrs_placa.set('7D34', '7d34'); vtrs_placa.set('7H22', '7h22'); vtrs_placa.set('7H23', '7h23'); vtrs_placa.set('7H25', '7h25'); vtrs_placa.set('7H29', '7h29'); vtrs_placa.set('7H32', '7h32'); vtrs_placa.set('7H38', '7h38'); vtrs_placa.set('8163', '8163'); vtrs_placa.set('8299', '8299'); vtrs_placa.set('8401', '8401'); vtrs_placa.set('8408', '8408'); vtrs_placa.set('8970', '8970'); vtrs_placa.set('9028', '9028'); vtrs_placa.set('9051', '9051'); vtrs_placa.set('9077', '9077'); vtrs_placa.set('9132', '9132'); vtrs_placa.set('9133', '9133'); vtrs_placa.set('9134', '9134'); vtrs_placa.set('9135', '9135'); vtrs_placa.set('9473', '9473'); vtrs_placa.set('9882', '9882'); vtrs_placa.set('9894', '9894'); vtrs_placa.set('9908', '9908'); vtrs_placa.set('9J14', 'Izf9j14'); vtrs_placa.set('9E63', 'Micro'); vtrs_placa.set('ICRO', 'Micro 03');
@@ -888,7 +273,6 @@ chrome.storage.local.get("ativa", (data) => {
                                     console.error("Erro na mensagem:", chrome.runtime.lastError.message);
                                 } else {
                                     response.dados.forEach(element => {
-                                        console.log(element["lotacao"]);
                                         for (let index = 0; index < areas.length; index++) {
                                             if (areas[index] == element["lotacao"]) {
                                                 const gm = element.nomeFuncional.replace(/\D/g, "");
@@ -982,33 +366,32 @@ chrome.storage.local.get("ativa", (data) => {
                                 }
                                 document.getElementById('sel_equipe_edit_equip').dispatchEvent(new Event('change', { bubbles: true }));
                             });
-                            document.getElementById('sel_equipe_edit_equip').addEventListener('change', function () {
-                                localStorage.setItem('edita_equipe_pega_equipe', 'equipe');
-                                var eqps = document.querySelectorAll('app-unidade-servico-card')[parseInt(document.querySelector('#sel_equipe_edit_equip').value)].querySelectorAll('app-equipe-mini-card');
-                                for (let i = 0; i < eqps.length; i++) {
-                                    if (eqps[i].querySelector('span').innerHTML.includes(document.querySelectorAll('select')[3].value)) {
-                                        eqps[i].querySelector('button').click();
-                                        break;
-                                    }
-                                };
+                            document.getElementById('sel_equipe_edit_equip').addEventListener('change', async function () {
+                                const selects = document.getElementById('sel_equipe_edit_equip').closest('tr').querySelectorAll('select');
+                                const equipeNome = selects[1].selectedOptions[0].innerText + ' - ' + selects[2].value; //21 - Dia
+                                const unidadesSvUuids = localStorage.getItem('unidadeServico-uuid').split(';');
+                                const equipesUuids = localStorage.getItem('equipes-uuid').split(';');
+                                const unidadeUuid = unidadesSvUuids.find(unidade => unidade.split(',')[0] == equipeNome.split(' - ')[0]).split(',')[1];
+                                const equipeUuid = equipesUuids.find(equipe => equipe.split(',')[0] == equipeNome).split(',')[1];
+                                const dadosEquipe = await buscarDadosEquipe(unidadeUuid, equipeUuid);
+                                selects[3].value = dadosEquipe.gsp || '';
+                                selects[4].value = dadosEquipe.gmos[0] || '';
+                                selects[5].value = dadosEquipe.gmos[1] || '';
+                                selects[6].value = dadosEquipe.gmos[2] || '';
+                                selects[7].value = dadosEquipe.ptrs[0] || '';
+                                selects[8].value = dadosEquipe.ptrs[1] || '';
+                                selects[9].value = dadosEquipe.ptrs[2] || '';
+                                selects[10].value = dadosEquipe.viaturas[0] || '';
+                                selects[11].value = dadosEquipe.viaturas[1] || '';
+                                selects[12].value = dadosEquipe.viaturas[2] || '';
+                                selects[13].value = dadosEquipe.cameras[0] || '';
+                                selects[14].value = dadosEquipe.cameras[1] || '';
+                                selects[15].value = dadosEquipe.cameras[2] || '';
+                                selects[16].value = dadosEquipe.cameras[3] || '';
+
                             });
                             selects[2].addEventListener('change', function () {
                                 document.getElementById('sel_equipe_edit_equip').dispatchEvent(new Event('change', { bubbles: true }));
-                            });
-                            document.querySelector('#editar_equipe_but').addEventListener('click', function () {
-                                localStorage.setItem('processo_edicao', 'excluir_pessoas');
-                                localStorage.setItem('editar_equipe', selects[0].value + '-' + selects[1].value + '-' + selects[2].value + '-' + selects[3].value + '-' + selects[4].value + '-' + selects[5].value + '-' + selects[6].value + '-' + selects[7].value + '-' + selects[8].value + '-' + selects[9].value + '-' + selects[10].value + '-' + selects[11].value + '-' + selects[12].value + '-' + selects[13].value + '-' + selects[14].value + '-' + selects[15].value + '-' + selects[16].value)
-                                unidade_servico = document.querySelectorAll('app-unidade-servico-card')[parseInt(document.querySelector('#sel_equipe_edit_equip').value)];
-                                if (unidade_servico.querySelector('button[title="Encerrar Serviço"]')) {
-                                    unidade_servico.querySelector('button[title="Encerrar Serviço"]').click();
-                                } else {
-                                    for (let i = 0; i < unidade_servico.querySelectorAll('app-equipe-mini-card').length; i++) {
-                                        if (unidade_servico.querySelectorAll('app-equipe-mini-card')[i].querySelector('span').innerHTML.includes(document.querySelectorAll('select')[3].value)) {
-                                            unidade_servico.querySelectorAll('app-equipe-mini-card')[i].querySelectorAll('button')[1].click();
-                                            break;
-                                        }
-                                    };
-                                }
                             });
 
                             document.getElementById('sel_area_edit_equip').dispatchEvent(new Event('change', { bubbles: true }));
@@ -1217,149 +600,8 @@ chrome.storage.local.get("ativa", (data) => {
                                     item.setAttribute('placeholder', '        ');
                                     item.setAttribute('style', 'field-sizing:content');
                                 });
-                                document.querySelector('#div_separador_equipes').querySelector('tbody').querySelectorAll('button').forEach(function (item) {
-                                    item.addEventListener('click', async function () {
-
-                                        const dados = Array.from(item.closest('tr').querySelectorAll('input,select')).map(campo => campo.value);
-                                        const nomeEquipe = `${dados[0]} - ${dados[1]}`;
-                                        const uuidUnidades = localStorage.getItem('unidadeServico-uuid').split(';');
-                                        const uuidFuncoes = localStorage.getItem('funcoes-uuid').split(';');
-                                        const uuidGms = localStorage.getItem('gms-uuid').split(';');
-                                        const uuidEquipamentos = localStorage.getItem('equipamentos-uuid').split(';');
-                                        const uuidEquipes = localStorage.getItem('equipes-uuid').split(';');
-                                        const dadosDaEquipe = {};
-                                        dadosDaEquipe["nomeEquipe"] = `${dados[0]} - ${dados[1]}`;
-                                        dadosDaEquipe["uuidUnidadeServico"] = uuidUnidades.find(unidade => unidade.split(',')[0] == dados[0]).split(',')[1];
-                                        dadosDaEquipe["uuidEquipe"] = uuidEquipes.find(equipe => equipe.split(',')[0] == nomeEquipe).split(',')[1];
-                                        const pessoas = [];
-                                        for (let index = 2; index < 9; index++) {
-                                            if (dados[index].trim() != '') {
-                                                const pessoaUuid = uuidGms.find(pessoa => pessoa.split(',')[0] == dados[index].trim()).split(',')[1];
-                                                let funcaoUuid;
-                                                if (index == 2) {
-                                                    funcaoUuid = uuidFuncoes.find(pessoa => pessoa.split(',')[0] == 'Supervisor').split(',')[1];
-                                                }
-                                                if (index >= 3 && index <= 5) {
-                                                    funcaoUuid = uuidFuncoes.find(pessoa => pessoa.split(',')[0] == 'Motorista').split(',')[1];
-                                                }
-                                                if (index > 5) {
-                                                    funcaoUuid = uuidFuncoes.find(pessoa => pessoa.split(',')[0] == 'Patrulheiro').split(',')[1];
-                                                }
-                                                pessoas.push({
-                                                    uuid: pessoaUuid,
-                                                    pessoa: pessoaUuid,
-                                                    funcao: funcaoUuid
-                                                })
-                                            }
-
-                                        }
-                                        dadosDaEquipe["pessoas"] = pessoas;
-                                        const equipeEditada = await editarEquipe(dadosDaEquipe);
-                                        if (!equipeEditada) return;
-
-                                        const dadosDosEquipamentos = {
-                                            uuidUnidadeServico: dadosDaEquipe["uuidUnidadeServico"]
-                                        }
-                                        const equipamentos = [];
-                                        for (let index = 9; index < 13; index++) {
-                                            if (dados[index].trim() != '') {
-                                                const equipamentoUuid = uuidEquipamentos.find(equipamento => equipamento.split(',')[0] == dados[index].trim()).split(',')[1];
-                                                equipamentos.push(equipamentoUuid);
-                                            }
-
-                                        }
-                                        for (let index = 13; index < dados.length; index++) {
-                                            if (dados[index].trim() != '') {
-                                                const equipamentoUuid = uuidEquipamentos.find(equipamento => equipamento.split(',')[0] == '00' + dados[index].trim()).split(',')[1];
-                                                equipamentos.push(equipamentoUuid);
-                                            }
-
-                                        }
-                                        dadosDosEquipamentos.equipamentos = equipamentos;
-                                        let equipamentosEditados;
-                                        if (equipamentos.length > 0) {
-                                            equipamentosEditados = await editarEquipamentos(dadosDosEquipamentos);
-                                        }
-                                        if (!equipamentosEditados) return;
-                                        const equipeIniciada = await iniciarServico(dadosDaEquipe["uuidUnidadeServico"], dadosDaEquipe["uuidEquipe"]);
-
-                                        if (!equipeIniciada) return;
-
-                                        const pesquisarButton = document.querySelector('app-botao-acao-pesquisar button');
-                                        if (!pesquisarButton) {
-                                            document.querySelector("app-filtros-selecionados em").click();
-                                            const pesquisarButtonExisteInterval = setInterval(() => {
-                                                const pesquisarButton = document.querySelector('app-botao-acao-pesquisar button');
-                                                if (pesquisarButton) {
-                                                    clearInterval(pesquisarButtonExisteInterval);
-                                                    pesquisarButton.click();
-                                                }
-                                            }, 100);
-                                        } else {
-                                            pesquisarButton.click();
-                                        }
-
-                                        /*
-     dadosDosEquipamentos = {
-        uuidUnidadeServico:onwefonwefon-wepfkbwefkjwbef-wekfjbnwekfjwebnf,
-        equipamentos: ["e6aa2f44-a2bd-4157-b105-99caf979f5ae", uuid: "d580c7dd-7546-49c8-bab0-bb8d2c01bb65"]
-     }
-     */
-
-
-                                        /*
-                                         dadosDaEquipe = {
-                                            uuidUnidadeServico:onwefonwefon-wepfkbwefkjwbef-wekfjbnwekfjwebnf,
-                                            uuidEquipe:wergnerkgnerçknlerg-ekgrjberklgbekrgb-ergjnergjkerg,
-                                            nomeEquipe: 'A1 - Dia',
-                                            pessoas: [
-                                                {
-                                                    uuid: "e6aa2f44-a2bd-4157-b105-99caf979f5ae",
-                                                    pessoa: "e6aa2f44-a2bd-4157-b105-99caf979f5ae",
-                                                    funcao: "820f1b74-4345-43ce-aa76-86df3d3317dd"
-                                                },
-                                                {
-                                                    uuid: "d580c7dd-7546-49c8-bab0-bb8d2c01bb65",
-                                                    pessoa: "d580c7dd-7546-49c8-bab0-bb8d2c01bb65",
-                                                    funcao: "820f1b74-4345-43ce-aa76-86df3d3317dd"
-                                                },
-                                                {
-                                                    uuid: "385b6ad0-3ab8-4059-81d7-f887197a1c75",
-                                                    pessoa: "385b6ad0-3ab8-4059-81d7-f887197a1c75",
-                                                    funcao: "820f1b74-4345-43ce-aa76-86df3d3317dd"
-                                                }
-                                            ]
-                                         }
-                                         */
-
-                                        /* localStorage.setItem('processo_edicao', 'excluir_pessoas');
-                                         var unidade_servico = '';
-                                         var editar_equipe_modal = '';
-                                         document.querySelectorAll('app-equipe-mini-card').forEach(function (it) {
-                                             if (it.querySelector('span').innerHTML == item.parentNode.parentNode.querySelectorAll('input')[0].value + ' - ' + item.parentNode.parentNode.querySelector('select').value) {
-                                                 unidade_servico = it.parentNode.parentNode.parentNode.parentNode;
-                                                 editar_equipe_modal = it;
-                                             }
-                                         });
-                                         var selects = item.parentNode.parentNode.querySelectorAll('input, select');
-                                         localStorage.setItem('editar_equipe', selects[0].value + '-' + Array.from(document.querySelectorAll('app-unidade-servico-card')).indexOf(unidade_servico) + '-' + selects[1].value + '-' + selects[2].value + '-' + selects[3].value + '-' + selects[4].value + '-' + selects[5].value + '-' + selects[6].value + '-' + selects[7].value + '-' + selects[8].value + '-' + selects[9].value + '-' + selects[10].value + '-' + selects[11].value + '-' + selects[12].value + '-' + selects[13].value + '-' + selects[14].value + '-' + selects[15].value)
- 
-                                         if (unidade_servico.querySelector('button[title="Iniciar Serviço"]')) {
-                                             editar_equipe_modal.querySelectorAll('button')[1].click();
-                                         } else if (unidade_servico.querySelector('button[title="Encerrar Serviço"]')) {
-                                             unidade_servico.querySelector('button[title="Encerrar Serviço"]').click();
-                                         } else {
-                                             if (localStorage.getItem('inserir_multiplas_equipes') && parseInt(localStorage.getItem('inserir_multiplas_equipes')) > -1) {
-                                                 localStorage.setItem('inserir_multiplas_equipes', parseInt(localStorage.getItem('inserir_multiplas_equipes')) - 1);
-                                                 document.querySelector('#div_separador_equipes').querySelector('tbody').querySelectorAll('button')[parseInt(localStorage.getItem('inserir_multiplas_equipes'))].click();
-                                             } else {
-                                                 localStorage.removeItem('inserir_multiplas_equipes');
-                                                 localStorage.removeItem('editar_equipe');
-                                             }
-                                         }
- */
-                                    });
-
+                                document.querySelectorAll('#div_separador_equipes tbody button, #editar_equipe_but').forEach(function (item) {
+                                    item.addEventListener('click', () => enviarDadosEdicaoEquipe(item));
                                 });
                                 document.querySelector('#div_separador_equipes').querySelector('thead').querySelector('button').addEventListener('click', function () {
                                     localStorage.setItem('inserir_multiplas_equipes', document.querySelector('#div_separador_equipes').querySelector('tbody').querySelectorAll('button').length - 2);
@@ -1422,12 +664,6 @@ chrome.storage.local.get("ativa", (data) => {
                                 }
                             });
                         }
-
-
-
-
-
-                        //document.getElementById('checkbox').click();
                     }
                 }
             }, "1000");
@@ -1499,29 +735,6 @@ async function atualizarUuid() {
 }
 
 async function editarEquipe(dadosDaEquipe) {
-    /*
-     dadosDaEquipe = {
-        uuidUnidadeServico:onwefonwefon-wepfkbwefkjwbef-wekfjbnwekfjwebnf,
-        nomeEquipe: 'A1 - Dia',
-        pessoas: [
-            {
-                uuid: "e6aa2f44-a2bd-4157-b105-99caf979f5ae",
-                pessoa: "e6aa2f44-a2bd-4157-b105-99caf979f5ae",
-                funcao: "820f1b74-4345-43ce-aa76-86df3d3317dd"
-            },
-            {
-                uuid: "d580c7dd-7546-49c8-bab0-bb8d2c01bb65",
-                pessoa: "d580c7dd-7546-49c8-bab0-bb8d2c01bb65",
-                funcao: "820f1b74-4345-43ce-aa76-86df3d3317dd"
-            },
-            {
-                uuid: "385b6ad0-3ab8-4059-81d7-f887197a1c75",
-                pessoa: "385b6ad0-3ab8-4059-81d7-f887197a1c75",
-                funcao: "820f1b74-4345-43ce-aa76-86df3d3317dd"
-            }
-        ]
-     }
-     */
     const body = {
         uuid: dadosDaEquipe.uuidEquipe,
         nome: dadosDaEquipe.nomeEquipe,
@@ -1559,12 +772,6 @@ async function editarEquipe(dadosDaEquipe) {
 }
 
 async function editarEquipamentos(dadosDosEquipamentos) {
-    /*
-     dadosDosEquipamentos = {
-        uuidUnidadeServico:onwefonwefon-wepfkbwefkjwbef-wekfjbnwekfjwebnf,
-        equipamentos: ["e6aa2f44-a2bd-4157-b105-99caf979f5ae", uuid: "d580c7dd-7546-49c8-bab0-bb8d2c01bb65"]
-     }
-     */
     const body = dadosDosEquipamentos.equipamentos;
 
     const response = await fetch(
@@ -1596,6 +803,66 @@ async function editarEquipamentos(dadosDosEquipamentos) {
     return true;
 }
 
+async function buscarDadosEquipe(unidadeUuid, equipeUuid) {
+    const pessoasRequisicao = await fetch(
+        `https://cadweb.sinesp.gov.br/cad-equipe-servico/unidade-servico/equipe/${equipeUuid}`,
+        {
+            credentials: "include"
+        }
+    );
+
+    if (!pessoasRequisicao.ok) {
+        throw new Error(`Erro HTTP: ${pessoasRequisicao.status}`);
+        return;
+    }
+    const pessoasResposta = await pessoasRequisicao.json();
+    const dadosEquipe = {};
+    const gsp = pessoasResposta.find(pessoa => pessoa.nomeFuncao == 'Supervisor');
+    if (gsp) {
+        dadosEquipe.gsp = gsp.nomeFuncional.replace(/\D/g, "");
+    } else {
+        dadosEquipe.gsp = '';
+    }
+    const gmos = pessoasResposta.filter(pessoa => pessoa.nomeFuncao == 'Motorista');
+    if (gmos.length > 0) {
+        dadosEquipe.gmos = gmos.map(gmo => gmo.nomeFuncional.replace(/\D/g, ""));
+    } else {
+        dadosEquipe.gmos = [];
+    }
+    const ptrs = pessoasResposta.filter(pessoa => pessoa.nomeFuncao == 'Patrulheiro');
+    if (ptrs.length > 0) {
+        dadosEquipe.ptrs = ptrs.map(ptr => ptr.nomeFuncional.replace(/\D/g, ""));
+    } else {
+        dadosEquipe.ptrs = [];
+    }
+    const equipamentosRequisicao = await fetch(
+        `https://cadweb.sinesp.gov.br/cad-equipe-servico/unidade-servico/${unidadeUuid}/equipamentos`,
+        {
+            credentials: "include"
+        }
+    );
+
+    if (!equipamentosRequisicao.ok) {
+        throw new Error(`Erro HTTP: ${equipamentosRequisicao.status}`);
+        return;
+    }
+    const equipamentosResposta = await equipamentosRequisicao.json();
+
+    const cameras = equipamentosResposta.filter(equipamento => equipamento.nomeTipoEquipamento == "Câmera Corporal");
+    if (cameras.length > 0) {
+        dadosEquipe.cameras = cameras.map(camera => camera.prefixo.substr(2));
+    } else {
+        dadosEquipe.cameras = [];
+    }
+    const viaturas = equipamentosResposta.filter(equipamento => equipamento.tipoEquipamento.descricaoClasse == "Viatura")
+    if (viaturas.length > 0) {
+        dadosEquipe.viaturas = viaturas.map(viatura => viatura.prefixo);
+    } else {
+        dadosEquipe.viaturas = [];
+    }
+    return dadosEquipe;
+}
+
 async function iniciarServico(unidadeSv, equipeSv) {
     const iniciarSvRequisicao = await fetch( //atualiza Uuidequipamentos
         `https://cadweb.sinesp.gov.br/cad-equipe-servico/unidade-servico/${unidadeSv}/iniciar-servico/${equipeSv}`,
@@ -1616,3 +883,123 @@ async function iniciarServico(unidadeSv, equipeSv) {
 
     return true;
 }
+
+async function enviarDadosEdicaoEquipe(botao) {
+    const dados = Array.from(botao.closest('tr').querySelectorAll('input,select:not([id=sel_area_edit_equip])')).map(campo => {
+        if (campo.id == "sel_equipe_edit_equip") return campo.selectedOptions[0].innerText
+        return campo.value
+    });
+    const nomeEquipe = `${dados[0]} - ${dados[1]}`;
+    const uuidUnidades = localStorage.getItem('unidadeServico-uuid').split(';');
+    const uuidFuncoes = localStorage.getItem('funcoes-uuid').split(';');
+    const uuidGms = localStorage.getItem('gms-uuid').split(';');
+    const uuidEquipamentos = localStorage.getItem('equipamentos-uuid').split(';');
+    const uuidEquipes = localStorage.getItem('equipes-uuid').split(';');
+    const dadosDaEquipe = {};
+    dadosDaEquipe["nomeEquipe"] = `${dados[0]} - ${dados[1]}`;
+    dadosDaEquipe["uuidUnidadeServico"] = uuidUnidades.find(unidade => unidade.split(',')[0] == dados[0]).split(',')[1];
+    dadosDaEquipe["uuidEquipe"] = uuidEquipes.find(equipe => equipe.split(',')[0] == nomeEquipe).split(',')[1];
+    const pessoas = [];
+    for (let index = 2; index < 9; index++) {
+        if (dados[index].trim() != '') {
+            const pessoaUuid = uuidGms.find(pessoa => pessoa.split(',')[0] == dados[index].trim()).split(',')[1];
+            let funcaoUuid;
+            if (index == 2) {
+                funcaoUuid = uuidFuncoes.find(pessoa => pessoa.split(',')[0] == 'Supervisor').split(',')[1];
+            }
+            if (index >= 3 && index <= 5) {
+                funcaoUuid = uuidFuncoes.find(pessoa => pessoa.split(',')[0] == 'Motorista').split(',')[1];
+            }
+            if (index > 5) {
+                funcaoUuid = uuidFuncoes.find(pessoa => pessoa.split(',')[0] == 'Patrulheiro').split(',')[1];
+            }
+            pessoas.push({
+                uuid: pessoaUuid,
+                pessoa: pessoaUuid,
+                funcao: funcaoUuid
+            })
+        }
+
+    }
+    dadosDaEquipe["pessoas"] = pessoas;
+    const equipeEditada = await editarEquipe(dadosDaEquipe);
+    if (!equipeEditada) return;
+
+    const dadosDosEquipamentos = {
+        uuidUnidadeServico: dadosDaEquipe["uuidUnidadeServico"]
+    }
+    const equipamentos = [];
+    for (let index = 9; index < 13; index++) {
+        if (dados[index].trim() != '') {
+            const equipamentoUuid = uuidEquipamentos.find(equipamento => equipamento.split(',')[0] == dados[index].trim()).split(',')[1];
+            equipamentos.push(equipamentoUuid);
+        }
+
+    }
+    for (let index = 13; index < dados.length; index++) {
+        if (dados[index].trim() != '') {
+            const equipamentoUuid = uuidEquipamentos.find(equipamento => equipamento.split(',')[0] == '00' + dados[index].trim()).split(',')[1];
+            equipamentos.push(equipamentoUuid);
+        }
+
+    }
+    dadosDosEquipamentos.equipamentos = equipamentos;
+    let equipamentosEditados;
+    if (equipamentos.length > 0) {
+        equipamentosEditados = await editarEquipamentos(dadosDosEquipamentos);
+    }
+    if (!equipamentosEditados) return;
+    const equipeIniciada = await iniciarServico(dadosDaEquipe["uuidUnidadeServico"], dadosDaEquipe["uuidEquipe"]);
+
+    if (!equipeIniciada) return;
+
+    const pesquisarButton = document.querySelector('app-botao-acao-pesquisar button');
+    if (!pesquisarButton) {
+        document.querySelector("app-filtros-selecionados em").click();
+        const pesquisarButtonExisteInterval = setInterval(() => {
+            const pesquisarButton = document.querySelector('app-botao-acao-pesquisar button');
+            if (pesquisarButton) {
+                clearInterval(pesquisarButtonExisteInterval);
+                pesquisarButton.click();
+            }
+        }, 100);
+    } else {
+        pesquisarButton.click();
+    }
+}
+
+async function selecionar50() {
+
+    const select = document.querySelector(
+        'mat-select[formcontrolname="registrosPorPagina"]'
+    );
+
+    if (!select) return;
+
+    select.click();
+
+    await new Promise(
+        r => setTimeout(r, 300)
+    );
+
+    const opcoes =
+        document.querySelectorAll(
+            'mat-option'
+        );
+
+    for (const opcao of opcoes) {
+
+        if (
+            opcao.textContent.trim() === '50'
+        ) {
+
+            opcao.click();
+            break;
+
+        }
+
+    }
+
+}
+
+selecionar50();
