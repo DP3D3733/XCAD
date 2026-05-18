@@ -882,7 +882,7 @@ chrome.storage.local.get("ativa", (data) => {
                         var gms;
                         if (!localStorage.getItem('atualizacao_pessoas') || localStorage.getItem('atualizacao_pessoas') != new Date().getDate()) {
                             let dados = [[], [], [], [], [], [], [], [], [], [], [], []];
-                            let areas = ['Subintendência Regional Cruzeiro', 'Subintendência Regional Partenon', 'Subintendência Regional Leste', 'Subintendência Regional Restinga', 'Subintendência Regional Norte', 'Subintendência Regional Eixo Baltazar', 'Subintendência Regional Pinheiro', 'Subintendência Regional Eixo Sul', 'Subintendência da Ronda Ostensiva Municipal', 'Subintendência Regional Centro', 'Subintendência Regional Patam', 'Central de Operações da Guarda Civil Metropolitana'];
+                            let areas = ['Subintendência Regional Cruzeiro', 'Subintendência Regional Partenon', 'Subintendência Regional Leste', 'Subintendência Regional Restinga', 'Subintendência Regional Norte', 'Subintendência Regional Eixo Baltazar', 'Subintendência Regional Lomba do Pinheiro', 'Subintendência Regional Eixo Sul', 'Subintendência da Ronda Ostensiva Municipal', 'Subintendência Regional Centro', 'Patrulha de Atendimento à Mulher', 'Central de Operações da Guarda Civil Metropolitana'];
                             chrome.runtime.sendMessage({ action: "atualizar_banco_local_efetivo" }, response => {
                                 if (chrome.runtime.lastError) {
                                     console.error("Erro na mensagem:", chrome.runtime.lastError.message);
@@ -1218,13 +1218,14 @@ chrome.storage.local.get("ativa", (data) => {
                                     item.setAttribute('style', 'field-sizing:content');
                                 });
                                 document.querySelector('#div_separador_equipes').querySelector('tbody').querySelectorAll('button').forEach(function (item) {
-                                    item.addEventListener('click', function () {
+                                    item.addEventListener('click', async function () {
 
                                         const dados = Array.from(item.closest('tr').querySelectorAll('input,select')).map(campo => campo.value);
                                         const nomeEquipe = `${dados[0]} - ${dados[1]}`;
                                         const uuidUnidades = localStorage.getItem('unidadeServico-uuid').split(';');
                                         const uuidFuncoes = localStorage.getItem('funcoes-uuid').split(';');
                                         const uuidGms = localStorage.getItem('gms-uuid').split(';');
+                                        const uuidEquipamentos = localStorage.getItem('equipamentos-uuid').split(';');
                                         const uuidEquipes = localStorage.getItem('equipes-uuid').split(';');
                                         const dadosDaEquipe = {};
                                         dadosDaEquipe["nomeEquipe"] = `${dados[0]} - ${dados[1]}`;
@@ -1253,7 +1254,59 @@ chrome.storage.local.get("ativa", (data) => {
 
                                         }
                                         dadosDaEquipe["pessoas"] = pessoas;
-                                        editarEquipe(dadosDaEquipe);
+                                        const equipeEditada = await editarEquipe(dadosDaEquipe);
+                                        if (!equipeEditada) return;
+
+                                        const dadosDosEquipamentos = {
+                                            uuidUnidadeServico: dadosDaEquipe["uuidUnidadeServico"]
+                                        }
+                                        const equipamentos = [];
+                                        for (let index = 9; index < 13; index++) {
+                                            if (dados[index].trim() != '') {
+                                                const equipamentoUuid = uuidEquipamentos.find(equipamento => equipamento.split(',')[0] == dados[index].trim()).split(',')[1];
+                                                equipamentos.push(equipamentoUuid);
+                                            }
+
+                                        }
+                                        for (let index = 13; index < dados.length; index++) {
+                                            if (dados[index].trim() != '') {
+                                                const equipamentoUuid = uuidEquipamentos.find(equipamento => equipamento.split(',')[0] == '00' + dados[index].trim()).split(',')[1];
+                                                equipamentos.push(equipamentoUuid);
+                                            }
+
+                                        }
+                                        dadosDosEquipamentos.equipamentos = equipamentos;
+                                        let equipamentosEditados;
+                                        if (equipamentos.length > 0) {
+                                            equipamentosEditados = await editarEquipamentos(dadosDosEquipamentos);
+                                        }
+                                        if (!equipamentosEditados) return;
+                                        const equipeIniciada = await iniciarServico(dadosDaEquipe["uuidUnidadeServico"], dadosDaEquipe["uuidEquipe"]);
+
+                                        if (!equipeIniciada) return;
+
+                                        const pesquisarButton = document.querySelector('app-botao-acao-pesquisar button');
+                                        if (!pesquisarButton) {
+                                            document.querySelector("app-filtros-selecionados em").click();
+                                            const pesquisarButtonExisteInterval = setInterval(() => {
+                                                const pesquisarButton = document.querySelector('app-botao-acao-pesquisar button');
+                                                if (pesquisarButton) {
+                                                    clearInterval(pesquisarButtonExisteInterval);
+                                                    pesquisarButton.click();
+                                                }
+                                            }, 100);
+                                        } else {
+                                            pesquisarButton.click();
+                                        }
+
+                                        /*
+     dadosDosEquipamentos = {
+        uuidUnidadeServico:onwefonwefon-wepfkbwefkjwbef-wekfjbnwekfjwebnf,
+        equipamentos: ["e6aa2f44-a2bd-4157-b105-99caf979f5ae", uuid: "d580c7dd-7546-49c8-bab0-bb8d2c01bb65"]
+     }
+     */
+
+
                                         /*
                                          dadosDaEquipe = {
                                             uuidUnidadeServico:onwefonwefon-wepfkbwefkjwbef-wekfjbnwekfjwebnf,
@@ -1427,6 +1480,19 @@ async function atualizarUuid() {
     localStorage.setItem('unidadeServico-uuid', unidadeServicoResposta.resultados.map(unidade => unidade.nome.split(' - ')[1] + ',' + unidade.uuid).join(';'));
     localStorage.setItem('equipes-uuid', unidadeServicoResposta.resultados.map(unidade => unidade.equipes.map(equipe => `${equipe.nome},${equipe.uuid}`).join(';')).join(';'));
 
+    const equipamentosRequisicao = await fetch( //atualiza Uuidequipamentos
+        "https://cadweb.sinesp.gov.br/cad-equipe-servico/equipamento/listar?numPagina=1&registrosPorPagina=500&propriedadeOrdenacao=prefixo&direcaoOrdenacao=ASC&situacao=A",
+        {
+            credentials: "include"
+        }
+    );
+
+    if (!equipamentosRequisicao.ok) {
+        throw new Error(`Erro HTTP: ${equipamentosRequisicao.status}`);
+        return;
+    }
+    const equipamentosResposta = await equipamentosRequisicao.json();
+    localStorage.setItem('equipamentos-uuid', equipamentosResposta.resultados.map(equipamento => equipamento.prefixo + ',' + equipamento.uuid).join(';'))
 
 
     window.location.reload();
@@ -1486,8 +1552,67 @@ async function editarEquipe(dadosDaEquipe) {
         throw new Error(
             `Erro HTTP: ${response.status}`
         );
+        return false;
+    }
+
+    return true;
+}
+
+async function editarEquipamentos(dadosDosEquipamentos) {
+    /*
+     dadosDosEquipamentos = {
+        uuidUnidadeServico:onwefonwefon-wepfkbwefkjwbef-wekfjbnwekfjwebnf,
+        equipamentos: ["e6aa2f44-a2bd-4157-b105-99caf979f5ae", uuid: "d580c7dd-7546-49c8-bab0-bb8d2c01bb65"]
+     }
+     */
+    const body = dadosDosEquipamentos.equipamentos;
+
+    const response = await fetch(
+        `https://cadweb.sinesp.gov.br/cad-equipe-servico/unidade-servico/${dadosDosEquipamentos.uuidUnidadeServico}/equipamentos/alterar`,
+        {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            body: JSON.stringify(body)
+        }
+    );
+
+    if (!response.ok) {
+
+        const texto = await response.text();
+
+        console.error(texto);
+
+        throw new Error(
+            `Erro HTTP: ${response.status}`
+        );
+        return false;
 
     }
 
-    console.log("editado");
+    return true;
+}
+
+async function iniciarServico(unidadeSv, equipeSv) {
+    const iniciarSvRequisicao = await fetch( //atualiza Uuidequipamentos
+        `https://cadweb.sinesp.gov.br/cad-equipe-servico/unidade-servico/${unidadeSv}/iniciar-servico/${equipeSv}`,
+        {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Requested-With": "XMLHttpRequest"
+            }
+        }
+    );
+
+    if (!iniciarSvRequisicao.ok) {
+        throw new Error(`Erro HTTP: ${iniciarSvRequisicao.status}`);
+        return false;
+    }
+
+    return true;
 }
