@@ -497,7 +497,7 @@ function sentry() {
 
     habilitarDropGlobalFoto();
     inserirCheckboxAtividadesProgramadas();
-    ajustarCodigoAreaNomeAtividadeProgramada();
+    if (url.includes('despacho/schedule-garrison') && url.includes('/edit')) ajustarCodigoAreaNomeAtividadeProgramada();
 }
 
 //---------------SENTRY INDIVIDUOS-------------------------------------------------------------------------------------
