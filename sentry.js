@@ -29,7 +29,7 @@ function sentry() {
 
     const intervalCriaTabela = setInterval(() => {
         if (typeof table !== "undefined" && table.getData().length > 400) {
-            criarTabela();
+            if (url == 'https://sentry.procempa.com.br/web/effectives') criarTabela();
 
             clearInterval(intervalCriaTabela);
         }
@@ -498,6 +498,8 @@ function sentry() {
     habilitarDropGlobalFoto();
     inserirCheckboxAtividadesProgramadas();
     if (url.includes('despacho/schedule-garrison') && url.includes('/edit')) ajustarCodigoAreaNomeAtividadeProgramada();
+
+    if (url.includes('/despacho/dashboard')) criarBotaoVisualizarOS();
 }
 
 //---------------SENTRY INDIVIDUOS-------------------------------------------------------------------------------------
@@ -742,7 +744,12 @@ function inserirCheckboxAtividadesProgramadas() {
     const inserirCheckInterval = setInterval(() => {
         const tabela = document.querySelector('#table.tabulator');
         if (!tabela) return;
-        const linhas = tabela.querySelectorAll('div.tabulator-tableholder div[role=row]');
+        const linhas = Array
+            .from(tabela.querySelectorAll('div.tabulator-tableholder div[role=row]'))
+            .filter(row => {
+                const prev = row.previousElementSibling;
+                return !(prev && prev.tagName === 'INPUT');
+            });
         if (linhas.length == 0) return;
         linhas.forEach(linha => {
             const checkbox = document.createElement('input');
@@ -750,7 +757,7 @@ function inserirCheckboxAtividadesProgramadas() {
             checkbox.addEventListener('change', () => mostrarEsconderMenuDeOpcoes());
             linha.insertAdjacentElement('beforebegin', checkbox);
         });
-        clearInterval(inserirCheckInterval);
+        //clearInterval(inserirCheckInterval);
     }, 1000);
 }
 
@@ -822,6 +829,7 @@ async function copiarAtividades() {
         .filter(check => check.checked)
         .map(check => check.nextElementSibling);
 
+    let todasCopiadas = true;
     for (const atividade of atividadesSelecionadas) {
 
         const id = atividade
@@ -839,9 +847,11 @@ async function copiarAtividades() {
         const atividadeCadastrada =
             await cadastrarAtividadeProgramada(atividadeProntaPraInserir);
 
-        if (!atividadeCadastrada)
-            continue;
+        if (!atividadeCadastrada) {
+            todasCopiadas = false;
+        }
     }
+    if (todasCopiadas) window.location.reload();
 }
 
 async function buscarAtividadeProgramada(id) {
@@ -1028,6 +1038,422 @@ function ajustarCodigoAreaNomeAtividadeProgramada() {
         }));
     })
 }
+
+function criarBotaoVisualizarOS() {
+    setInterval(() => {
+        if (document.querySelector('#buttonVisualizarOS')) return;
+        const titulo = document.querySelector('h2.actual-title');
+        const buttonVisualizarOS = document.createElement('button');
+        buttonVisualizarOS.setAttribute('class', 'btn btn-xs btn-primary');
+        buttonVisualizarOS.setAttribute('id', 'buttonVisualizarOS');
+        buttonVisualizarOS.innerHTML = '<b>OS (O)</b>';
+        document.querySelector('span.garrisonActionsButton').insertAdjacentElement('beforeEnd', buttonVisualizarOS);
+        document.addEventListener("keydown", (e) => {
+
+            if (e.key === "o" && buttonVisualizarOS) {
+                buttonVisualizarOS.click();
+            }
+
+        });
+        document.addEventListener("mousedown", (e) => {
+
+            const modal = document.querySelector("#modalOS .modal-content");
+
+            if (!modal.contains(e.target)) {
+
+                document.querySelector("#modalOS").style.display = 'none';
+
+                // ou:
+                // $("#modalOS").modal("hide");
+            }
+        });
+        const modal = document.createElement('div');
+        modal.setAttribute('class', "modal inmodal");
+        modal.setAttribute('id', "modalOS");
+        modal.setAttribute('style', "display:none");
+        modal.innerHTML = `
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Ordem de Serviço</h3>
+                </div>
+                <div class="modal-body">
+                    OS: <select id="selectOS"><option>Selecione</option></select>
+                    <br><br>
+                    <div id="tabela-os"></div>
+                    <br><br>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default" data-mdb-dismiss="modal" aria-label="Close">Ok</button>
+                </div>
+            </div>
+        </div>`
+        document.querySelector('body').insertAdjacentElement('beforeEnd', modal);
+        const select = document.querySelector('#selectOS');
+        criarTabelaOS();
+        buttonVisualizarOS.addEventListener('click', () => {
+            modal.style.display = 'block';
+            select.dispatchEvent(new Event('input', {
+                bubbles: true,
+                cancelable: true
+            }));
+        });
+        (async () => {
+            const numOSs = await buscarNumerosOSCadastradas();
+            if (!numOSs.length) return;
+            document.querySelector('#selectOS').innerHTML = '<option>Selecione</option>';
+            numOSs.forEach(num => {
+                select.innerHTML += `<option value="${num}">${num}</option>`;
+            })
+        })();
+        select.addEventListener('change', async function () {
+            await montarOS(this.value);
+        });
+        modal.querySelector('button[data-mdb-dismiss="modal"]').addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+    }, 500);
+}
+
+async function montarOS(numOS) {
+    const modalBody = document.querySelector('#modalOS div.modal-body');
+
+    const demandas = await buscarOS(numOS);
+    console.log(demandas);
+
+
+    const resultados = await Promise.all(
+        demandas.map(async demanda => ({
+            demanda,
+            atividadeProgramada: await buscarAtividadeProgramada(demanda.id)
+        }))
+    );
+
+    const pesquisaAtendimento = await Promise.all(
+        resultados.map(async ({ demanda, atividadeProgramada }) => {
+            const dataInicialCrua = atividadeProgramada.schedule.dateUsageMin;
+            const dataInicialArray = dataInicialCrua.split('-');
+            const dataInicialPronta =
+                `${dataInicialArray[2]}/${dataInicialArray[1]}/${dataInicialArray[0]} 00:00`;
+
+            const dataFinalCrua = atividadeProgramada.schedule.dateUsageMax;
+            const dataFinalArray = dataFinalCrua.split('-');
+            const dataFinalPronta =
+                `${dataFinalArray[2]}/${dataFinalArray[1]}/${dataFinalArray[0]} 23:59`;
+
+            const guarnicoes = await buscarGuarnicoes(
+                dataInicialPronta,
+                dataFinalPronta
+            );
+
+            const guarnicoesComAtendimento = await Promise.all(
+                guarnicoes.map(async (guarnicao) => ({
+
+                    ...guarnicao,
+
+                    atividadesProgramadas:
+                        await buscarAtendimentoAtividadeProgramada(
+                            guarnicao.garrison_id,
+                            atividadeProgramada.schedule.id
+                        )
+                }))
+            );
+
+            const atendimentos = guarnicoesComAtendimento.filter(
+                guarnicao => guarnicao.atividadesProgramadas.length > 0
+            );
+
+            return atendimentos;
+        })
+    );
+    const pesquisaPronta = [];
+    pesquisaAtendimento.forEach(guarnicao => {
+        guarnicao.forEach(item => {
+            item.atividadesProgramadas.forEach(atividade => {
+                atividade.activities.forEach(act => {
+                    const pesquisa = {};
+                    pesquisa.nome = atividade.name.substring(18);
+                    pesquisa.atividadeId = atividade.id;
+                    pesquisa.id = act.dispatchList[0]?.dispatchId || '-';
+                    pesquisa.local = act.placeDescr;
+                    pesquisa.natureza = act.reason;
+                    pesquisa.guarnicao = item.garrison_team;
+                    pesquisa.inicio = act.startText || '';
+                    pesquisa.duracao = act.duration || '';
+                    pesquisa.status = act.status;
+                    pesquisaPronta.push(pesquisa);
+                })
+            })
+        })
+    });
+    const idsDemandasAssumidas = pesquisaPronta.map(pesquisa => pesquisa.atividadeId);
+    resultados.forEach(result => {
+        if (!idsDemandasAssumidas.includes(result.atividadeProgramada.schedule.id)) {
+            const demanda = result.atividadeProgramada;
+            demanda.schedule.activities.forEach(atv => {
+                const pesquisa = {};
+                pesquisa.nome = demanda.schedule.name.substring(18);
+                pesquisa.id = '-';
+                pesquisa.local = atv.address.place || atv.address.street;
+                pesquisa.natureza = atv.reason;
+                pesquisa.guarnicao = '?';
+                pesquisa.inicio = atv.hours.startHour || '';
+                pesquisa.duracao = atv.duration || '';
+                pesquisa.status = '💤 Não assumida';
+                pesquisaPronta.push(pesquisa);
+            });
+        }
+    })
+    const tabela = Tabulator.findTable("#tabela-os")[0];
+    tabela.setData(pesquisaPronta);
+}
+
+function criarTabelaOS() {
+    const tabela = new Tabulator("#tabela-os", {
+
+        layout: "fitColumns",
+
+        rowFormatter: function (row) {
+
+            const data = row.getData();
+
+            const element = row.getElement();
+
+            if (data.status === "done") {
+                row.getElement().style.backgroundColor = "#e8fff0";
+            }
+
+            if (data.status === "inProgress") {
+                row.getElement().style.backgroundColor = "#fff8e1";
+            }
+
+            if (data.status === "todo") {
+                row.getElement().style.backgroundColor = "#ffeaea";
+            }
+
+            if (data.status === "notDone") {
+                row.getElement().style.backgroundColor = "#df6060";
+                row.getElement().style.color = 'white';
+            }
+
+            row.getElement().style.cursor = "pointer";
+
+            element.addEventListener("click", () => {
+                const data = row.getData();
+
+                if (data.id == '-') return;
+
+                window.open(
+                    `https://sentry.procempa.com.br/web/reports/dispatch_info?id=${data.id}`,
+                    "_blank"
+                );
+            });
+        },
+
+        initialSort: [
+            {
+                column: "inicio",
+                dir: "asc"
+            }
+        ],
+
+        columns: [
+            {
+                title: "Título",
+                field: "nome",
+                widthGrow: 2,
+                headerFilter: "input"
+            },
+            {
+                title: "Local",
+                field: "local",
+                widthGrow: 2,
+                headerFilter: "input"
+            },
+            {
+                title: "Natureza",
+                field: "natureza",
+                headerFilter: "input"
+            },
+            {
+                title: "Início",
+                field: "inicio",
+                hozAlign: "center",
+                widthGrow: 1.2,
+                headerFilter: "input"
+            },
+            {
+                title: "Guarnição",
+                field: "guarnicao",
+                hozAlign: "center",
+                headerFilter: "input"
+            },
+            {
+                title: "Duração",
+                field: "duracao",
+                hozAlign: "center",
+                headerFilter: "input"
+            },
+            {
+                title: "Status",
+                field: "status",
+                hozAlign: "center",
+                headerFilter: "list",
+                headerFilterParams: {
+                    values: {
+                        "": "Todos",
+                        done: "Concluído",
+                        todo: "Pendente",
+                        inProgress: "Em andamento",
+                        "💤 Não assumida": "Não assumida"
+                    }
+                },
+                formatter: function (cell) {
+
+                    const valor = cell.getValue();
+
+                    if (valor === "done") {
+                        return "✅ Concluído";
+                    }
+
+                    if (valor === "inProgress") {
+                        return "🟡 Em andamento";
+                    }
+
+                    if (valor === "notDone") {
+                        return "🤦‍♂️ Não realizada";
+                    }
+
+                    if (valor == "💤 Não assumida") return valor;
+
+                    return "❌ Pendente";
+                }
+            }
+        ]
+    });
+}
+/*
+function parserNumOSToData(numOS, osInicial = 1) {
+    const numeral = numOS.match(/OS n\.º\s+(\d+)/)?.[1]; //  001/2026 => 001
+    const ano = numOS.match(/\/(\d{4})/)?.[1];
+    const data = new Date(`${ano}-01-01`);
+    const dias = Math.floor((numeroOS - osInicial) / 2);
+
+    data.setDate(data.getDate() + dias);
+    const dataInicial = numeral/2 % 2 ? data.toLocaleDateString("pt-BR") + 
+
+    return data.toLocaleDateString("pt-BR");
+}
+*/
+async function buscarOS(numOS) {
+    console.log(numOS);
+    const response = await fetch(
+        "https://sentry.procempa.com.br/despacho/schedule-garrison/list",
+        {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                filter: [
+                    {
+                        field: "name",
+                        type: "like",
+                        value: numOS
+                    }
+                ]
+            })
+        }
+    );
+
+    const data = await response.json();
+
+    return data.data
+}
+
+async function buscarNumerosOSCadastradas() {
+    const response = await fetch(
+        "https://sentry.procempa.com.br/despacho/schedule-garrison/list",
+        {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                filter: [
+                    {
+                        field: "name",
+                        type: "like",
+                        value: "OS n.º "
+                    }
+                ]
+            })
+        }
+    );
+
+    if (!response) return [];
+
+    const data = await response.json();
+
+    if (!data.data.length) return [];
+
+    const numerosOS = data.data.map(atividade => atividade.name.match(/OS n\.º\s+(\d+\/\d+)/)?.[1]);
+
+    return [...new Set(numerosOS)]
+}
+
+async function buscarGuarnicoes(dataInicial, dataFinal) {
+    const response = await fetch(
+        "https://sentry.procempa.com.br/despacho/garrison/list",
+        {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                filter: [
+                    {
+                        field: "garrison_start",
+                        type: "keywords",
+                        value: {
+                            dtStart: dataInicial,
+                            dtEnd: dataFinal
+                        }
+                    }
+                ]
+            })
+        }
+    );
+
+    if (!response) return [];
+
+    const data = await response.json();
+
+    if (!data.data.length) return [];
+
+    return data.data
+}
+
+async function buscarAtendimentoAtividadeProgramada(guarnicaoId, atividadeId) {
+    const response = await fetch(
+        `https://sentry.procempa.com.br/despacho/garrison/getGarrisonSchedule/${guarnicaoId}`,
+        {
+            method: "GET",
+            credentials: "include"
+        }
+    );
+
+    if (!response) return false;
+
+    const data = await response.json();
+    const atendimentosDaAtividade = data.filter(atividade => atividade.id == atividadeId);
+    return atendimentosDaAtividade;
+}
+
+
 
 
 
