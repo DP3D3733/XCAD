@@ -32,6 +32,9 @@ window.addEventListener("message", (event) => {
     window.reload();
   }
 });
-const script = document.createElement("script");
-script.src = chrome.runtime.getURL("sentry.js");
-document.documentElement.appendChild(script);
+const url = window.location.href;
+if (url.includes('sentry')) {
+  const script = document.createElement("script");
+  script.src = chrome.runtime.getURL("sentry.js");
+  document.documentElement.appendChild(script);
+}

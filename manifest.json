@@ -27,11 +27,18 @@
         "consultas_integradas_tjrs_individuo_lista_nomes.js",
         "libs/firebase-app-compat.js",
         "libs/firebase-firestore-compat.js",
-        "versiculos.json",
-        "sentry.js"
+        "versiculos.json"
       ],
       "matches": [
         "<all_urls>"
+      ]
+    },
+    {
+      "resources": [
+        "sentry.js"
+      ],
+      "matches": [
+        "https://sentry.procempa.com.br/*"
       ]
     }
   ],
