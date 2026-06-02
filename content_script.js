@@ -38,3 +38,13 @@ if (url.includes('sentry')) {
   script.src = chrome.runtime.getURL("sentry.js");
   document.documentElement.appendChild(script);
 }
+
+if (url.includes('sentry.procempa.com.br/web/despacho/schedule-garrison')) {
+  const scriptOS = document.createElement("script");
+  scriptOS.src = chrome.runtime.getURL("sentry_OS.js");
+  document.documentElement.appendChild(scriptOS);
+
+  const scriptJSZip = document.createElement("script");
+  scriptJSZip.src = chrome.runtime.getURL("jszip.js");
+  document.documentElement.appendChild(scriptJSZip);
+}

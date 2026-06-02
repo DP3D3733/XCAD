@@ -473,12 +473,6 @@ function sentry() {
 
     window.addEventListener("message", event => {
 
-        console.log("MESSAGE EVENT:");
-        console.log(event);
-
-        console.log("DATA:");
-        console.log(event.data);
-
         if (event.data?.type === "verificarConsulta") {
             const dadosIndividuo = event.data.data;
             //const possuiCadastro = await consultarIndividuoPorCPF(dadosIndividuo.cpf);
@@ -497,9 +491,11 @@ function sentry() {
 
     habilitarDropGlobalFoto();
     inserirCheckboxAtividadesProgramadas();
-    if (url.includes('despacho/schedule-garrison') && url.includes('/edit')) ajustarCodigoAreaNomeAtividadeProgramada();
+    if (url.includes('despacho/schedule-garrison') && (url.includes('/edit') || url.includes('/create'))) ajustarCodigoAreaNomeAtividadeProgramada();
 
     if (url.includes('/despacho/dashboard')) criarBotaoVisualizarOS();
+
+    if (url.includes('/despacho/attendance') && sessionStorage.getItem('associarLocal')) deixarSoOMapaVisivel();
 }
 
 //---------------SENTRY INDIVIDUOS-------------------------------------------------------------------------------------
@@ -1067,6 +1063,14 @@ function criarBotaoVisualizarOS() {
                 // $("#modalOS").modal("hide");
             }
         });
+        buttonVisualizarOS.addEventListener('click', () => {
+            document.querySelector('#modalOS').style.display = 'block';
+            document.querySelector('#selectOS').dispatchEvent(new Event('input', {
+                bubbles: true,
+                cancelable: true
+            }));
+        });
+        if (document.querySelector('#modalOS')) return;
         const modal = document.createElement('div');
         modal.setAttribute('class', "modal inmodal");
         modal.setAttribute('id', "modalOS");
@@ -1091,13 +1095,7 @@ function criarBotaoVisualizarOS() {
         document.querySelector('body').insertAdjacentElement('beforeEnd', modal);
         const select = document.querySelector('#selectOS');
         criarTabelaOS();
-        buttonVisualizarOS.addEventListener('click', () => {
-            modal.style.display = 'block';
-            select.dispatchEvent(new Event('input', {
-                bubbles: true,
-                cancelable: true
-            }));
-        });
+
         (async () => {
             const numOSs = await buscarNumerosOSCadastradas();
             if (!numOSs.length) return;
@@ -1131,15 +1129,20 @@ async function montarOS(numOS) {
 
     const pesquisaAtendimento = await Promise.all(
         resultados.map(async ({ demanda, atividadeProgramada }) => {
-            const dataInicialCrua = atividadeProgramada.schedule.dateUsageMin;
-            const dataInicialArray = dataInicialCrua.split('-');
-            const dataInicialPronta =
-                `${dataInicialArray[2]}/${dataInicialArray[1]}/${dataInicialArray[0]} 00:00`;
+            const dataInicialCrua = atividadeProgramada.schedule.dateUsageMin || new Date().toISOString().split("T")[0];
+            if (dataInicialCrua) {
+                const dataInicialArray = dataInicialCrua.split('-');
+                dataInicialPronta =
+                    `${dataInicialArray[2]}/${dataInicialArray[1]}/${dataInicialArray[0]} 00:00`;
+            }
 
-            const dataFinalCrua = atividadeProgramada.schedule.dateUsageMax;
-            const dataFinalArray = dataFinalCrua.split('-');
-            const dataFinalPronta =
-                `${dataFinalArray[2]}/${dataFinalArray[1]}/${dataFinalArray[0]} 23:59`;
+
+            const dataFinalCrua = atividadeProgramada.schedule.dateUsageMax || new Date().toISOString().split("T")[0];
+            if (dataFinalCrua) {
+                const dataFinalArray = dataFinalCrua.split('-');
+                dataFinalPronta =
+                    `${dataFinalArray[2]}/${dataFinalArray[1]}/${dataFinalArray[0]} 23:59`;
+            }
 
             const guarnicoes = await buscarGuarnicoes(
                 dataInicialPronta,
@@ -1454,6 +1457,54 @@ async function buscarAtendimentoAtividadeProgramada(guarnicaoId, atividadeId) {
 }
 
 
+
+function deixarSoOMapaVisivel() {
+    const blocoMapa = document
+        .querySelector('#map-btn')
+        .closest('div.card-body');
+
+    document.querySelector('nav').style.display = 'none';
+    document.querySelectorAll('#root div[class="card mb-2"]')[0].style.display = 'none';
+    document.querySelectorAll('#root div[class="card mb-2"]')[2].style.display = 'none';
+    document.querySelectorAll('#root div[class="card mb-2"]')[3].style.display = 'none';
+    document.querySelectorAll('#root div[class="card mb-2"]')[4].style.display = 'none';
+    document.querySelectorAll('#root div[class="card mb-2"]')[6].style.display = 'none';
+    const buttonAssociar = document.createElement('span');
+    buttonAssociar.setAttribute('class', "btn btn-primary w-100");
+    document.querySelector('#copy-btn').insertAdjacentElement('beforeBegin', buttonAssociar);
+    buttonAssociar.innerText = 'Associar';
+
+    const buttonCancelar = document.querySelector('#copy-btn').cloneNode('true');
+    buttonCancelar.removeAttribute('id');
+    document.querySelector('#copy-btn').insertAdjacentElement('beforeBegin', buttonCancelar);
+    buttonCancelar.innerText = 'Cancelar';
+    buttonAssociar.addEventListener('click', () => finalizarAssociarLocal())
+
+    document.querySelector('#copy-btn').remove();
+
+}
+
+function finalizarAssociarLocal() {
+    const localASerAssociado = sessionStorage.getItem('associarLocal');
+    const associacao = {};
+    associacao[localASerAssociado] = {
+        "district": document.querySelector('#select2-factDistrict-container').innerText,
+        "city": document.querySelector('#select2-factCity-container').innerText,
+        "placeType": document.querySelector('#select2-factType-container').innerText,
+        "place": document.querySelector('#select2-factPlace-container').innerText,
+        "neighborhood": document.querySelector('#select2-factNeighborhood-container').innerText,
+        "street": document.querySelector('#select2-factStreet-container').innerText,
+        "number": document.querySelector('#factNumber').value,
+        "latitude": document.querySelector('#factLatitude').value,
+        "longitude": document.querySelector('#factLongitude').value,
+        "sectors": [
+            document.querySelector("#factSectors").selectedOptions[0].value
+        ]
+    }
+    sessionStorage.setItem('associarLocal', JSON.stringify(associacao));
+    sessionStorage.setItem('associacao', 'pronta');
+
+}
 
 
 
