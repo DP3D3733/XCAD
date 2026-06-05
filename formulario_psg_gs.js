@@ -9,7 +9,7 @@ chrome.storage.local.get("ativa", (data) => {
             });
         }
         //lista de campos a serem utilizados como referência para coletar os dados para a minuta do relatório
-        var campos = ['div[data-params*="DATA DE INÍCIO DO PLANTÃO"]', 'div[data-params*="INFORME O TURNO"]', 'div[data-params*="INFORME O GS"]', 'div[data-params*="INFORME O Nº DA ORDEM DE SERVIÇO"]', 'div[data-params*="COGM"]', 'div[data-params*="DENÚNCIAS 156POA"]', 'div[data-params*="DENÚNCIAS CAD / EPTC"]', 'div[data-params*="DENÚNCIAS WATSAPP"]', 'div[data-params*="FISCALIZADOS"]', 'div[data-params*="ORIENTADOS"]', 'div[data-params*="AUTUADOS"]', 'div[data-params*="INTERDITADOS"]', 'div[data-params*="TROTES"]', 'div[data-params*="INFORMAÇÕES"]', 'div[data-params*="TOTAL DE CAD"]', 'div[data-params*="FECHADO APÓS ORIENTAÇÃO"]', 'div[data-params*="TOTAL DE LIGAÇÕES"]', 'div[data-params*="NÃO ATENDIDAS"]', 'div[data-params*="APOIO SAMU"]', 'div[data-params*="GU 21"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA GU 21"]', 'div[data-params*="GU 22"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA GU 22"]', 'div[data-params*="QAP(CIENTE DA OS) DA 21"]', 'div[data-params*="GU 31"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA GU 31"]', 'div[data-params*="GU 32"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA GU 32"]', 'div[data-params*="QAP(CIENTE DA OS) DA 31"]', 'div[data-params*="GU 41"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA GU 41"]', 'div[data-params*="GU 42"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA GU 42"]', 'div[data-params*="QAP(CIENTE DA OS) DA 41"]', 'div[data-params*="GU 51"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA GU 51"]', 'div[data-params*="GU 52"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA GU 52"]', 'div[data-params*="QAP(CIENTE DA OS) DA 51"]', 'div[data-params*="GU 61"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA GU 61"]', 'div[data-params*="GU 62"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA GU 62"]', 'div[data-params*="QAP(CIENTE DA OS) DA 61"]', 'div[data-params*="GU 71"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA GU 71"]', 'div[data-params*="GU 72"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA GU 72"]', 'div[data-params*="QAP(CIENTE DA OS) DA 71"]', 'div[data-params*="GU 81"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA GU 81"]', 'div[data-params*="GU 82"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA GU 82"]', 'div[data-params*="QAP(CIENTE DA OS) DA 81"]', 'div[data-params*="GU 91"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA GU 91"]', 'div[data-params*="GU 92"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA GU 92"]', 'div[data-params*="QAP(CIENTE DA OS) DA 91"]', 'div[data-params*="GSO ROMU"]', 'div[data-params*="GSP ROMU"]', 'div[data-params*="PLANTÃO ROMU"]', 'div[data-params*="PORTARIA ROMU"]', 'div[data-params*="R1"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA R1"]', 'div[data-params*="R2"]:not([data-params*="VTR"])', 'div[data-params*="QAP(CIENTE DA OS) DA R1"]', 'div[data-params*="VTR DA R2"]', 'div[data-params*="R3"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA R3"]', 'div[data-params*="R4"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA R4"]', 'div[data-params*="R5"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA R5"]', 'div[data-params*="R6"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA R6"]', 'div[data-params*="GSP CENTRO"]', 'div[data-params*="PLANTÃO CENTRO"]', 'div[data-params*="PORTARIA CENTRO"]', 'div[data-params*="C1"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA C1"]', 'div[data-params*="C2"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA C2"]', 'div[data-params*="QAP(CIENTE DA OS) DA C1"]', 'div[data-params*="C3"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA C3"]', 'div[data-params*="C4"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA C4"]', 'div[data-params*="C5"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA C5"]', 'div[data-params*="C6"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA C6"]', 'div[data-params*="C7"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA C7"]', 'div[data-params*="C8"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA C8"]', 'div[data-params*="P1"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA P1"]', 'div[data-params*="P2"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA P2"]', 'div[data-params*="QAP(CIENTE DA OS) DA PATAM"]', 'div[data-params*="DEMANDAS NÃO ATENDIDAS"]', 'div[data-params*="RELATO"]'];
+        var campos = ['div[data-params*="DATA DE INÍCIO DO PLANTÃO"]', 'div[data-params*="INFORME O TURNO"]', 'div[data-params*="INFORME O GS"]', 'div[data-params*="INFORME O Nº DA ORDEM DE SERVIÇO"]', 'div[data-params*="COGM"]', 'div[data-params*="DENÚNCIAS 156POA"]', 'div[data-params*="DENÚNCIAS CAD / EPTC"]', 'div[data-params*="DENÚNCIAS WATSAPP"]', 'div[data-params*="FISCALIZADOS"]', 'div[data-params*="ORIENTADOS"]', 'div[data-params*="AUTUADOS"]', 'div[data-params*="INTERDITADOS"]', 'div[data-params*="TROTES"]', 'div[data-params*="INFORMAÇÕES"]', 'div[data-params*="TOTAL DE CAD"]', 'div[data-params*="FECHADO APÓS ORIENTAÇÃO"]', 'div[data-params*="TOTAL DE LIGAÇÕES"]', 'div[data-params*="NÃO ATENDIDAS"]', 'div[data-params*="APOIO SAMU"]', 'div[data-params*="GU 21"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA GU 21"]', 'div[data-params*="GU 22"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA GU 22"]', 'div[data-params*="QAP(CIENTE DA OS) - 200"]', 'div[data-params*="GU 31"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA GU 31"]', 'div[data-params*="GU 32"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA GU 32"]', 'div[data-params*="QAP(CIENTE DA OS) - 300"]', 'div[data-params*="GU 41"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA GU 41"]', 'div[data-params*="GU 42"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA GU 42"]', 'div[data-params*="QAP(CIENTE DA OS) - 400"]', 'div[data-params*="GU 51"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA GU 51"]', 'div[data-params*="GU 52"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA GU 52"]', 'div[data-params*="QAP(CIENTE DA OS) - 500"]', 'div[data-params*="GU 61"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA GU 61"]', 'div[data-params*="GU 62"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA GU 62"]', 'div[data-params*="QAP(CIENTE DA OS) - 600"]', 'div[data-params*="GU 71"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA GU 71"]', 'div[data-params*="GU 72"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA GU 72"]', 'div[data-params*="QAP(CIENTE DA OS) - 700"]', 'div[data-params*="GU 81"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA GU 81"]', 'div[data-params*="GU 82"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA GU 82"]', 'div[data-params*="QAP(CIENTE DA OS) - 800"]', 'div[data-params*="GU 91"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA GU 91"]', 'div[data-params*="GU 92"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA GU 92"]', 'div[data-params*="QAP(CIENTE DA OS) - 900"]', 'div[data-params*="GSO ROMU"]', 'div[data-params*="GSP ROMU"]', 'div[data-params*="PLANTÃO ROMU"]', 'div[data-params*="PORTARIA ROMU"]', 'div[data-params*="R1"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA R1"]', 'div[data-params*="R2"]:not([data-params*="VTR"])', 'div[data-params*="QAP(CIENTE DA OS) - 1000"]', 'div[data-params*="VTR DA R2"]', 'div[data-params*="R3"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA R3"]', 'div[data-params*="R4"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA R4"]', 'div[data-params*="R5"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA R5"]', 'div[data-params*="R6"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA R6"]', 'div[data-params*="GSP CENTRO"]', 'div[data-params*="PLANTÃO CENTRO"]', 'div[data-params*="PORTARIA CENTRO"]', 'div[data-params*="C1"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA C1"]', 'div[data-params*="C2"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA C2"]', 'div[data-params*="QAP(CIENTE DA OS) - 1200"]', 'div[data-params*="C3"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA C3"]', 'div[data-params*="C4"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA C4"]', 'div[data-params*="C5"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA C5"]', 'div[data-params*="C6"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA C6"]', 'div[data-params*="C7"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA C7"]', 'div[data-params*="C8"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA C8"]', 'div[data-params*="P1"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA P1"]', 'div[data-params*="P2"]:not([data-params*="VTR"])', 'div[data-params*="VTR DA P2"]', 'div[data-params*="QAP(CIENTE DA OS) - 1100"]', 'div[data-params*="DEMANDAS NÃO ATENDIDAS"]', 'div[data-params*="RELATO"]'];
 
         //map que irá informar a relação campo no formulário/campo no JSON
         var map_campos_chave = new Map();
@@ -21,47 +21,47 @@ chrome.storage.local.get("ativa", (data) => {
             map_campos_chave.set('div[data-params*="COGM"]', 'cogm');
             map_campos_chave.set('div[data-params*="GU 21"]:not([data-params*="VTR"])', 'gu_21');
             map_campos_chave.set('div[data-params*="VTR DA GU 21"]', 'vtr_21');
-            map_campos_chave.set('div[data-params*="QAP(CIENTE DA OS) DA 21"]', 'qap_21');
+            map_campos_chave.set('div[data-params*="QAP(CIENTE DA OS) - 200"]', 'qap_21');
             map_campos_chave.set('div[data-params*="GU 22"]:not([data-params*="VTR"])', 'gu_22');
             map_campos_chave.set('div[data-params*="VTR DA GU 22"]', 'vtr_22');
             map_campos_chave.set('div[data-params*="GU 31"]:not([data-params*="VTR"])', 'gu_31');
             map_campos_chave.set('div[data-params*="VTR DA GU 31"]', 'vtr_31');
-            map_campos_chave.set('div[data-params*="QAP(CIENTE DA OS) DA 31"]', 'qap_31');
+            map_campos_chave.set('div[data-params*="QAP(CIENTE DA OS) - 300"]', 'qap_31');
             map_campos_chave.set('div[data-params*="GU 32"]:not([data-params*="VTR"])', 'gu_32');
             map_campos_chave.set('div[data-params*="VTR DA GU 32"]', 'vtr_32');
             map_campos_chave.set('div[data-params*="GU 41"]:not([data-params*="VTR"])', 'gu_41');
             map_campos_chave.set('div[data-params*="VTR DA GU 41"]', 'vtr_41');
-            map_campos_chave.set('div[data-params*="QAP(CIENTE DA OS) DA 41"]', 'qap_41');
+            map_campos_chave.set('div[data-params*="QAP(CIENTE DA OS) - 400"]', 'qap_41');
             map_campos_chave.set('div[data-params*="GU 42"]:not([data-params*="VTR"])', 'gu_42');
             map_campos_chave.set('div[data-params*="VTR DA GU 42"]', 'vtr_42');
             map_campos_chave.set('div[data-params*="GU 51"]:not([data-params*="VTR"])', 'gu_51');
             map_campos_chave.set('div[data-params*="VTR DA GU 51"]', 'vtr_51');
-            map_campos_chave.set('div[data-params*="QAP(CIENTE DA OS) DA 51"]', 'qap_51');
+            map_campos_chave.set('div[data-params*="QAP(CIENTE DA OS) - 500"]', 'qap_51');
             map_campos_chave.set('div[data-params*="GU 52"]:not([data-params*="VTR"])', 'gu_52');
             map_campos_chave.set('div[data-params*="VTR DA GU 52"]', 'vtr_52');
             map_campos_chave.set('div[data-params*="GU 61"]:not([data-params*="VTR"])', 'gu_61');
             map_campos_chave.set('div[data-params*="VTR DA GU 61"]', 'vtr_61');
-            map_campos_chave.set('div[data-params*="QAP(CIENTE DA OS) DA 61"]', 'qap_61');
+            map_campos_chave.set('div[data-params*="QAP(CIENTE DA OS) - 600"]', 'qap_61');
             map_campos_chave.set('div[data-params*="GU 62"]:not([data-params*="VTR"])', 'gu_62');
             map_campos_chave.set('div[data-params*="VTR DA GU 62"]', 'vtr_62');
             map_campos_chave.set('div[data-params*="GU 71"]:not([data-params*="VTR"])', 'gu_71');
             map_campos_chave.set('div[data-params*="VTR DA GU 71"]', 'vtr_71');
-            map_campos_chave.set('div[data-params*="QAP(CIENTE DA OS) DA 71"]', 'qap_71');
+            map_campos_chave.set('div[data-params*="QAP(CIENTE DA OS) - 700"]', 'qap_71');
             map_campos_chave.set('div[data-params*="GU 72"]:not([data-params*="VTR"])', 'gu_72');
             map_campos_chave.set('div[data-params*="VTR DA GU 72"]', 'vtr_72');
             map_campos_chave.set('div[data-params*="GU 81"]:not([data-params*="VTR"])', 'gu_81');
             map_campos_chave.set('div[data-params*="VTR DA GU 81"]', 'vtr_81');
-            map_campos_chave.set('div[data-params*="QAP(CIENTE DA OS) DA 81"]', 'qap_81');
+            map_campos_chave.set('div[data-params*="QAP(CIENTE DA OS) - 800"]', 'qap_81');
             map_campos_chave.set('div[data-params*="GU 82"]:not([data-params*="VTR"])', 'gu_82');
             map_campos_chave.set('div[data-params*="VTR DA GU 82"]', 'vtr_82');
             map_campos_chave.set('div[data-params*="GU 91"]:not([data-params*="VTR"])', 'gu_91');
             map_campos_chave.set('div[data-params*="VTR DA GU 91"]', 'vtr_91');
-            map_campos_chave.set('div[data-params*="QAP(CIENTE DA OS) DA 91"]', 'qap_91');
+            map_campos_chave.set('div[data-params*="QAP(CIENTE DA OS) - 900"]', 'qap_91');
             map_campos_chave.set('div[data-params*="GU 92"]:not([data-params*="VTR"])', 'gu_92');
             map_campos_chave.set('div[data-params*="VTR DA GU 92"]', 'vtr_92');
             map_campos_chave.set('div[data-params*="C1"]:not([data-params*="VTR"])', 'gu_c1');
             map_campos_chave.set('div[data-params*="VTR DA C1"]', 'vtr_c1');
-            map_campos_chave.set('div[data-params*="QAP(CIENTE DA OS) DA C1"]', 'qap_c1');
+            map_campos_chave.set('div[data-params*="QAP(CIENTE DA OS) - 1200"]', 'qap_c1');
             map_campos_chave.set('div[data-params*="C2"]:not([data-params*="VTR"])', 'gu_c2');
             map_campos_chave.set('div[data-params*="VTR DA C2"]', 'vtr_c2');
             map_campos_chave.set('div[data-params*="C3"]:not([data-params*="VTR"])', 'gu_c3');
@@ -78,7 +78,7 @@ chrome.storage.local.get("ativa", (data) => {
             map_campos_chave.set('div[data-params*="VTR DA C8"]', 'vtr_c8');
             map_campos_chave.set('div[data-params*="R1"]:not([data-params*="VTR"])', 'gu_r1');
             map_campos_chave.set('div[data-params*="VTR DA R1"]', 'vtr_r1');
-            map_campos_chave.set('div[data-params*="QAP(CIENTE DA OS) DA R1"]', 'qap_r1');
+            map_campos_chave.set('div[data-params*="QAP(CIENTE DA OS) - 1000"]', 'qap_r1');
             map_campos_chave.set('div[data-params*="R2"]:not([data-params*="VTR"])', 'gu_r2');
             map_campos_chave.set('div[data-params*="VTR DA R2"]', 'vtr_r2');
             map_campos_chave.set('div[data-params*="R3"]:not([data-params*="VTR"])', 'gu_r3');
@@ -91,16 +91,9 @@ chrome.storage.local.get("ativa", (data) => {
             map_campos_chave.set('div[data-params*="VTR DA R6"]', 'vtr_r6');
             map_campos_chave.set('div[data-params*="P1"]:not([data-params*="VTR"])', 'gu_p1');
             map_campos_chave.set('div[data-params*="VTR DA P1"]', 'vtr_p1');
-            map_campos_chave.set('div[data-params*="QAP(CIENTE DA OS) DA PATAM"]', 'qap_p1');
+            map_campos_chave.set('div[data-params*="QAP(CIENTE DA OS) - 1100"]', 'qap_p1');
             map_campos_chave.set('div[data-params*="P2"]:not([data-params*="VTR"])', 'gu_p2');
             map_campos_chave.set('div[data-params*="VTR DA P2"]', 'vtr_p2');
-            map_campos_chave.set('div[data-params*="GSO ROMU"]', 'gso_romu');
-            map_campos_chave.set('div[data-params*="GSP ROMU"]', 'gsp_romu');
-            map_campos_chave.set('div[data-params*="PLANTÃO ROMU"]', 'gp_romu');
-            map_campos_chave.set('div[data-params*="PORTARIA ROMU"]', 'portaria_romu');
-            map_campos_chave.set('div[data-params*="GSP CENTRO"]', 'gsp_centro');
-            map_campos_chave.set('div[data-params*="PLANTÃO CENTRO"]', 'gp_centro');
-            map_campos_chave.set('div[data-params*="PORTARIA CENTRO"]', 'portaria_centro');
             map_campos_chave.set('div[data-params*="DENÚNCIAS 156POA"]', 'denuncias_153');
             map_campos_chave.set('div[data-params*="DENÚNCIAS CAD / EPTC"]', 'denuncias_cad_eptc');
             map_campos_chave.set('div[data-params*="DENÚNCIAS WATSAPP"]', 'denuncias_whats');
@@ -378,7 +371,7 @@ chrome.storage.local.get("ativa", (data) => {
                     Array.from(document.querySelectorAll('div[role=button]')).filter(item => item.innerText == 'Voltar')[1].click();
                 });
             }
-            if (document.querySelector('div[data-params*="PORTARIA CENTRO"]')) {
+            if (document.querySelector('div[data-params*="D7"]')) {
                 if (document.getElementById('naorepete_form_gs')) {
                 } else {
                     var naorepete_form_gs = document.createElement("div");
@@ -388,8 +381,8 @@ chrome.storage.local.get("ativa", (data) => {
                     var campo_insere_cogm = document.createElement("textarea");
                     campo_insere_cogm.setAttribute("id", "campo_insere_cogm");
                     document.querySelector('div[data-params*="COGM"]').parentNode.insertBefore(campo_insere_cogm, document.querySelector('div[data-params*="COGM"]'));
-                    var cogm_gm_nr = ['098', '110', '139', '155', '231', '336', '512', '520', '521', '523', '556', '558', '591', '621', '641', '643', '652', '660', '807', '813', '815', '831', '832', '833', '834', '839', '842', '848', '858', '867', '869'];
-                    var cogm_gm_nome = ['GETÚLIO MARCOS OLIVEIRA ROLIANO', 'NIAMAR DE SOUZA SIQUEIRA', 'CLAUDENIR DA SILVA NUNES', 'MARIO FERNANDO DORNELES DE BARCELOS', 'MARA ELISABETE RODRIGUES DE BRUM', 'CLAUDIA MARTINELI BARROS FERREIRA', 'VICENTE DE PAULA GENTIL', 'JOSÉ PAULO DE OLIVEIRA CAMPOS', 'PEDRO CARDOSO', 'JOÃO LUIZ FARIAS VASCONCELOS', 'LAURO GIOVANI ALVES DO VAL', 'GILNEI INÁCIO GUIMARÃES', 'LUIS EDUARDO CARVALHO DOS SANTOS', 'SERGIO OLIVEIRA DE SOUZA', 'JOSÉ PAULO BARBOSA', 'LUIS RICARDO BANDEIRA FLORES', 'SILVIO LUIS MENDES FERREIRA', 'LUIS ALBERTO REIS PINTO', 'GELSON DA CONCEIÇÃO GASPARY', 'DANIEL DE AGUIAR PIVETTA', 'GIOVANI BENITES LOPES', 'WESLEY ERREIRA COUTO', 'ANDERSON CAMPOS DUARTE JUNIOR ', 'FELIPE DA SILVA MACKOSKI', 'RUAN SOLRAC RODRIGUES BRITO', 'ARTHUR ZAPATA DA SILVA', 'CALEBE RUIVO DA SILVA', 'LEONARDO GARCIA DA FONSECA', 'DOUGLAS JAQUES ALVES', 'MARCO AURÉLIO SANTOS DA SILVA FILHO', 'AMANDA NAIBERT SILVA']
+                    var cogm_gm_nr = ['098', '110', '139', '155', '231', '336', '512', '520', '521', '523', '556', '558', '591', '621', '641', '643', '652', '660', '807', '813', '815', '831', '832', '833', '834', '839', '842', '848', '858', '867', '869', '897', '954', '928', '893', '903'];
+                    var cogm_gm_nome = ['GETÚLIO MARCOS OLIVEIRA ROLIANO', 'NIAMAR DE SOUZA SIQUEIRA', 'CLAUDENIR DA SILVA NUNES', 'MARIO FERNANDO DORNELES DE BARCELOS', 'MARA ELISABETE RODRIGUES DE BRUM', 'CLAUDIA MARTINELI BARROS FERREIRA', 'VICENTE DE PAULA GENTIL', 'JOSÉ PAULO DE OLIVEIRA CAMPOS', 'PEDRO CARDOSO', 'JOÃO LUIZ FARIAS VASCONCELOS', 'LAURO GIOVANI ALVES DO VAL', 'GILNEI INÁCIO GUIMARÃES', 'LUIS EDUARDO CARVALHO DOS SANTOS', 'SERGIO OLIVEIRA DE SOUZA', 'JOSÉ PAULO BARBOSA', 'LUIS RICARDO BANDEIRA FLORES', 'SILVIO LUIS MENDES FERREIRA', 'LUIS ALBERTO REIS PINTO', 'GELSON DA CONCEIÇÃO GASPARY', 'DANIEL DE AGUIAR PIVETTA', 'GIOVANI BENITES LOPES', 'WESLEY ERREIRA COUTO', 'ANDERSON CAMPOS DUARTE JUNIOR ', 'FELIPE DA SILVA MACKOSKI', 'RUAN SOLRAC RODRIGUES BRITO', 'ARTHUR ZAPATA DA SILVA', 'CALEBE RUIVO DA SILVA', 'LEONARDO GARCIA DA FONSECA', 'DOUGLAS JAQUES ALVES', 'MARCO AURÉLIO SANTOS DA SILVA FILHO', 'AMANDA NAIBERT SILVA', 'LAURA BOLZAN CECCHIM', 'BIBIANA DE CASTRO MULLER', 'EDUARDA LUCKEYSE DE SOUZA PEREIRA', 'MARIA EDUARDA FELIZARDO FERREIRA', 'JÚLIA DA COSTA SANTANA'];
                     var cogm_funcoes = ['', '', 'SIGMA / RÁDIO', 'SIGMA / RÁDIO', 'CAD 1 NORTE', 'CAD 2 SUL', 'CAD 3 CENTRO', 'CAD 4 ROMU', '153/TOTEM 01', 'TOTEM 02', 'VIDEO MONIT. 1', 'VIDEO MONIT. 2', 'COPOM', 'COPOM'];
                     campo_insere_cogm.addEventListener('input', function () {
                         var guardas = campo_insere_cogm.value.split('\n');
@@ -404,7 +397,7 @@ chrome.storage.local.get("ativa", (data) => {
                     var filtros = document.createElement("div");
                     filtros.setAttribute("id", "filtros");
                     filtros.setAttribute("style", "position: fixed; left: 0; top: 0; background-color: white;margin:5px;padding:5px");
-                    var innerHTMLText = 'Filtros:<br><table><tbody><tr><td><input checked type=checkbox data-qual_filtro="cogm" />COGM</td><td><input checked type=checkbox data-qual_filtro="areas" />Áreas</td><td><input checked type=checkbox data-qual_filtro="secoes" />Seções</td><td><input type=checkbox data-qual_filtro="marcados" />Marcados</td></tr><tr><td></td><td><input checked type=checkbox data-qual_filtro="200" />200 Área Cruzeiro<br><input checked type=checkbox data-qual_filtro="300" />300 Área Partenon<br><input checked type=checkbox data-qual_filtro="400" />400 Área Leste<br><input checked type=checkbox data-qual_filtro="500" />500 Área Restinga<br><input checked type=checkbox data-qual_filtro="600" />600 Área Norte<br><input checked type=checkbox data-qual_filtro="700" />700 Área Eixo Baltazar<br><input checked type=checkbox data-qual_filtro="800" />800 Área Pinheiro<br><input checked type=checkbox data-qual_filtro="900" />900 Área Eixo Sul<br><input checked type=checkbox data-qual_filtro="1000" />1000 Área Romu<br><input checked type=checkbox data-qual_filtro="1100" />1100 Área Patam<br><input checked type=checkbox data-qual_filtro="1200" />1200 Área Centro<br></td><td><input checked type=checkbox data-qual_filtro="pessoas" />Pessoas<br><input checked type=checkbox data-qual_filtro="vtr" />Viaturas<br><input checked type=checkbox data-qual_filtro="QAP" />QAP<br><input checked type=checkbox data-qual_filtro="GSO" />GSO<br><input checked type=checkbox data-qual_filtro="GSP" />GSP<br><input checked type=checkbox data-qual_filtro="Plantao" />Plantão<br><input checked type=checkbox data-qual_filtro="Portaria" />Portaria</td></tr></tbody></table>';
+                    var innerHTMLText = 'Filtros:<br><table><tbody><tr><td><input checked type=checkbox data-qual_filtro="cogm" />COGM</td><td><input checked type=checkbox data-qual_filtro="areas" />Áreas</td><td><input checked type=checkbox data-qual_filtro="secoes" />Seções</td><td><input type=checkbox data-qual_filtro="marcados" />Marcados</td></tr><tr><td></td><td><input checked type=checkbox data-qual_filtro="200" />200 Área Cruzeiro<br><input checked type=checkbox data-qual_filtro="300" />300 Área Partenon<br><input checked type=checkbox data-qual_filtro="400" />400 Área Leste<br><input checked type=checkbox data-qual_filtro="500" />500 Área Restinga<br><input checked type=checkbox data-qual_filtro="600" />600 Área Norte<br><input checked type=checkbox data-qual_filtro="700" />700 Área Eixo Baltazar<br><input checked type=checkbox data-qual_filtro="800" />800 Área Pinheiro<br><input checked type=checkbox data-qual_filtro="900" />900 Área Eixo Sul<br><input checked type=checkbox data-qual_filtro="1000" />1000 Área Romu<br><input checked type=checkbox data-qual_filtro="1100" />1100 Área Patam<br><input checked type=checkbox data-qual_filtro="1200" />1200 Área Centro<br><input checked type=checkbox data-qual_filtro="1500" />1500 Área Daz<br></td><td><input checked type=checkbox data-qual_filtro="pessoas" />Pessoas<br><input checked type=checkbox data-qual_filtro="vtr" />Viaturas<br><input checked type=checkbox data-qual_filtro="QAP" />QAP<br><input checked type=checkbox data-qual_filtro="GSO" />GSO<br><input checked type=checkbox data-qual_filtro="GSP" />GSP<br><input checked type=checkbox data-qual_filtro="Plantao" />Plantão<br><input checked type=checkbox data-qual_filtro="Portaria" />Portaria</td></tr></tbody></table>';
                     'use strict';
                     filtros.innerHTML = window.trustedTypes.defaultPolicy.createHTML(innerHTMLText);
                     document.querySelector('div[data-params*="COGM"]').parentNode.insertBefore(filtros, document.querySelector('div[data-params*="COGM"]'));
@@ -447,9 +440,9 @@ chrome.storage.local.get("ativa", (data) => {
                                         document.querySelector('div[data-params*="VTR DA GU 22"]').style.display = 'none';
                                     }
                                     if (document.querySelector('input[data-qual_filtro=QAP]').checked == true) {
-                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA 21"]').style.display = '';
+                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 200"]').style.display = '';
                                     } else {
-                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA 21"]').style.display = 'none';
+                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 200"]').style.display = 'none';
                                     }
                                 }
                                 if (qual_filtro == '300') {
@@ -468,9 +461,9 @@ chrome.storage.local.get("ativa", (data) => {
                                         document.querySelector('div[data-params*="VTR DA GU 32"]').style.display = 'none';
                                     }
                                     if (document.querySelector('input[data-qual_filtro=QAP]').checked == true) {
-                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA 31"]').style.display = '';
+                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 300"]').style.display = '';
                                     } else {
-                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA 31"]').style.display = 'none';
+                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 300"]').style.display = 'none';
                                     }
                                 }
                                 if (qual_filtro == '400') {
@@ -489,9 +482,9 @@ chrome.storage.local.get("ativa", (data) => {
                                         document.querySelector('div[data-params*="VTR DA GU 42"]').style.display = 'none';
                                     }
                                     if (document.querySelector('input[data-qual_filtro=QAP]').checked == true) {
-                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA 41"]').style.display = '';
+                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 400"]').style.display = '';
                                     } else {
-                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA 41"]').style.display = 'none';
+                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 400"]').style.display = 'none';
                                     }
                                 }
                                 if (qual_filtro == '500') {
@@ -510,9 +503,9 @@ chrome.storage.local.get("ativa", (data) => {
                                         document.querySelector('div[data-params*="VTR DA GU 52"]').style.display = 'none';
                                     }
                                     if (document.querySelector('input[data-qual_filtro=QAP]').checked == true) {
-                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA 51"]').style.display = '';
+                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 500"]').style.display = '';
                                     } else {
-                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA 51"]').style.display = 'none';
+                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 500"]').style.display = 'none';
                                     }
 
                                 }
@@ -532,9 +525,9 @@ chrome.storage.local.get("ativa", (data) => {
                                         document.querySelector('div[data-params*="VTR DA GU 62"]').style.display = 'none';
                                     }
                                     if (document.querySelector('input[data-qual_filtro=QAP]').checked == true) {
-                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA 61"]').style.display = '';
+                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 600"]').style.display = '';
                                     } else {
-                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA 61"]').style.display = 'none';
+                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 600"]').style.display = 'none';
                                     }
                                 }
                                 if (qual_filtro == '700') {
@@ -553,9 +546,9 @@ chrome.storage.local.get("ativa", (data) => {
                                         document.querySelector('div[data-params*="VTR DA GU 72"]').style.display = 'none';
                                     }
                                     if (document.querySelector('input[data-qual_filtro=QAP]').checked == true) {
-                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA 71"]').style.display = '';
+                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 700"]').style.display = '';
                                     } else {
-                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA 71"]').style.display = 'none';
+                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 700"]').style.display = 'none';
                                     }
                                 }
                                 if (qual_filtro == '800') {
@@ -574,9 +567,9 @@ chrome.storage.local.get("ativa", (data) => {
                                         document.querySelector('div[data-params*="VTR DA GU 82"]').style.display = 'none';
                                     }
                                     if (document.querySelector('input[data-qual_filtro=QAP]').checked == true) {
-                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA 81"]').style.display = '';
+                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 800"]').style.display = '';
                                     } else {
-                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA 81"]').style.display = 'none';
+                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 800"]').style.display = 'none';
                                     }
                                 }
                                 if (qual_filtro == '900') {
@@ -595,9 +588,9 @@ chrome.storage.local.get("ativa", (data) => {
                                         document.querySelector('div[data-params*="VTR DA GU 92"]').style.display = 'none';
                                     }
                                     if (document.querySelector('input[data-qual_filtro=QAP]').checked == true) {
-                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA 91"]').style.display = '';
+                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 900"]').style.display = '';
                                     } else {
-                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA 91"]').style.display = 'none';
+                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 900"]').style.display = 'none';
                                     }
                                 }
                                 if (qual_filtro == '1000') {
@@ -632,29 +625,9 @@ chrome.storage.local.get("ativa", (data) => {
                                         document.querySelector('div[data-params*="VTR DA R6"]').style.display = 'none';
                                     }
                                     if (document.querySelector('input[data-qual_filtro=QAP]').checked == true) {
-                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA R1"]').style.display = '';
+                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 1000"]').style.display = '';
                                     } else {
-                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA R1"]').style.display = 'none';
-                                    }
-                                    if (document.querySelector('input[data-qual_filtro=GSO]').checked == true) {
-                                        document.querySelector('div[data-params*="GSO ROMU"]').style.display = '';
-                                    } else {
-                                        document.querySelector('div[data-params*="GSO ROMU"]').style.display = 'none';
-                                    }
-                                    if (document.querySelector('input[data-qual_filtro=GSP]').checked == true) {
-                                        document.querySelector('div[data-params*="GSP ROMU"]').style.display = '';
-                                    } else {
-                                        document.querySelector('div[data-params*="GSP ROMU"]').style.display = 'none';
-                                    }
-                                    if (document.querySelector('input[data-qual_filtro=Plantao]').checked == true) {
-                                        document.querySelector('div[data-params*="PLANTÃO ROMU"]').style.display = '';
-                                    } else {
-                                        document.querySelector('div[data-params*="PLANTÃO ROMU"]').style.display = 'none';
-                                    }
-                                    if (document.querySelector('input[data-qual_filtro=Portaria]').checked == true) {
-                                        document.querySelector('div[data-params*="PORTARIA ROMU"]').style.display = '';
-                                    } else {
-                                        document.querySelector('div[data-params*="PORTARIA ROMU"]').style.display = 'none';
+                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 1000"]').style.display = 'none';
                                     }
                                 }
                                 if (qual_filtro == '1100') {
@@ -673,9 +646,9 @@ chrome.storage.local.get("ativa", (data) => {
                                         document.querySelector('div[data-params*="VTR DA P2"]').style.display = 'none';
                                     }
                                     if (document.querySelector('input[data-qual_filtro=QAP]').checked == true) {
-                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA PATAM').style.display = '';
+                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 1100').style.display = '';
                                     } else {
-                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA PATAM"]').style.display = 'none';
+                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 1100"]').style.display = 'none';
                                     }
                                 }
                                 if (qual_filtro == '1200') {
@@ -718,24 +691,39 @@ chrome.storage.local.get("ativa", (data) => {
                                         document.querySelector('div[data-params*="VTR DA C8"]').style.display = 'none';
                                     }
                                     if (document.querySelector('input[data-qual_filtro=QAP]').checked == true) {
-                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA C1"]').style.display = '';
+                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 1200"]').style.display = '';
                                     } else {
-                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA C1"]').style.display = 'none';
+                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 1200"]').style.display = 'none';
                                     }
-                                    if (document.querySelector('input[data-qual_filtro=GSP]').checked == true) {
-                                        document.querySelector('div[data-params*="GSP CENTRO"]').style.display = '';
+
+                                }
+                                if (qual_filtro == '1500') {
+                                    if (document.querySelector('input[data-qual_filtro=pessoas]').checked == true) {
+                                        document.querySelector('div[data-params*="D1"]:not([data-params*="VTR"])').style.display = '';
+                                        document.querySelector('div[data-params*="D2"]:not([data-params*="VTR"])').style.display = '';
+                                        document.querySelector('div[data-params*="D3"]:not([data-params*="VTR"])').style.display = '';
+                                        document.querySelector('div[data-params*="D4"]:not([data-params*="VTR"])').style.display = '';
+                                        document.querySelector('div[data-params*="D5"]:not([data-params*="VTR"])').style.display = '';
+                                        document.querySelector('div[data-params*="D6"]:not([data-params*="VTR"])').style.display = '';
+                                        document.querySelector('div[data-params*="D7"]:not([data-params*="VTR"])').style.display = '';
                                     } else {
-                                        document.querySelector('div[data-params*="GSP CENTRO"]').style.display = 'none';
+                                        document.querySelector('div[data-params*="D1"]:not([data-params*="VTR"])').style.display = 'none';
+                                        document.querySelector('div[data-params*="D2"]:not([data-params*="VTR"])').style.display = 'none';
+                                        document.querySelector('div[data-params*="D3"]:not([data-params*="VTR"])').style.display = 'none';
+                                        document.querySelector('div[data-params*="D4"]:not([data-params*="VTR"])').style.display = 'none';
+                                        document.querySelector('div[data-params*="D5"]:not([data-params*="VTR"])').style.display = 'none';
+                                        document.querySelector('div[data-params*="D6"]:not([data-params*="VTR"])').style.display = 'none';
+                                        document.querySelector('div[data-params*="D7"]:not([data-params*="VTR"])').style.display = 'none';
                                     }
-                                    if (document.querySelector('input[data-qual_filtro=Plantao]').checked == true) {
-                                        document.querySelector('div[data-params*="PLANTÃO CENTRO"]').style.display = '';
+                                    if (document.querySelector('input[data-qual_filtro=vtr]').checked == true) {
+                                        document.querySelector('div[data-params*="VTR DA D1"]').style.display = '';
                                     } else {
-                                        document.querySelector('div[data-params*="PLANTÃO CENTRO"]').style.display = 'none';
+                                        document.querySelector('div[data-params*="VTR DA D1"]').style.display = 'none';
                                     }
-                                    if (document.querySelector('input[data-qual_filtro=Portaria]').checked == true) {
-                                        document.querySelector('div[data-params*="PORTARIA CENTRO"]').style.display = '';
+                                    if (document.querySelector('input[data-qual_filtro=QAP]').checked == true) {
+                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 1500"]').style.display = '';
                                     } else {
-                                        document.querySelector('div[data-params*="PORTARIA CENTRO"]').style.display = 'none';
+                                        document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 1500"]').style.display = 'none';
                                     }
 
                                 }
@@ -777,63 +765,63 @@ chrome.storage.local.get("ativa", (data) => {
                                     document.querySelector('div[data-params*="GU 22"]:not([data-params*="VTR"])').style.display = 'none';
                                     document.querySelector('div[data-params*="VTR DA GU 21"]').style.display = 'none';
                                     document.querySelector('div[data-params*="VTR DA GU 22"]').style.display = 'none';
-                                    document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA 21"]').style.display = 'none';
+                                    document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 200"]').style.display = 'none';
                                 }
                                 if (qual_filtro == '300') {
                                     document.querySelector('div[data-params*="GU 31"]:not([data-params*="VTR"])').style.display = 'none';
                                     document.querySelector('div[data-params*="GU 32"]:not([data-params*="VTR"])').style.display = 'none';
                                     document.querySelector('div[data-params*="VTR DA GU 31"]').style.display = 'none';
                                     document.querySelector('div[data-params*="VTR DA GU 32"]').style.display = 'none';
-                                    document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA 31"]').style.display = 'none';
+                                    document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 300"]').style.display = 'none';
                                 }
                                 if (qual_filtro == '400') {
                                     document.querySelector('div[data-params*="GU 41"]:not([data-params*="VTR"])').style.display = 'none';
                                     document.querySelector('div[data-params*="GU 42"]:not([data-params*="VTR"])').style.display = 'none';
                                     document.querySelector('div[data-params*="VTR DA GU 41"]').style.display = 'none';
                                     document.querySelector('div[data-params*="VTR DA GU 42"]').style.display = 'none';
-                                    document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA 41"]').style.display = 'none';
+                                    document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 400"]').style.display = 'none';
                                 }
                                 if (qual_filtro == '500') {
                                     document.querySelector('div[data-params*="GU 51"]:not([data-params*="VTR"])').style.display = 'none';
                                     document.querySelector('div[data-params*="GU 52"]:not([data-params*="VTR"])').style.display = 'none';
                                     document.querySelector('div[data-params*="VTR DA GU 51"]').style.display = 'none';
                                     document.querySelector('div[data-params*="VTR DA GU 52"]').style.display = 'none';
-                                    document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA 51"]').style.display = 'none';
+                                    document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 500"]').style.display = 'none';
                                 }
                                 if (qual_filtro == '600') {
                                     document.querySelector('div[data-params*="GU 61"]:not([data-params*="VTR"])').style.display = 'none';
                                     document.querySelector('div[data-params*="GU 62"]:not([data-params*="VTR"])').style.display = 'none';
                                     document.querySelector('div[data-params*="VTR DA GU 61"]').style.display = 'none';
                                     document.querySelector('div[data-params*="VTR DA GU 62"]').style.display = 'none';
-                                    document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA 61"]').style.display = 'none';
+                                    document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 600"]').style.display = 'none';
                                 }
                                 if (qual_filtro == '700') {
                                     document.querySelector('div[data-params*="GU 71"]:not([data-params*="VTR"])').style.display = 'none';
                                     document.querySelector('div[data-params*="GU 72"]:not([data-params*="VTR"])').style.display = 'none';
                                     document.querySelector('div[data-params*="VTR DA GU 71"]').style.display = 'none';
                                     document.querySelector('div[data-params*="VTR DA GU 72"]').style.display = 'none';
-                                    document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA 71"]').style.display = 'none';
+                                    document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 700"]').style.display = 'none';
                                 }
                                 if (qual_filtro == '800') {
                                     document.querySelector('div[data-params*="GU 81"]:not([data-params*="VTR"])').style.display = 'none';
                                     document.querySelector('div[data-params*="GU 82"]:not([data-params*="VTR"])').style.display = 'none';
                                     document.querySelector('div[data-params*="VTR DA GU 81"]').style.display = 'none';
                                     document.querySelector('div[data-params*="VTR DA GU 82"]').style.display = 'none';
-                                    document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA 81"]').style.display = 'none';
+                                    document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 800"]').style.display = 'none';
                                 }
                                 if (qual_filtro == '900') {
                                     document.querySelector('div[data-params*="GU 91"]:not([data-params*="VTR"])').style.display = 'none';
                                     document.querySelector('div[data-params*="GU 92"]:not([data-params*="VTR"])').style.display = 'none';
                                     document.querySelector('div[data-params*="VTR DA GU 91"]').style.display = 'none';
                                     document.querySelector('div[data-params*="VTR DA GU 92"]').style.display = 'none';
-                                    document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA 91"]').style.display = 'none';
+                                    document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 900"]').style.display = 'none';
                                 }
                                 if (qual_filtro == '1100') {
                                     document.querySelector('div[data-params*="P1"]:not([data-params*="VTR"])').style.display = 'none';
                                     document.querySelector('div[data-params*="P2"]:not([data-params*="VTR"])').style.display = 'none';
                                     document.querySelector('div[data-params*="VTR DA P1"]').style.display = 'none';
                                     document.querySelector('div[data-params*="VTR DA P2"]').style.display = 'none';
-                                    document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA PATAM"]').style.display = 'none';
+                                    document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 1100"]').style.display = 'none';
                                 }
                                 if (qual_filtro == '1000') {
                                     document.querySelector('div[data-params*="R1"]:not([data-params*="VTR"])').style.display = 'none';
@@ -848,11 +836,7 @@ chrome.storage.local.get("ativa", (data) => {
                                     document.querySelector('div[data-params*="VTR DA R4"]').style.display = 'none';
                                     document.querySelector('div[data-params*="VTR DA R5"]').style.display = 'none';
                                     document.querySelector('div[data-params*="VTR DA R6"]').style.display = 'none';
-                                    document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA R1"]').style.display = 'none';
-                                    document.querySelector('div[data-params*="GSO ROMU"]').style.display = 'none';
-                                    document.querySelector('div[data-params*="GSP ROMU"]').style.display = 'none';
-                                    document.querySelector('div[data-params*="PLANTÃO ROMU"]').style.display = 'none';
-                                    document.querySelector('div[data-params*="PORTARIA ROMU"]').style.display = 'none';
+                                    document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 1000"]').style.display = 'none';
                                 }
                                 if (qual_filtro == '1200') {
                                     document.querySelector('div[data-params*="C1"]:not([data-params*="VTR"])').style.display = 'none';
@@ -871,10 +855,18 @@ chrome.storage.local.get("ativa", (data) => {
                                     document.querySelector('div[data-params*="VTR DA C6"]').style.display = 'none';
                                     document.querySelector('div[data-params*="VTR DA C7"]').style.display = 'none';
                                     document.querySelector('div[data-params*="VTR DA C8"]').style.display = 'none';
-                                    document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA C1"]').style.display = 'none';
-                                    document.querySelector('div[data-params*="GSP CENTRO"]').style.display = 'none';
-                                    document.querySelector('div[data-params*="PLANTÃO CENTRO"]').style.display = 'none';
-                                    document.querySelector('div[data-params*="PORTARIA CENTRO"]').style.display = 'none';
+                                    document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 1200"]').style.display = 'none';
+                                }
+                                if (qual_filtro == '1500') {
+                                    document.querySelector('div[data-params*="D1"]:not([data-params*="VTR"])').style.display = 'none';
+                                    document.querySelector('div[data-params*="D2"]:not([data-params*="VTR"])').style.display = 'none';
+                                    document.querySelector('div[data-params*="D3"]:not([data-params*="VTR"])').style.display = 'none';
+                                    document.querySelector('div[data-params*="D4"]:not([data-params*="VTR"])').style.display = 'none';
+                                    document.querySelector('div[data-params*="D5"]:not([data-params*="VTR"])').style.display = 'none';
+                                    document.querySelector('div[data-params*="D6"]:not([data-params*="VTR"])').style.display = 'none';
+                                    document.querySelector('div[data-params*="D7"]:not([data-params*="VTR"])').style.display = 'none';
+                                    document.querySelector('div[data-params*="VTR DA D1"]').style.display = 'none';
+                                    document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 1200"]').style.display = 'none';
                                 }
                                 if (qual_filtro == 'marcados') {
                                     document.querySelectorAll('div[aria-checked="false"]').forEach(function (n_marcado) {
@@ -923,8 +915,6 @@ chrome.storage.local.get("ativa", (data) => {
                     campo_insere_equipes.setAttribute("id", "campo_insere_equipes");
                     var formulario_21 = Array.from(document.querySelectorAll('u')).filter(item => item.innerText == 'GU 21')[0].parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode;
                     formulario_21.parentNode.insertBefore(campo_insere_equipes, formulario_21);
-                    var vtrs_placa = new Map();
-                    vtrs_placa.set('0118', '1470'); vtrs_placa.set('0122', '4G47'); vtrs_placa.set('0124', '4B58'); vtrs_placa.set('0218', '1468'); vtrs_placa.set('0222', '4E96'); vtrs_placa.set('0224', '3D36'); vtrs_placa.set('0283', '0283'); vtrs_placa.set('0301', '0301'); vtrs_placa.set('0305', '0305'); vtrs_placa.set('0318', '1469'); vtrs_placa.set('0322', '4E69'); vtrs_placa.set('0324', '3D37'); vtrs_placa.set('0418', '1471'); vtrs_placa.set('0422', '4E64'); vtrs_placa.set('0424', '3D50'); vtrs_placa.set('0518', '1473'); vtrs_placa.set('0522', '4G77'); vtrs_placa.set('0524', '2F38'); vtrs_placa.set('0618', '1467'); vtrs_placa.set('0622', '4E77'); vtrs_placa.set('0722', '4E57'); vtrs_placa.set('0819', '8J14'); vtrs_placa.set('0822', '4G14'); vtrs_placa.set('0906', '0906'); vtrs_placa.set('0919', '8J11'); vtrs_placa.set('0922', '4E85'); vtrs_placa.set('0f11', '0F11'); vtrs_placa.set('1019', '8J26'); vtrs_placa.set('1022', '4F34'); vtrs_placa.set('1119', '9A14'); vtrs_placa.set('1122', '4E88'); vtrs_placa.set('1222', '4G49'); vtrs_placa.set('1267', '1B67'); vtrs_placa.set('1319', '8J15'); vtrs_placa.set('1322', '4G36'); vtrs_placa.set('1419', '2J01'); vtrs_placa.set('1422', '4F48'); vtrs_placa.set('1519', '2J13'); vtrs_placa.set('1522', '4F75'); vtrs_placa.set('1619', '2J14'); vtrs_placa.set('1622', '4F19'); vtrs_placa.set('1667', '1667'); vtrs_placa.set('1719', '2J15'); vtrs_placa.set('1722', '4E76'); vtrs_placa.set('1819', '2J10'); vtrs_placa.set('1822', '4G61'); vtrs_placa.set('1919', '2J11'); vtrs_placa.set('1922', '4E61'); vtrs_placa.set('1g13', '1G13'); vtrs_placa.set('1i54', '1I54'); vtrs_placa.set('1i84', '1I84'); vtrs_placa.set('1j04', '1J04'); vtrs_placa.set('2019', '2J07'); vtrs_placa.set('2022', '4F60'); vtrs_placa.set('2048', '2048'); vtrs_placa.set('2119', '2J03'); vtrs_placa.set('2219', '2J05'); vtrs_placa.set('2240', '2240'); vtrs_placa.set('2241', '2241'); vtrs_placa.set('2253', '2253'); vtrs_placa.set('2254', '2254'); vtrs_placa.set('2319', '2J08'); vtrs_placa.set('2419', '2J12'); vtrs_placa.set('2420', '2420'); vtrs_placa.set('2519', '2J09'); vtrs_placa.set('2619', '2J02'); vtrs_placa.set('2747', '2747'); vtrs_placa.set('0287', '0287'); vtrs_placa.set('0294', '0294'); vtrs_placa.set('2975', '2975'); vtrs_placa.set('2a47', '2A47'); vtrs_placa.set('2a58', '2A58'); vtrs_placa.set('2a67', '2A67'); vtrs_placa.set('2a76', '2A76'); vtrs_placa.set('2b31', '2B31'); vtrs_placa.set('2b44', '2B44'); vtrs_placa.set('2b49', '2B49'); vtrs_placa.set('2b67', '2B67'); vtrs_placa.set('2b72', '2B72'); vtrs_placa.set('2b76', '2B76'); vtrs_placa.set('2b85', '2B85'); vtrs_placa.set('2b93', '2B93'); vtrs_placa.set('2b94', '2B94'); vtrs_placa.set('3376', '3376'); vtrs_placa.set('3377', '3377'); vtrs_placa.set('3378', '3378'); vtrs_placa.set('3379', '3379'); vtrs_placa.set('3380', '3380'); vtrs_placa.set('3742', '3742'); vtrs_placa.set('3753', '3753'); vtrs_placa.set('3761', '3761'); vtrs_placa.set('3766', '3766'); vtrs_placa.set('3770', '3770'); vtrs_placa.set('3932', '3932'); vtrs_placa.set('3942', '3942'); vtrs_placa.set('3948', '3948'); vtrs_placa.set('3953', '3953'); vtrs_placa.set('3955', '3955'); vtrs_placa.set('4267', '4267'); vtrs_placa.set('4339', '4339'); vtrs_placa.set('5255', '5255'); vtrs_placa.set('5g09', '5G09'); vtrs_placa.set('6017', '6017'); vtrs_placa.set('6046', '6046'); vtrs_placa.set('6077', '6077'); vtrs_placa.set('6085', '6085'); vtrs_placa.set('6094', '6094'); vtrs_placa.set('6103', '6103'); vtrs_placa.set('6108', '6108'); vtrs_placa.set('6121', '6121'); vtrs_placa.set('6126', '6126'); vtrs_placa.set('6915', '6915'); vtrs_placa.set('6950', '6950'); vtrs_placa.set('6959', '6959'); vtrs_placa.set('6965', '6965'); vtrs_placa.set('6972', '6972'); vtrs_placa.set('0718', '1466'); vtrs_placa.set('7259', '7259'); vtrs_placa.set('7280', '7280'); vtrs_placa.set('7285', '7285'); vtrs_placa.set('7337', '7337'); vtrs_placa.set('0734', '0734'); vtrs_placa.set('7429', '7429'); vtrs_placa.set('7554', '7554'); vtrs_placa.set('7d34', '7D34'); vtrs_placa.set('7h22', '7H22'); vtrs_placa.set('7h23', '7H23'); vtrs_placa.set('7h25', '7H25'); vtrs_placa.set('7h29', '7H29'); vtrs_placa.set('7h32', '7H32'); vtrs_placa.set('7h38', '7H38'); vtrs_placa.set('8163', '8163'); vtrs_placa.set('8299', '8299'); vtrs_placa.set('8401', '8401'); vtrs_placa.set('8408', '8408'); vtrs_placa.set('8970', '8970'); vtrs_placa.set('9028', '9028'); vtrs_placa.set('9051', '9051'); vtrs_placa.set('9077', '9077'); vtrs_placa.set('9132', '9132'); vtrs_placa.set('9133', '9133'); vtrs_placa.set('9134', '9134'); vtrs_placa.set('9135', '9135'); vtrs_placa.set('9473', '9473'); vtrs_placa.set('9882', '9882'); vtrs_placa.set('9894', '9894'); vtrs_placa.set('9908', '9908');
 
                     campo_insere_equipes.addEventListener('input', function () {
                         if (campo_insere_equipes.value.includes('-&&-')) {
@@ -969,31 +959,19 @@ chrome.storage.local.get("ativa", (data) => {
                             var equipes = campo_insere_equipes.value.replaceAll('\nC0', '\nC').split('\n');
                             equipes.forEach(function (item) {
                                 if (item != '') {
-                                    if (item.split(' - ')[0].includes('C') || item.split(' - ')[0].includes('R') || item.split(' - ')[0].includes('P')) {
-                                        var campo_da_equipe = document.querySelector('div[data-params*="' + item.split(' - ')[0] + '"]');
+                                    if (item.split(' - ')[0].includes('C') || item.split(' - ')[0].includes('R') || item.split(' - ')[0].includes('P') || item.split(' - ')[0].includes('D')) {
+                                        var campo_da_equipe = document.querySelector('div[data-params*="' + item.split(' - ')[0].trim() + '"]:not([data-params*="VTR"])');
                                     } else {
                                         campo_da_equipe = document.querySelector('div[data-params*="GU ' + item.split(' - ')[0].trim() + '"]');
                                     }
                                     if (campo_da_equipe) {
-                                        var check_componente = campo_da_equipe.querySelector('div[data-answer-value*="' + item.split('\t')[1] + '"]');
-                                        if (check_componente && check_componente.ariaChecked == 'false') {
-                                            check_componente.click();
-                                        } else if (!check_componente) {
-                                            campo_da_equipe.querySelector('div[data-answer-value="__other_option__"]').click();
-                                            campo_da_equipe.querySelectorAll('input')[1].value = item.split('\t')[1] + ' ' + item.split('\t')[2];
-                                            campo_da_equipe.querySelectorAll('input')[1].dispatchEvent(new Event('input', { bubbles: true }));
-                                        }
+                                        campo_da_equipe.querySelector('input').value = campo_da_equipe.querySelector('input').value != '' ? `${campo_da_equipe.querySelector('input').value}, ${item.split('\t')[1]} ${item.split('\t')[2]} (${item.split('\t')[3]})` : `${item.split('\t')[1]} ${item.split('\t')[2]} (${item.split('\t')[3]})`;
+                                        campo_da_equipe.querySelector('input').dispatchEvent(new Event('input', { bubbles: true }));
                                     }
                                     var campo_da_vtr_da_equipe = document.querySelector('div[data-params*="VTR"][data-params*=" ' + item.split(' - ')[0] + '"]');
                                     if (campo_da_vtr_da_equipe) {
-                                        var check_vtr = campo_da_vtr_da_equipe.querySelector('div[data-answer-value*="' + item.split('\t')[4].substring(item.split('\t')[4].length - 4, item.split('\t')[4].length) + '"]');
-                                        if (check_vtr && check_vtr.ariaChecked == 'false') {
-                                            check_vtr.click();
-                                        } else if (!check_vtr) {
-                                            campo_da_vtr_da_equipe.querySelector('div[data-answer-value="__other_option__"]').click();
-                                            campo_da_vtr_da_equipe.querySelectorAll('input')[1].value = item.split('\t')[4];
-                                            campo_da_vtr_da_equipe.querySelectorAll('input')[1].dispatchEvent(new Event('input', { bubbles: true }));
-                                        }
+                                        campo_da_vtr_da_equipe.querySelector('input').value = item.split('\t')[4];
+                                        campo_da_vtr_da_equipe.querySelector('input').dispatchEvent(new Event('input', { bubbles: true }));
                                     }
                                 }
                             });
@@ -1001,7 +979,7 @@ chrome.storage.local.get("ativa", (data) => {
                     });
                     var campo_insere_qap = document.createElement("textarea");
                     campo_insere_qap.setAttribute("id", "campo_insere_qap");
-                    document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA 21"]').parentNode.insertBefore(campo_insere_qap, document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA 21"]'));
+                    document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 200"]').parentNode.insertBefore(campo_insere_qap, document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 200"]'));
                     campo_insere_qap.addEventListener('input', function () {
                         let gus_extenso = ['CRUZEIRO', 'PARTENON', 'LESTE', 'RESTINGA', 'NORTE', 'BALTAZAR', 'PINHEIRO', 'SUL', 'CENTRO', 'ROMU', 'PATAM'];
                         let gus_numero = ['21', '31', '41', '51', '61', '71', '81', '91', 'C1', 'R1', 'PATAM'];

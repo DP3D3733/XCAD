@@ -941,7 +941,7 @@ chrome.storage.local.get("ativa", (data) => {
                                         areas.push('1200 Área Centro');
                                     }
                                     if (idx == 3) {
-                                        areas.push('1000 Romu', 'Apoio', 'Comando Operacional', 'Comando Geral', 'Batedores', '1100 Patam', 'Eapc');
+                                        areas.push('1000 Romu', 'Apoio', 'Comando Operacional', 'Comando Geral', 'Batedores', '1100 Patam', 'Eapc', '1500 Daz');
                                     }
                                     if (idx == 4) {
                                         areas.push('Empenho(s) Liberado(s)');
