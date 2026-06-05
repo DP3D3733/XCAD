@@ -379,6 +379,7 @@ chrome.storage.local.get("ativa", (data) => {
                     document.querySelector('div[data-params*="COGM"]').parentNode.insertBefore(naorepete_form_gs, document.querySelector('div[data-params*="COGM"]'));
                     //Insere Equipe COGM
                     var campo_insere_cogm = document.createElement("textarea");
+                    campo_insere_cogm.setAttribute("placeholder", "Colar COGM...");
                     campo_insere_cogm.setAttribute("id", "campo_insere_cogm");
                     document.querySelector('div[data-params*="COGM"]').parentNode.insertBefore(campo_insere_cogm, document.querySelector('div[data-params*="COGM"]'));
                     var cogm_gm_nr = ['098', '110', '139', '155', '231', '336', '512', '520', '521', '523', '556', '558', '591', '621', '641', '643', '652', '660', '807', '813', '815', '831', '832', '833', '834', '839', '842', '848', '858', '867', '869', '897', '954', '928', '893', '903'];
@@ -912,6 +913,7 @@ chrome.storage.local.get("ativa", (data) => {
 
                     //Insere campo e function para inserir equipes e equipamentos
                     var campo_insere_equipes = document.createElement("textarea");
+                    campo_insere_equipes.setAttribute("placeholder", "Colar Equipes...");
                     campo_insere_equipes.setAttribute("id", "campo_insere_equipes");
                     var formulario_21 = Array.from(document.querySelectorAll('u')).filter(item => item.innerText == 'GU 21')[0].parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode;
                     formulario_21.parentNode.insertBefore(campo_insere_equipes, formulario_21);
@@ -978,6 +980,7 @@ chrome.storage.local.get("ativa", (data) => {
                         }
                     });
                     var campo_insere_qap = document.createElement("textarea");
+                    campo_insere_qap.setAttribute("placeholder", "Colar QAP...");
                     campo_insere_qap.setAttribute("id", "campo_insere_qap");
                     document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 200"]').parentNode.insertBefore(campo_insere_qap, document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 200"]'));
                     campo_insere_qap.addEventListener('input', function () {
