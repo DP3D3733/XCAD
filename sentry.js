@@ -495,9 +495,17 @@ function sentry() {
     if (url.includes('/despacho/dashboard')) {
         criarBotaoVisualizarOS();
         inserirBotaoCopiarAtendimento();
+        inserirButtonNovosBAs();
+        verificarNovosBAs();
     }
 
     if (url.includes('/despacho/attendance') && sessionStorage.getItem('associarLocal')) deixarSoOMapaVisivel();
+
+    if (url.includes('/bos?pendentes=true')) {
+        setTimeout(() => {
+            pesquisarNovosBAs();
+        }, 1000);
+    }
 }
 
 //---------------SENTRY INDIVIDUOS-------------------------------------------------------------------------------------
@@ -1580,6 +1588,83 @@ Definir ponto de encontro e aguardar liberação para deslocamento.` : '';
         console.error("Erro ao copiar:", erro);
         return;
     }
+}
+
+function inserirButtonNovosBAs() {
+    const buttonNovosBAs = `<button id="btnNovosBAs" title="Abrir BAs pendentes" onclick=window.location.href="https://sentry.procempa.com.br/web/bos?pendentes=true" style="
+        display:none;
+        position:fixed;
+        top:20px;
+        right:20px;
+        z-index:999999;
+        background:#fff;
+        border:1px solid #ccc;
+        color: white;
+        background-color: #eb595e;
+        border-radius:10px;
+        padding:10px 10px;
+        align-items:center;
+        box-shadow:0 2px 10px rgba(0,0,0,.2);
+        cursor:pointer;
+        height:20px;
+        font-size:15px;
+        gap: 5px;
+    "
+>
+    <span id="contadorNovosBAs">0</span>
+    <i class="fa fa-file"></i>
+</button>`
+
+    const tituloCAD = document.querySelector('#page-wrapper h2');
+    if (tituloCAD.innerText != 'Central de Atendimento e Despacho') return;
+    tituloCAD.insertAdjacentHTML('beforeend', buttonNovosBAs);
+    verificarNovosBAs();
+    setInterval(() => {
+        verificarNovosBAs();
+    }, 10000);
+}
+
+async function verificarNovosBAs() {
+    const response = await fetch("https://sentry.procempa.com.br/web/bos/list", {
+        headers: {
+            "accept": "application/json",
+            "content-type": "application/json",
+            "x-requested-with": "XMLHttpRequest"
+        },
+        body: JSON.stringify({
+            filter: [
+                { field: "status", type: "in", value: ["PENDING"] }
+            ],
+            page: 1,
+            size: 20,
+            sort: [
+                {
+                    field: "id",
+                    dir: "desc"
+                }
+            ]
+        }),
+        method: "POST",
+        credentials: "include"
+    });
+
+    const dados = await response.json();
+    const qtdNovosBAs = dados.data.data.length;
+    document.querySelector('#btnNovosBAs').style.display = 'none';
+    if (qtdNovosBAs == 0) return;
+    document.querySelector('#contadorNovosBAs').innerText = qtdNovosBAs;
+    document.querySelector('#btnNovosBAs').style.display = 'flex';
+}
+
+function pesquisarNovosBAs() {
+    const select = document.querySelector('#status');
+
+    [...select.options].forEach(op => {
+        op.selected = op.value === 'PENDING';
+    });
+
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+    document.querySelector("#btn-search").click();
 }
 
 
