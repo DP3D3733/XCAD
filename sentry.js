@@ -492,7 +492,10 @@ function sentry() {
     inserirCheckboxAtividadesProgramadas();
     if (url.includes('despacho/schedule-garrison') && (url.includes('/edit') || url.includes('/create'))) ajustarCodigoAreaNomeAtividadeProgramada();
 
-    if (url.includes('/despacho/dashboard')) criarBotaoVisualizarOS();
+    if (url.includes('/despacho/dashboard')) {
+        criarBotaoVisualizarOS();
+        inserirBotaoCopiarAtendimento();
+    }
 
     if (url.includes('/despacho/attendance') && sessionStorage.getItem('associarLocal')) deixarSoOMapaVisivel();
 }
@@ -862,6 +865,21 @@ async function buscarAtividadeProgramada(id) {
     const data = await response.json();
 
     return data;
+}
+
+async function buscarAtendimento(id) {
+
+    const response = await fetch(
+        `https://sentry.procempa.com.br/despacho/attendance/${id}`,
+        {
+            method: "GET",
+            credentials: "include"
+        }
+    );
+    if (!response) return;
+    const data = await response.json();
+
+    return data.attendance;
 }
 
 function prepararNovaAtividadeObjeto(atividade, novoNrOs, novaData) {
@@ -1498,6 +1516,70 @@ function finalizarAssociarLocal() {
     sessionStorage.setItem('associarLocal', JSON.stringify(associacao));
     sessionStorage.setItem('associacao', 'pronta');
 
+}
+
+function inserirBotaoCopiarAtendimento() {
+    setInterval(() => {
+        const buttonMapaAtendimento = document.querySelector('button[id*="gisEventAttendance"]');
+        if (!buttonMapaAtendimento) return;
+
+        const buttonCopiarParaWhatsAppMenu = document.querySelector('#buttonCopiarParaWhatsAppMenu');
+        if (buttonCopiarParaWhatsAppMenu) return;
+
+        const id = buttonMapaAtendimento.getAttribute('id').split('-')[1];
+        buttonMapaAtendimento.insertAdjacentHTML('beforeBegin', `
+        <button type="button" class="btn btn-primary btn-xs dash-info-edit" id="buttonCopiarParaWhatsAppMenu" onclick="copiarAtendimentoParaWhatsApp(${id})">
+            <i class="fa fa-copy"></i>
+        </button>`);
+    }, 1000);
+}
+
+async function copiarAtendimentoParaWhatsApp(id) {
+    const dadosAtendimento = await buscarAtendimento(id);
+
+    if (!dadosAtendimento) return;
+    const data = new Date(dadosAtendimento.systemUpdate);
+    const dataFormatada =
+        String(data.getDate()).padStart(2, '0') + '/' +
+        String(data.getMonth() + 1).padStart(2, '0') + '/' +
+        data.getFullYear() + ', ' +
+        String(data.getHours()).padStart(2, '0') + ':' +
+        String(data.getMinutes()).padStart(2, '0');
+
+    let mensagem = `*Demanda via ${dadosAtendimento.channel}*
+                
+*🚨ATIVAR AS CÂMERAS CORPORAIS🚨*
+
+*Data-hora:* ${dataFormatada}
+
+*Natureza:* ${dadosAtendimento.nature}
+
+*Situação:*  ${dadosAtendimento.transcription}
+
+*Endereço:*
+    ${dadosAtendimento.factPlace + ' - '}${dadosAtendimento.factStreet}, ${dadosAtendimento.factNumber}
+
+*Contato denunciante:*
+    *Nome:* ${dadosAtendimento.contactName}
+    *Número:* ${dadosAtendimento.contactPhone}
+    `;
+
+    const obsSamu = dadosAtendimento.nature == 'Apoio ao Samu' ? `
+Definir ponto de encontro e aguardar liberação para deslocamento.` : '';
+
+    mensagem += obsSamu;
+
+    try {
+        await navigator.clipboard.writeText(mensagem);
+
+        document.querySelector('#buttonCopiarParaWhatsAppMenu').innerHTML = '<i class="fa fa-check"></i>';
+        setTimeout(() => {
+            document.querySelector('#buttonCopiarParaWhatsAppMenu').innerHTML = '<i class="fa fa-copy"></i>';
+        }, 1000);
+    } catch (erro) {
+        console.error("Erro ao copiar:", erro);
+        return;
+    }
 }
 
 
