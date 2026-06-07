@@ -365,7 +365,6 @@ chrome.storage.local.get("ativa", (data) => {
                     datalist.setAttribute("name", "gm_option");
                     const gms = localStorage.getItem('gms');
                     if (!gms) return;
-                    //"<option>Agente 007 FERREIRA</option>;
                     datalist.innerHTML = JSON.parse(gms)[1].filter(item => typeof (item) == 'object').flat().map(item => `<option>Agente ${item}<option>`);
                     document.querySelector(".espaco").append(datalist);
                     document.querySelector("input[formcontrolname=nomeSolicitante]").setAttribute('list', 'gm_option');

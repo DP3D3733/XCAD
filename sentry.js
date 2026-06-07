@@ -464,7 +464,6 @@ function sentry() {
         }
 
         const dados = await response.json();
-        console.log(dados.data.list.total);
         if (dados.data.list.total == 0) return false;
         return true
     }
@@ -887,15 +886,12 @@ function prepararNovaAtividadeObjeto(atividade, novoNrOs, novaData) {
     delete atividade.systemCreation;
     delete atividade.systemUpdate;
     delete atividade.userSystemId;
-
-    console.log(atividade);
     return atividade;
 }
 
 async function cadastrarAtividadeProgramada(
     dadosDaAtividade
 ) {
-
     const anexosOriginais =
         [...(dadosDaAtividade.attachment || [])];
 
@@ -1117,7 +1113,6 @@ async function montarOS(numOS) {
     const modalBody = document.querySelector('#modalOS div.modal-body');
 
     const demandas = await buscarOS(numOS);
-    console.log(demandas);
 
 
     const resultados = await Promise.all(
@@ -1349,7 +1344,6 @@ function parserNumOSToData(numOS, osInicial = 1) {
 }
 */
 async function buscarOS(numOS) {
-    console.log(numOS);
     const response = await fetch(
         "https://sentry.procempa.com.br/despacho/schedule-garrison/list",
         {
