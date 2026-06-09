@@ -808,7 +808,8 @@ function mostrarEsconderMenuDeOpcoes() {
 }
 
 function ajustaNumOS() {
-    const dataValue = document.querySelector('#dataOSInput').value;
+    const dataValue = document.querySelector('#dataOSInput')?.value;
+    if (!dataValue || dataValue == 'Selecione') return;
     const dataObj = new Date(dataValue);
     const anoAtual = dataObj.getFullYear();
     const primeiroDeJaneiro = new Date(anoAtual, 0, 1);
@@ -1124,10 +1125,16 @@ function criarBotaoVisualizarOS() {
             document.querySelector('#selectOS').innerHTML = '<option>Selecione</option>';
             numOSs.forEach(num => {
                 select.innerHTML += `<option value="${num}">${num}</option>`;
-            })
+            });
+            const osSelecionada = sessionStorage.getItem('osSelecionada');
+            if (!osSelecionada || !select.querySelector(`option[value="${osSelecionada}"]`)) return;
+            select.querySelector(`option[value="${osSelecionada}"]`).selected = true;
+            montarOS(osSelecionada);
         })();
+
         select.addEventListener('change', async function () {
             await montarOS(this.value);
+            sessionStorage.setItem('osSelecionada', select.value);
         });
         modal.querySelector('button[data-mdb-dismiss="modal"]').addEventListener('click', () => {
             modal.style.display = 'none';
@@ -1186,10 +1193,13 @@ async function montarOS(numOS) {
             const atendimentos = guarnicoesComAtendimento.filter(
                 guarnicao => guarnicao.atividadesProgramadas.length > 0
             );
-
+            if (atendimentos[0]?.atividadesProgramadas) {
+                atendimentos[0].atividadesProgramadas[0].area = atividadeProgramada.schedule.groups.sectors[0].replaceAll('Subintendência', '').replaceAll('Regional', '').replaceAll(' da', '').trim();
+            }
             return atendimentos;
         })
     );
+
     const pesquisaPronta = [];
     pesquisaAtendimento.forEach(guarnicao => {
         guarnicao.forEach(item => {
@@ -1197,6 +1207,7 @@ async function montarOS(numOS) {
                 atividade.activities.forEach(act => {
                     const pesquisa = {};
                     pesquisa.nome = atividade.name.substring(18);
+                    pesquisa.area = atividade.area;
                     pesquisa.atividadeId = atividade.id;
                     pesquisa.id = act.dispatchList[0]?.dispatchId || '-';
                     pesquisa.local = act.placeDescr;
@@ -1217,6 +1228,7 @@ async function montarOS(numOS) {
             demanda.schedule.activities.forEach(atv => {
                 const pesquisa = {};
                 pesquisa.nome = demanda.schedule.name.substring(18);
+                pesquisa.area = demanda.schedule.groups.sectors[0].replaceAll('Subintendência', '').replaceAll('Regional', '').replaceAll(' da', '').trim();
                 pesquisa.id = '-';
                 pesquisa.local = atv.address.place || atv.address.street;
                 pesquisa.natureza = atv.reason;
@@ -1234,6 +1246,14 @@ async function montarOS(numOS) {
 
 function criarTabelaOS() {
     const tabela = new Tabulator("#tabela-os", {
+        persistentConfig: true,
+
+        persistence: {
+            columns: true,      // ordem, largura e visibilidade
+            filter: true,       // filtros
+            sort: true,         // ordenação
+            headerFilter: true  // filtros do cabeçalho
+        },
 
         layout: "fitColumns",
 
@@ -1287,6 +1307,24 @@ function criarTabelaOS() {
                 field: "nome",
                 widthGrow: 2,
                 headerFilter: "input"
+            },
+            {
+                title: "Área",
+                field: "area",
+                widthGrow: 2,
+                headerFilter: "list",
+                headerFilterParams: {
+                    valuesLookup: true, // busca valores únicos da coluna
+                    multiselect: true,
+                    clearable: true
+                },
+                headerFilterFunc: function (headerValue, rowValue) {
+                    if (!headerValue || headerValue.length === 0) {
+                        return true;
+                    }
+
+                    return headerValue.includes(rowValue);
+                }
             },
             {
                 title: "Local",
@@ -1423,8 +1461,9 @@ async function buscarNumerosOSCadastradas() {
     if (!data.data.length) return [];
 
     const numerosOS = data.data.map(atividade => atividade.name.match(/OS n\.º\s+(\d+\/\d+)/)?.[1]);
+    const numerosOsArr = [...new Set(numerosOS)].slice(0, 4);
 
-    return [...new Set(numerosOS)]
+    return numerosOsArr;
 }
 
 async function buscarGuarnicoes(dataInicial, dataFinal) {
@@ -1554,6 +1593,8 @@ async function copiarAtendimentoParaWhatsApp(id) {
         String(data.getHours()).padStart(2, '0') + ':' +
         String(data.getMinutes()).padStart(2, '0');
 
+    const qthFato = dadosAtendimento.factPlace ? dadosAtendimento.factPlace + ' - ' : '';
+
     let mensagem = `*Demanda via ${dadosAtendimento.channel}*
                 
 *🚨ATIVAR AS CÂMERAS CORPORAIS🚨*
@@ -1565,11 +1606,11 @@ async function copiarAtendimentoParaWhatsApp(id) {
 *Situação:*  ${dadosAtendimento.transcription}
 
 *Endereço:*
-    ${dadosAtendimento.factPlace + ' - '}${dadosAtendimento.factStreet}, ${dadosAtendimento.factNumber}
+    ${qthFato}${dadosAtendimento.factStreet}, ${dadosAtendimento.factNumber}
 
 *Contato denunciante:*
-    *Nome:* ${dadosAtendimento.contactName}
-    *Número:* ${dadosAtendimento.contactPhone}
+    *Nome:* ${dadosAtendimento.contactName || '-'}
+    *Número:* ${dadosAtendimento.contactPhone || '-'}
     `;
 
     const obsSamu = dadosAtendimento.nature == 'Apoio ao Samu' ? `
@@ -1666,6 +1707,8 @@ function pesquisarNovosBAs() {
     select.dispatchEvent(new Event('change', { bubbles: true }));
     document.querySelector("#btn-search").click();
 }
+
+
 
 
 
