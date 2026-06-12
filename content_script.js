@@ -18,12 +18,52 @@ window.addEventListener("message", (event) => {
     })
   }
   if (event.data.type === "atualizar_efetivo") {
-    console.log(event.data.data)
     chrome.runtime.sendMessage({ action: "atualizar_efetivo", data: event.data.data }, response => {
       if (chrome.runtime.lastError) {
         console.error("Erro na mensagem:", chrome.runtime.lastError.message);
       } else {
         sessionStorage.setItem('efetivoAtualizado', 'sim');
+      }
+    });
+  }
+  if (event.data.type === "enviarOSRotinas") {
+    chrome.runtime.sendMessage({ action: "enviarOSRotinas", demanda: event.data.data }, response => {
+      if (chrome.runtime.lastError) {
+        console.error("Erro na mensagem:", chrome.runtime.lastError.message);
+      } else {
+        sessionStorage.removeItem('aguardandoEnvioOS');
+      }
+    });
+  }
+  if (event.data.type === "excluirDemandaOSRotinas") {
+    chrome.runtime.sendMessage({ action: "excluirDemandaOSRotinas", id: event.data.id }, response => {
+      if (chrome.runtime.lastError) {
+        window.postMessage({
+          type: "excluirDemandaOSRotinasResposta",
+          status: "erro",
+          erro: erro.message
+        }, "*");
+      } else {
+        window.postMessage({
+          type: "excluirDemandaOSRotinasResposta",
+          status: "ok"
+        }, "*");
+      }
+    });
+  }
+  if (event.data.type === "enviarNovoAtendimento") {
+    chrome.runtime.sendMessage({ action: "enviarNovoAtendimento", atendimento: event.data.data }, response => {
+      if (chrome.runtime.lastError) {
+        window.postMessage({
+          type: "enviarNovoAtendimentoResposta",
+          status: "erro",
+          erro: erro.message
+        }, "*");
+      } else {
+        window.postMessage({
+          type: "enviarNovoAtendimentoResposta",
+          status: "ok"
+        }, "*");
       }
     });
   }

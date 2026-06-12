@@ -506,6 +506,10 @@ function sentry() {
             pesquisarNovosBAs();
         }, 1000);
     }
+
+    if (url.includes('despacho/attendance/')) {
+        inserirBotaoEnviarChamadaRotinas();
+    }
 }
 
 //---------------SENTRY INDIVIDUOS-------------------------------------------------------------------------------------
@@ -888,7 +892,26 @@ async function buscarAtendimento(id) {
     if (!response) return;
     const data = await response.json();
 
-    return data.attendance;
+    return data;
+}
+
+async function buscarAtendimentos() {
+    const response = await fetch(
+        "https://sentry.procempa.com.br/despacho/attendance/list",
+        {
+            headers: {
+                "accept": "application/json",
+                "content-type": "application/json",
+                "x-requested-with": "XMLHttpRequest"
+            },
+            body: JSON.stringify({ filter: [] }),
+            method: "POST",
+            credentials: "include"
+        }
+    );
+
+    const data = await response.json();
+    return data.data;
 }
 
 function prepararNovaAtividadeObjeto(atividade, novoNrOs, novaData) {
@@ -991,6 +1014,7 @@ async function excluirAtividades() {
         .map(check => check.nextElementSibling);
 
     let todasExcluidas = true;
+    let atividadesExcluidasNoRotinas = true;
     for (const atividade of atividadesSelecionadas) {
 
         const id = atividade
@@ -1000,11 +1024,47 @@ async function excluirAtividades() {
         const atividadeExcluida =
             await excluirAtividade(id);
 
-        if (!atividadeExcluida)
+        if (!atividadeExcluida) {
             todasExcluidas = false;
+            continue;
+        }
+
+        atividadesExcluidasNoRotinas = await excluirDemandaOSRotinas(id);
+
+        if (!atividadesExcluidasNoRotinas) {
+            todasExcluidas = false;
+        }
+
     }
 
+
     if (todasExcluidas) window.location.reload();
+}
+
+async function excluirDemandaOSRotinas(id) {
+    return new Promise((resolve, reject) => {
+
+        function listener(event) {
+            if (event.data.type !== "excluirDemandaOSRotinasResposta") {
+                return;
+            }
+
+            window.removeEventListener("message", listener);
+
+            if (event.data.status === "ok") {
+                resolve(true);
+            } else {
+                reject(event.data.erro);
+            }
+        }
+
+        window.addEventListener("message", listener);
+
+        window.postMessage({
+            type: "excluirDemandaOSRotinas",
+            id
+        }, "*");
+    });
 }
 
 async function excluirAtividade(id) {
@@ -1126,7 +1186,7 @@ function criarBotaoVisualizarOS() {
             numOSs.forEach(num => {
                 select.innerHTML += `<option value="${num}">${num}</option>`;
             });
-            const osSelecionada = sessionStorage.getItem('osSelecionada');
+            const osSelecionada = localStorage.getItem('osSelecionada');
             if (!osSelecionada || !select.querySelector(`option[value="${osSelecionada}"]`)) return;
             select.querySelector(`option[value="${osSelecionada}"]`).selected = true;
             montarOS(osSelecionada);
@@ -1134,7 +1194,7 @@ function criarBotaoVisualizarOS() {
 
         select.addEventListener('change', async function () {
             await montarOS(this.value);
-            sessionStorage.setItem('osSelecionada', select.value);
+            localStorage.setItem('osSelecionada', select.value);
         });
         modal.querySelector('button[data-mdb-dismiss="modal"]').addEventListener('click', () => {
             modal.style.display = 'none';
@@ -1448,6 +1508,11 @@ async function buscarNumerosOSCadastradas() {
                         field: "name",
                         type: "like",
                         value: "OS n.º "
+                    },
+                    {
+                        field: "status",
+                        type: "=",
+                        value: "Ativo"
                     }
                 ]
             })
@@ -1582,9 +1647,10 @@ function inserirBotaoCopiarAtendimento() {
 }
 
 async function copiarAtendimentoParaWhatsApp(id) {
-    const dadosAtendimento = await buscarAtendimento(id);
-
+    let dadosAtendimento = await buscarAtendimento(id);
     if (!dadosAtendimento) return;
+    dadosAtendimento.attendance.userCreated = dadosAtendimento.userCreated;
+    dadosAtendimento = dadosAtendimento.attendance;
     const data = new Date(dadosAtendimento.systemUpdate);
     const dataFormatada =
         String(data.getDate()).padStart(2, '0') + '/' +
@@ -1707,6 +1773,125 @@ function pesquisarNovosBAs() {
     select.dispatchEvent(new Event('change', { bubbles: true }));
     document.querySelector("#btn-search").click();
 }
+
+
+async function enviarChamadaRotinas(atendimento) {
+
+    return new Promise((resolve, reject) => {
+        const chamadaProntaParaEnvio = {
+            id: atendimento.id,
+            solicitante: atendimento.contactName || '',
+            numero: atendimento.contactPhone || '',
+            situacao: atendimento.transcription || '',
+            natureza: atendimento.nature || '',
+            endereco: atendimento.factPlace || `${atendimento.factStreet || ''} ${atendimento.factNumber || ''}, ${atendimento.factNeighborhood || ''}`,
+            atendente: atendimento.userCreated,
+            setor: atendimento.sectors ? atendimento.sectors[0] : '',
+            canal: atendimento.channel || '',
+            data: atendimento.systemCreation
+        };
+        console.log(chamadaProntaParaEnvio);
+        function listener(event) {
+            if (event.data.type !== "enviarNovoAtendimentoResposta") {
+                return;
+            }
+
+            window.removeEventListener("message", listener);
+
+            if (event.data.status === "ok") {
+                resolve(true);
+            } else {
+                reject(event.data.erro);
+            }
+        }
+
+        window.addEventListener("message", listener);
+
+        window.postMessage({
+            type: "enviarNovoAtendimento",
+            data: chamadaProntaParaEnvio
+        }, "*");
+    });
+}
+
+async function salvarAssociacoesEAtendimentos(associacoesEAtendimentos) {
+    const activityObservation = JSON.stringify(associacoesEAtendimentos);
+    const dados = await fetch(
+        'https://sentry.procempa.com.br/despacho/activity/8',
+        {
+            credentials: 'include'
+        }
+    ).then(r => r.json());
+
+    const atividade = dados.activity;
+
+    const payload = {
+        onDuty: atividade.onDuty.split('-').reverse().join('/'),
+        activityObservation: activityObservation,
+        bossInspector: String(atividade.bossInspector),
+        garrison: atividade.garrison,
+        bos: atividade.bos,
+        systemUpdate: atividade.systemUpdate
+    };
+
+    const response = await fetch(
+        'https://sentry.procempa.com.br/despacho/activity/8',
+        {
+            method: 'PUT',
+            credentials: 'include',
+            headers: {
+                'Accept': 'application/json, text/plain, */*',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        }
+    );
+
+    const texto = await response.text();
+
+    return texto;
+}
+
+async function buscarAssociacoesEAtendimentos() {
+
+    const response = await fetch(
+        `https://sentry.procempa.com.br/despacho/activity/8`,
+        {
+            credentials: "include"
+        }
+    );
+
+    const dados = await response.json();
+    const associacoes = dados?.activity?.activityObservation || '{}';
+    return JSON.parse(associacoes);
+}
+
+function inserirBotaoEnviarChamadaRotinas() {
+    const buttonSalvarOriginal = document.querySelector("#save");
+    if (!buttonSalvarOriginal) return;
+
+    const novoButtonSalvar = buttonSalvarOriginal.cloneNode(true);
+    novoButtonSalvar.setAttribute('id', 'novoButtonSalvar');
+    buttonSalvarOriginal.insertAdjacentElement('beforebegin', novoButtonSalvar);
+    buttonSalvarOriginal.style.display = 'none';
+    localStorage.setItem('atendimentoNovo', document.querySelector('#start').value);
+    novoButtonSalvar.addEventListener('click', () => {
+        document.querySelector("#save").click();
+    })
+}
+
+setInterval(async () => {
+    const temAtendimentoNovo = localStorage.getItem('atendimentoNovo');
+    if (!temAtendimentoNovo) return;
+    const atendimentos = await buscarAtendimentos();
+    const atendimentoNovoId = atendimentos.find(atendimento => atendimento.attendance_start == temAtendimentoNovo)?.attendance_id;
+    if (!atendimentoNovoId) return;
+    const atendimentoNovo = await buscarAtendimento(atendimentoNovoId);
+    const dadosAtendimentoNovo = atendimentoNovo.attendance;
+    dadosAtendimentoNovo.userCreated = atendimentoNovo.userCreated;
+    const enviado = await enviarChamadaRotinas(dadosAtendimentoNovo);
+    if (enviado) localStorage.removeItem('atendimentoNovo');
+}, 1000);
 
 
 

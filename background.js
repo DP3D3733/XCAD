@@ -138,7 +138,7 @@ chrome.webNavigation.onHistoryStateUpdated.addListener((details) => {
 });
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-import { getFirestore, collection, addDoc, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, doc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBag5uPzTK0sXx3nBzjGhmlmSCySO3u3_U",
@@ -268,6 +268,42 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 }
 
                 sendResponse({ dados: dados.dados });
+            } catch (e) {
+                console.error("Erro Firebase:", e);
+                sendResponse({ dados: message.data, status: "erro", error: e.message });
+            }
+        }
+        if (message.action == 'enviarOSRotinas') {
+            try {
+                console.log(message.demanda);
+                const demandas = message.demanda;
+                await Promise.all(
+                    Object.entries(demandas).map(([id, demanda]) =>
+                        setDoc(doc(db, "os", id), demanda)
+                    )
+                );
+
+                sendResponse({ status: "ok" });
+            } catch (e) {
+                console.error("Erro Firebase:", e);
+                sendResponse({ dados: message.data, status: "erro", error: e.message });
+            }
+        }
+        if (message.action == 'excluirDemandaOSRotinas') {
+            try {
+                await deleteDoc(doc(db, "os", message.id));
+                sendResponse({ status: "ok" });
+            } catch (e) {
+                console.error("Erro Firebase:", e);
+                sendResponse({ dados: message.data, status: "erro", error: e.message });
+            }
+        }
+        if (message.action == 'enviarNovoAtendimento') {
+            try {
+                console.log(message.atendimento.id);
+                await setDoc(doc(db, "chamadas", String(message.atendimento.id)), message.atendimento);
+
+                sendResponse({ status: "ok" });
             } catch (e) {
                 console.error("Erro Firebase:", e);
                 sendResponse({ dados: message.data, status: "erro", error: e.message });

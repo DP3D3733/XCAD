@@ -1,8 +1,10 @@
 let qths;
 let associacoes;
+let dadosAssociacoesEAtendimentos;
 main();
 async function main() {
-    associacoes = await buscarAssociacoes();
+    dadosAssociacoesEAtendimentos = await buscarAssociacoesEAtendimentos();
+    associacoes = dadosAssociacoesEAtendimentos.associacoes;
     qths = await listarLocais();
     criarBotaoImportarOS();
 
@@ -79,7 +81,7 @@ function criarBotaoImportarOS() {
 
         renderizarTabela(dados);
         qths = await listarLocais();
-        associacoes = await buscarAssociacoes();
+        associacoes = await buscarAssociacoesEAtendimentos().associacoes;
 
         conferirDados();
 
@@ -484,57 +486,9 @@ async function listarLocais() {
     return dados;
 }
 
-async function buscarAssociacoes() {
 
-    const response = await fetch(
-        `https://sentry.procempa.com.br/despacho/activity/8`,
-        {
-            credentials: "include"
-        }
-    );
 
-    const dados = await response.json();
-    const associacoes = dados?.activity?.activityObservation || '{}';
-    return JSON.parse(associacoes);
-}
 
-async function salvarAssociacoes(associacoes) {
-    const activityObservation = JSON.stringify(associacoes);
-    const dados = await fetch(
-        'https://sentry.procempa.com.br/despacho/activity/8',
-        {
-            credentials: 'include'
-        }
-    ).then(r => r.json());
-
-    const atividade = dados.activity;
-
-    const payload = {
-        onDuty: atividade.onDuty.split('-').reverse().join('/'),
-        activityObservation: activityObservation,
-        bossInspector: String(atividade.bossInspector),
-        garrison: atividade.garrison,
-        bos: atividade.bos,
-        systemUpdate: atividade.systemUpdate
-    };
-
-    const response = await fetch(
-        'https://sentry.procempa.com.br/despacho/activity/8',
-        {
-            method: 'PUT',
-            credentials: 'include',
-            headers: {
-                'Accept': 'application/json, text/plain, */*',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
-        }
-    );
-
-    const texto = await response.text();
-
-    return texto;
-}
 
 function associarLocal(local) {
     sessionStorage.setItem('associarLocal', local.innerHTML.split('<div')[0].trim());
@@ -559,7 +513,8 @@ function associarLocal(local) {
 
         const associacaoPronta = JSON.parse(sessionStorage.getItem('associarLocal'));
         Object.assign(associacoes, associacaoPronta);
-        salvarAssociacoes(associacoes);
+        dadosAssociacoesEAtendimentos[associacoes] = associacoes;
+        salvarAssociacoesEAtendimentos(dadosAssociacoesEAtendimentos);
         document.querySelector("#arquivo").dispatchEvent(
             new Event('change', {
                 bubbles: true
@@ -652,7 +607,11 @@ async function importarOS() {
             return await cadastrarAtividadeProgramada(demanda);
         })
     );
-    if (resultados) window.location.reload();
+    atualizarOSRotinas(document.querySelector('#numOS').value + '/' + document.querySelector('#ano').value);
+    sessionStorage.setItem('aguardandoEnvioOS', 'sim');
+    setInterval(() => {
+        if (!sessionStorage.getItem('aguardandoEnvioOS')) window.location.reload();
+    }, 100);
 }
 
 function verificarQualArea(gu) {
@@ -678,8 +637,8 @@ function verificarQualArea(gu) {
 function verificarEndereco(local) {
     const l = qths.data.data.find(qth => local.includes(qth.name)) || associacoes[local];
     const endereco = {
-        "name": l.name || l.place,
-        "type": l.type || l.placeType,
+        "place": l.name || l.place,
+        "placeType": l.type || l.placeType,
         "district": l.district || l.state,
         "city": l.city,
         "neighborhood": l.neighborhood,
@@ -753,6 +712,52 @@ function obterDataPorOS(numeroOS, ano) {
     const dd = String(data.getDate()).padStart(2, '0');
 
     return `${yyyy}-${mm}-${dd}`;
+}
+
+async function atualizarOSRotinas(numOS) {
+    const atividadesProgramadasIds = await buscarOS(numOS);
+
+    const atividadesProgramadas = await Promise.all(
+        atividadesProgramadasIds.map(atividade =>
+            buscarAtividadeProgramada(atividade.id)
+        )
+    );
+    let dataOS;
+    const atividadesProntasParaEnvio = {};
+
+    atividadesProgramadas.forEach(atividade => {
+        const id = atividade.schedule.id;
+
+        const dadosAtividade = atividade.schedule;
+        atividadesProntasParaEnvio[id] = {};
+        atividadesProntasParaEnvio[id].nomeDemanda = atividade.schedule.name.split(' - ')[1];
+        atividadesProntasParaEnvio[id].finalidade = atividade.schedule.description;
+        atividadesProntasParaEnvio[id].natureza = atividade.schedule.activities[0].reason;
+        const enderecoDados = atividade.schedule.activities[0].address;
+        atividadesProntasParaEnvio[id].qth = enderecoDados.place || '';
+        atividadesProntasParaEnvio[id].endereco = `${enderecoDados.street}${enderecoDados.number ? ', ' + enderecoDados.number : ''} - ${enderecoDados.neighborhood}`;
+        atividadesProntasParaEnvio[id].area = atividade.schedule.groups.sectors[0];
+        const horaInicial = atividade.schedule.activities[0].hours.startHour;
+        let horaFinal = '';
+        if (atividade.schedule.activities[0].hours.endHour) horaFinal = atividade.schedule.activities[0].hours.endHour;
+        if (atividade.schedule.activities[0].hours.duration) {
+            const [h, m] = horaInicial.split(':').map(Number);
+            const [dh, dm] = atividade.schedule.activities[0].hours.duration.split(':').map(Number);
+
+            const data = new Date();
+            data.setHours(h, m, 0, 0);
+
+            data.setMinutes(data.getMinutes() + (dh * 60) + dm);
+
+            horaFinal = data.toTimeString().slice(0, 5);
+        }
+        if (!dataOS) dataOS = new Date(atividade.schedule.dateUsageMin).toISOString();
+        const [ano, mes, dia] = atividade.schedule.dateUsageMin.split('-');
+        atividadesProntasParaEnvio[id].dataHoraInicial = (new Date(atividade.schedule.dateUsageMin + ' ' + horaInicial)).toISOString();
+        const diaFinal = horaFinal.split(':').map(Number)[0] < horaInicial.split(':').map(Number)[0] ? parseInt(dia) + 1 : dia;
+        atividadesProntasParaEnvio[id].dataHoraFinal = (new Date(atividade.schedule.dateUsageMax + ' ' + horaFinal)).toISOString();
+    })
+    window.postMessage({ type: "enviarOSRotinas", data: atividadesProntasParaEnvio }, "*");
 }
 
 
