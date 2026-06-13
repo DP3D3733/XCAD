@@ -4,10 +4,24 @@ let dadosAssociacoesEAtendimentos;
 main();
 async function main() {
     dadosAssociacoesEAtendimentos = await buscarAssociacoesEAtendimentos();
-    associacoes = dadosAssociacoesEAtendimentos.associacoes;
+    associacoes = dadosAssociacoesEAtendimentos;
     qths = await listarLocais();
     criarBotaoImportarOS();
 
+}
+
+async function buscarAssociacoesEAtendimentos() {
+
+    const response = await fetch(
+        `https://sentry.procempa.com.br/despacho/activity/8`,
+        {
+            credentials: "include"
+        }
+    );
+
+    const dados = await response.json();
+    const associacoes = dados?.activity?.activityObservation || '{}';
+    return JSON.parse(associacoes);
 }
 
 
@@ -81,7 +95,7 @@ function criarBotaoImportarOS() {
 
         renderizarTabela(dados);
         qths = await listarLocais();
-        associacoes = await buscarAssociacoesEAtendimentos().associacoes;
+        associacoes = await buscarAssociacoesEAtendimentos();
 
         conferirDados();
 
@@ -424,7 +438,7 @@ function conferirDados() {
     const qthsNomes = qths.data.data.map(qth => qth.name);
     const naturezas = ['PATRULHAMENTO PREVENTIVO', 'AÇÃO PRÓPRIA', 'AÇÃO INTEGRADA', 'AÇÃO CONJUNTA', 'FISCALIZAÇÃO E POLICIAMENTO - EVENTOS'];
     const guarnicoes = ['21', '31', '41', '51', '61', '71', '81', '91', '22', '32', '42', '52', '62', '72', '82', '92', 'C1', 'C2', 'C3', 'C4', 'C5'];
-    const areas = ['CRUZEIRO', 'PARTENON', 'LESTE', 'RESTINGA', 'NORTE', 'EIXO BALTAZAR', 'PINHEIRO', 'EIXO SUL', 'CENTRO', 'CHARLIE', 'ROMU'];
+    const areas = ['CRUZEIRO', 'PARTENON', 'LESTE', 'RESTINGA', 'NORTE', 'EIXO BALTAZAR', 'PINHEIRO', 'EIXO SUL', 'CENTRO', 'CHARLIE', 'ROMU', 'DAZ'];
 
     const linhas = document.querySelectorAll('#resultado tbody tr');
     linhas.forEach(linha => {
@@ -490,7 +504,7 @@ async function listarLocais() {
 
 
 
-function associarLocal(local) {
+async function associarLocal(local) {
     sessionStorage.setItem('associarLocal', local.innerHTML.split('<div')[0].trim());
     document
         .getElementById('iframeMapa')
@@ -513,8 +527,8 @@ function associarLocal(local) {
 
         const associacaoPronta = JSON.parse(sessionStorage.getItem('associarLocal'));
         Object.assign(associacoes, associacaoPronta);
-        dadosAssociacoesEAtendimentos[associacoes] = associacoes;
-        salvarAssociacoesEAtendimentos(dadosAssociacoesEAtendimentos);
+        dadosAssociacoesEAtendimentos = associacoes;
+        await salvarAssociacoesEAtendimentos(dadosAssociacoesEAtendimentos);
         document.querySelector("#arquivo").dispatchEvent(
             new Event('change', {
                 bubbles: true
@@ -629,7 +643,7 @@ function verificarQualArea(gu) {
         'C': { numeralArea: 1200, subintendencia: "Subintendência Regional Centro" },
         'D': { numeralArea: 1500, subintendencia: "Divisão de Ação Zoneada" },
     }
-    const area = areas[gu.trim().toUpperCase().replaceAll('\n', '').replaceAll('GU ', '').charAt(0)];
+    const area = areas[gu.toUpperCase().replaceAll('\n', '').replaceAll('GU', '').replaceAll('GM', '').replaceAll('GCM', '').trim().charAt(0)];
     if (!area) return console.log(gu, 'não encontrado');
     return area;
 }

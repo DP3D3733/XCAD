@@ -1622,7 +1622,7 @@ function finalizarAssociarLocal() {
         "latitude": document.querySelector('#factLatitude').value,
         "longitude": document.querySelector('#factLongitude').value,
         "sectors": [
-            document.querySelector("#factSectors").selectedOptions[0].value
+            document.querySelector("#factSectors").selectedOptions[0]?.value || ''
         ]
     }
     sessionStorage.setItem('associarLocal', JSON.stringify(associacao));
@@ -1660,6 +1660,8 @@ async function copiarAtendimentoParaWhatsApp(id) {
         String(data.getMinutes()).padStart(2, '0');
 
     const qthFato = dadosAtendimento.factPlace ? dadosAtendimento.factPlace + ' - ' : '';
+    const enderecoFato = `${dadosAtendimento.factStreet ? dadosAtendimento.factStreet + ', ' : ''}${dadosAtendimento.factNumber ? dadosAtendimento.factNumber + ' - ' : ''}${dadosAtendimento.factNeighborhood ? dadosAtendimento.factNeighborhood : ''}`;
+    const linkEndereco = dadosAtendimento.factLatitude && dadosAtendimento.factLongitude ? `https://www.google.com/maps?q=${dadosAtendimento.factLatitude},${dadosAtendimento.factLongitude}` : '';
 
     let mensagem = `*Demanda via ${dadosAtendimento.channel}*
                 
@@ -1672,7 +1674,8 @@ async function copiarAtendimentoParaWhatsApp(id) {
 *Situação:*  ${dadosAtendimento.transcription}
 
 *Endereço:*
-    ${qthFato}${dadosAtendimento.factStreet}, ${dadosAtendimento.factNumber}
+    ${qthFato}${enderecoFato}
+    ${linkEndereco}
 
 *Contato denunciante:*
     *Nome:* ${dadosAtendimento.contactName || '-'}
@@ -1852,19 +1855,7 @@ async function salvarAssociacoesEAtendimentos(associacoesEAtendimentos) {
     return texto;
 }
 
-async function buscarAssociacoesEAtendimentos() {
 
-    const response = await fetch(
-        `https://sentry.procempa.com.br/despacho/activity/8`,
-        {
-            credentials: "include"
-        }
-    );
-
-    const dados = await response.json();
-    const associacoes = dados?.activity?.activityObservation || '{}';
-    return JSON.parse(associacoes);
-}
 
 function inserirBotaoEnviarChamadaRotinas() {
     const buttonSalvarOriginal = document.querySelector("#save");
