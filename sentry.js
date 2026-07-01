@@ -554,6 +554,8 @@ async function colarIndividuo() {
         dados.CPF = dados.CPF.replaceAll('/', '-');
         dados.Naturalidade = (`${dados.Naturalidade.substring(0, dados.Naturalidade.length - 2)} - ${dados.Naturalidade.substr(-2)}`).toUpperCase();
         dados['Cor da pele'] = (dados['Cor da pele'].substring(0, dados['Cor da pele'].length - 1) + 'O').toUpperCase();
+        if (dados['Cor da pele'] == 'PRETO') dados['Cor da pele'] = 'NEGRO';
+        console.log(dados['Cor da pele']);
         dados.Sexo = dados.Sexo.toUpperCase();
         dados.Nacionalidade = cidadeEhDoBrasil(dados.Naturalidade) ? 'BRASIL' : '';
 

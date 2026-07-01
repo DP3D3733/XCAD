@@ -613,9 +613,10 @@ async function importarOS() {
             }
         ];
         if (horarioFixo == 'INTERVAL') demandaObj.activities[0].hours.endHour = horarioFinal;
+        if (iniciarOutroDia || terminarOutroDia) console.log(demandaObj);
         return demandaObj;
     });
-
+    return;
     const resultados = await Promise.all(
         demandasProntas.map(async demanda => {
             return await cadastrarAtividadeProgramada(demanda);
@@ -670,12 +671,19 @@ function verificarHorario(texto) {
 
     const inicio = partes[0];
 
+    const numOS = document.querySelector('#numOS').value;
+
+    let iniciarOutroDia = false;
+
     const ehOutroDia = (hora) => {
         const [h, m] = hora.split(':').map(Number);
-        return (h * 60 + m) <= (6 * 60 + 30);
+        return (h * 60 + m) < (6 * 60 + 30);
     };
 
-    const iniciarOutroDia = ehOutroDia(inicio);
+    if (parseInt(numOS) % 2 == 0) {
+        iniciarOutroDia = ehOutroDia(inicio);
+    }
+
 
     if (partes.length === 1) {
         return {
