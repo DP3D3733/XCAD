@@ -45,7 +45,7 @@ function criarBotaoImportarOS() {
                     <input type="number" id="numOS" placeholder="001" value="${numOSInicial[0]}" /><input type="number" id="ano" placeholder="2026"  value="${numOSInicial[1]}" />
                 </div>
                 <div class="modal-body">
-                    <input type="file" id="arquivo" accept=".zip">
+                    <input type="file" id="arquivo" accept=".zip"><label><input id=checkVerCertas type=checkbox checked=true />Certas</label><label><input id=checkVerErradas type=checkbox checked=true />Erradas</label>
                     <div id="resultado"></div>
                 </div>
                 <div class="modal-footer">
@@ -128,18 +128,28 @@ function extrairDados(doc) {
     const resultado = [];
 
     const elementos = Array.from(doc.body.children);
-
+    console.log(elementos.find(el => el.innerText.includes('ORDEM DE SERVIÇO'))?.innerText);
     let secaoAtual = '';
     let finalidadeAtual = '';
     let naturezaAtual = '';
+    const numAnoOSDiv = elementos.find(el => el.innerText.includes('ORDEM DE SERVIÇO'));
+    if (numAnoOSDiv) {
+        const resultado = numAnoOSDiv.innerText.replace(/[^\d/]/g, "");
+        const numOSInput = document.querySelector('#numOS');
+        const anoOSInput = document.querySelector('#ano');
+        numOSInput.value = resultado.split('/')[0];
+        anoOSInput.value = resultado.split('/')[1];
+    }
 
     for (const el of elementos) {
+
 
         if (el.tagName === 'H1') {
             secaoAtual = limpar(el.innerText);
         }
 
         const texto = limpar(el.innerText || '');
+
 
         if (texto.startsWith('FINALIDADE:')) {
 
@@ -312,6 +322,7 @@ function renderizarTabela(dados) {
                 <th style="position:sticky;top:0;z-index:101;background:#fff;">FINALIDADE</th>
                 <th style="position:sticky;top:0;z-index:101;background:#fff;">NATUREZA</th>
                 <th style="position:sticky;top:0;z-index:101;background:#fff;">LOCAL</th>
+                <th style="position:sticky;top:0;z-index:101;background:#fff;">ASSOCIAÇÃO</th>
                 <th style="position:sticky;top:0;z-index:101;background:#fff;">RECURSO</th>
                 <th style="position:sticky;top:0;z-index:101;background:#fff;">HORÁRIO</th>
                 <th style="position:sticky;top:0;z-index:101;background:#fff;">ATIVIDADE</th>
@@ -321,6 +332,7 @@ function renderizarTabela(dados) {
 
             <tr>
                 <th style="position:sticky;top:35px;z-index:100;background:#fff;"></th>
+                <th contenteditable="true" oninput="filtrarDemandas(this)" style="position:sticky;top:35px;z-index:100;background:#fff;border:1px solid #ccc;padding:8px"></th>
                 <th contenteditable="true" oninput="filtrarDemandas(this)" style="position:sticky;top:35px;z-index:100;background:#fff;border:1px solid #ccc;padding:8px"></th>
                 <th contenteditable="true" oninput="filtrarDemandas(this)" style="position:sticky;top:35px;z-index:100;background:#fff;border:1px solid #ccc;padding:8px"></th>
                 <th contenteditable="true" oninput="filtrarDemandas(this)" style="position:sticky;top:35px;z-index:100;background:#fff;border:1px solid #ccc;padding:8px"></th>
@@ -343,6 +355,7 @@ function renderizarTabela(dados) {
                 <td contenteditable="true" style="border:1px solid #ccc;padding:8px">${escapeHtml(item.secao)}</td>
                 <td contenteditable="true" style="border:1px solid #ccc;padding:8px">${escapeHtml(item.finalidade)}</td>
                 <td contenteditable="true" style="border:1px solid #ccc;padding:8px">${escapeHtml(item.natureza)}</td>
+                <td contenteditable="true" style="border:1px solid #ccc;padding:8px">${escapeHtml(item.local).replaceAll('\n', '<br>')}</td>
                 <td style="
                     border:1px solid #ccc;
                     padding:8px;
@@ -351,8 +364,7 @@ function renderizarTabela(dados) {
                 onmouseenter="this.querySelector('.acoes').style.display='flex'"
                 onmouseleave="this.querySelector('.acoes').style.display='none'">
 
-                    ${escapeHtml(item.local).replaceAll('\n', '<br>')}
-
+                    <div class="associacao"></div>
                     <div class="acoes"
                         style="
                             display:none;
@@ -361,7 +373,7 @@ function renderizarTabela(dados) {
                             right:4px;
                             gap:4px;
                         ">
-                        <button onclick="associarLocal(this.closest('td'))">📍</button>
+                        <button onclick="associarLocal(this.closest('td').previousElementSibling)">📍</button>
                     </div>
 
                 </td>
@@ -441,10 +453,11 @@ function conferirDados() {
     const areas = ['CRUZEIRO', 'PARTENON', 'LESTE', 'RESTINGA', 'NORTE', 'EIXO BALTAZAR', 'PINHEIRO', 'EIXO SUL', 'CENTRO', 'CHARLIE', 'ROMU', 'DAZ'];
 
     const linhas = document.querySelectorAll('#resultado tbody tr');
+    console.log(associacoes);
     linhas.forEach(linha => {
         const celulas = linha.querySelectorAll('td');
         for (let index = 0; index < celulas.length; index++) {
-            if ((index == 1 || index == 3 || index == 4 || index == 5) && celulas[index].innerText.trim() == '') {
+            if ((index == 1 || index == 3 || index == 4 || index == 6) && celulas[index].innerText.trim() == '') {
                 celulas[index].closest('tr').classList.add('errada');
                 celulas[index].style.backgroundColor = "#df6060";
                 continue;
@@ -454,14 +467,20 @@ function conferirDados() {
                 celulas[3].style.backgroundColor = "#df6060";
                 continue;
             }
-            if (index == 4 && (!qthsNomes.find(qth => celulas[4].innerText.includes(qth)) && !associacoes[celulas[4].innerHTML.split('<div')[0].trim()])) {
+            if (index == 4 && (!qthsNomes.find(qth => celulas[4].innerText.includes(qth)) && (!associacoes[celulas[4].innerText.trim()] || (!associacoes[celulas[4].innerText.trim()].place && !associacoes[celulas[4].innerText.trim()].street)))) {
                 celulas[4].closest('tr').classList.add('errada');
                 celulas[4].style.backgroundColor = "#df6060";
                 continue;
             }
-            if (index == 5 && (!guarnicoes.find(guarnicao => celulas[5].innerText.includes(guarnicao)) && !areas.find(area => celulas[5].innerText.includes(area)))) {
-                celulas[5].closest('tr').classList.add('errada');
-                celulas[5].style.backgroundColor = "#df6060";
+            if (qthsNomes.find(qth => celulas[4].innerText.includes(qth))) {
+                celulas[5].querySelector('div.associacao').innerText = qthsNomes.find(qth => celulas[4].innerText.includes(qth));
+            } else if (associacoes[celulas[4].innerText.trim()]) {
+                const ass = associacoes[celulas[4].innerText.trim()];
+                celulas[5].querySelector('div.associacao').innerText = `${ass.place} - ${ass.street}, ${ass.number} - ${ass.neighborhood}`;
+            };
+            if (index == 6 && (!guarnicoes.find(guarnicao => celulas[6].innerText.includes(guarnicao)) && !areas.find(area => celulas[6].innerText.includes(area)))) {
+                celulas[6].closest('tr').classList.add('errada');
+                celulas[6].style.backgroundColor = "#df6060";
                 continue;
             }
             celulas[index].style.backgroundColor = "white";
@@ -505,7 +524,7 @@ async function listarLocais() {
 
 
 async function associarLocal(local) {
-    sessionStorage.setItem('associarLocal', local.innerHTML.split('<div')[0].trim());
+    sessionStorage.setItem('associarLocal', local.innerText.trim());
     document
         .getElementById('iframeMapa')
         .src = 'https://sentry.procempa.com.br/web/despacho/attendance/create';
@@ -529,11 +548,7 @@ async function associarLocal(local) {
         Object.assign(associacoes, associacaoPronta);
         dadosAssociacoesEAtendimentos = associacoes;
         await salvarAssociacoesEAtendimentos(dadosAssociacoesEAtendimentos);
-        document.querySelector("#arquivo").dispatchEvent(
-            new Event('change', {
-                bubbles: true
-            })
-        );
+        conferirDados();
         sessionStorage.removeItem('associacao');
         sessionStorage.removeItem('associarLocal');
 
@@ -573,19 +588,20 @@ async function importarOS() {
         const finalidade = celulas[2].innerText;
         const naturezas = ['Patrulhamento Preventivo', 'Ação Própria', 'Ação Integrada', 'Ação Conjunta', 'Fiscalização e Policiamento em Eventos'];
         const natureza = naturezas.find(nat => nat.toUpperCase().includes(celulas[3].innerText.substring(0, 10)));
-        const local = verificarEndereco(celulas[4].innerHTML.split('<div')[0].trim());
-        const recurso = verificarQualArea(celulas[5].innerText);
-        const dadosHorario = verificarHorario(celulas[6].innerText);
+        const local = verificarEndereco(celulas[4].innerText.split('<div')[0].trim());
+        console.log(local);
+        const recurso = verificarQualArea(celulas[6].innerText);
+        const dadosHorario = verificarHorario(celulas[7].innerText);
         const horárioInicial = dadosHorario.inicio;
         const horarioFinal = dadosHorario.fim;
         const duracao = dadosHorario.duracao;
         const iniciarOutroDia = dadosHorario.iniciarOutroDia;
         const terminarOutroDia = dadosHorario.terminarOutroDia;
-        const atividade = celulas[7].innerText;
-        const horarioFixo = celulas[8].querySelector('input').checked ? 'FIXED' : 'INTERVAL';
-        const repetir = celulas[9].querySelector('input').checked;
+        const atividade = celulas[8].innerText;
+        const horarioFixo = celulas[9].querySelector('input').checked ? 'FIXED' : 'INTERVAL';
+        const repetir = celulas[10].querySelector('input').checked;
         const demandaObj = {};
-        demandaObj.name = `${numOS} - ${nome} - ${celulas[4].innerText} - ${recurso.numeralArea} - ${celulas[6].innerText}`;
+        demandaObj.name = `${numOS} - ${nome} - ${celulas[4].innerText} - ${recurso.numeralArea} - ${celulas[7].innerText}`;
         demandaObj.dateUsageMin = dataOS;
         demandaObj.dateUsageMax = dataOS;
         demandaObj.description = finalidade;
@@ -613,10 +629,8 @@ async function importarOS() {
             }
         ];
         if (horarioFixo == 'INTERVAL') demandaObj.activities[0].hours.endHour = horarioFinal;
-        if (iniciarOutroDia || terminarOutroDia) console.log(demandaObj);
         return demandaObj;
     });
-    return;
     const resultados = await Promise.all(
         demandasProntas.map(async demanda => {
             return await cadastrarAtividadeProgramada(demanda);
