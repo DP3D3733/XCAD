@@ -309,6 +309,31 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 sendResponse({ dados: message.data, status: "erro", error: e.message });
             }
         }
+
+        if (message.action == 'novoAlertaCercamento') {
+            const endereco = await buscarEndereco(message.endereco);
+            message.atendimento.factCity = endereco.cidade;
+            message.atendimento.factNeighborhood = endereco.bairro;
+            message.atendimento.factStreet = endereco.rua;
+            message.atendimento.factLatitude = endereco.latitude;
+            message.atendimento.factLongitude = endereco.longitude;
+            message.atendimento.factNumber = endereco.numero;
+
+            const [tab] = await chrome.tabs.query({
+                url: "*://cercamento.procempa.com.br/*"
+            });
+
+            if (tab) {
+                await chrome.windows.update(tab.windowId, {
+                    state: "normal",
+                    focused: true
+                });
+
+                await chrome.tabs.update(tab.id, {
+                    active: true
+                });
+            }
+        }
     })();
     return true; // <- IMPORTANTE: garante que o canal fica aberto até o sendResponse
 });
@@ -332,5 +357,128 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
         return true;
     }
+});
+
+async function buscarEndereco(endereco) {
+    try {
+        const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${encodeURIComponent(endereco)}`;
+
+        const res = await fetch(url);
+
+        if (!res.ok) {
+            throw new Error(`HTTP ${res.status} - ${res.statusText}`);
+        }
+
+        const data = await res.json();
+
+        if (!Array.isArray(data) || data.length === 0) {
+            return null;
+        }
+
+        const item = data[0];
+        const addr = item.address ?? {};
+
+        return {
+            rua: addr.road ?? null,
+            numero: addr.house_number ?? null,
+            bairro: addr.suburb ?? addr.neighbourhood ?? null,
+            cidade: addr.city ?? addr.town ?? addr.village ?? null,
+            estado: addr.state ?? null,
+            cep: addr.postcode ?? null,
+            latitude: item.lat,
+            longitude: item.lon
+        };
+    } catch (err) {
+        console.error("Erro ao consultar endereço:", err);
+
+        return {
+            erro: true,
+            mensagem: err.message
+        };
+    }
+}
+
+chrome.commands.onCommand.addListener(async (command) => {
+    if (command !== "pesquisarEfetivo" && command !== "pesquisarQTH") return;
+
+    const urls = { "pesquisarEfetivo": "https://sentry.procempa.com.br/web/effectives", "pesquisarQTH": "https://www.google.com/maps/d/u/0/edit?mid=1bfLD9QS9_oIRo5AXkl9IaIpvcfDkiAw&ll=-30.00223405574897%2C-51.2272405&z=12" };
+
+    console.log(urls[command]);
+
+    const [targetTab] = await chrome.tabs.query({
+        url: urls[command]
+    });
+
+    if (targetTab) {
+        // Traz a janela para frente e ativa a aba
+        await chrome.windows.update(targetTab.windowId, {
+            focused: true
+        });
+
+        await chrome.tabs.update(targetTab.id, {
+            active: true
+        });
+
+        if (targetTab.status === "complete") {
+            enviarMensagem(targetTab.id);
+        } else {
+            const listener = (tabId, info) => {
+                if (tabId === targetTab.id && info.status === "complete") {
+                    chrome.tabs.onUpdated.removeListener(listener);
+                    enviarMensagem(targetTab.id);
+                }
+            };
+
+            chrome.tabs.onUpdated.addListener(listener);
+        }
+
+        return;
+    }
+
+    // Não existe aba aberta, cria uma nova
+    chrome.tabs.create(
+        {
+            url: urls[command],
+            active: true
+        },
+        (novaTab) => {
+
+            const listener = (tabId, info) => {
+
+                if (
+                    tabId === novaTab.id &&
+                    info.status === "complete"
+                ) {
+
+                    chrome.tabs.onUpdated.removeListener(listener);
+
+                    enviarMensagem(novaTab.id);
+
+                }
+
+            };
+
+            chrome.tabs.onUpdated.addListener(listener);
+
+        }
+    );
+
+    function enviarMensagem(tabId) {
+
+        chrome.tabs.sendMessage(
+            tabId,
+            {
+                action: "focarEfetivo"
+            },
+            () => {
+                // Evita erro caso o content script ainda não esteja disponível
+                if (chrome.runtime.lastError) {
+                    console.warn(chrome.runtime.lastError.message);
+                }
+            }
+        );
+
+    }
+
 });
 

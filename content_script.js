@@ -71,6 +71,16 @@ window.addEventListener("message", (event) => {
     sessionStorage.removeItem('efetivoAtualizado');
     window.reload();
   }
+  if (event.data.type === "novoAlertaCercamento") {
+    chrome.runtime.sendMessage({ action: "novoAlertaCercamento", atendimento: event.data.data, endereco: event.data.endereco });
+  }
+
+});
+
+chrome.runtime.onMessage.addListener((message) => {
+  if (message.action === "focarEfetivo") {
+    window.postMessage({ type: "focarEfetivo" }, "*");
+  }
 });
 const url = window.location.href;
 if (url.includes('sentry')) {
@@ -87,4 +97,16 @@ if (url.includes('sentry.procempa.com.br/web/despacho/schedule-garrison')) {
   const scriptJSZip = document.createElement("script");
   scriptJSZip.src = chrome.runtime.getURL("jszip.js");
   document.documentElement.appendChild(scriptJSZip);
+}
+
+if (url.includes('cercamento.procempa.com.br')) {
+  const script = document.createElement("script");
+  script.src = chrome.runtime.getURL("cercamento.js");
+  document.documentElement.appendChild(script);
+}
+
+if (url.includes('sso-pmpa.procempa')) {
+  const script = document.createElement("script");
+  script.src = chrome.runtime.getURL("loginAutoProcempa.js");
+  document.documentElement.appendChild(script);
 }
