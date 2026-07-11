@@ -485,6 +485,25 @@ function sentry() {
             }
         }
 
+        if (event.data?.type === "focarEfetivo") {
+            const intervalEsperaRenderizarFiltro = setInterval(() => {
+                const tabela = Tabulator.findTable("#tabela2")[0];
+                const coluna = tabela.getColumn("namewar");
+
+                if (coluna) {
+                    const elemento = coluna.getElement();
+                    const filtro = elemento.querySelector(".tabulator-header-filter input");
+
+
+                    if (filtro) {
+                        clearInterval(intervalEsperaRenderizarFiltro);
+                        filtro.focus();
+                    }
+                }
+            }, 100);
+
+        }
+
     });
     if (url.includes('/individual') && !url.includes('/create')) inserirBotaoColarIndividuo();
 
@@ -496,6 +515,7 @@ function sentry() {
         criarBotaoVisualizarOS();
         inserirBotaoCopiarAtendimento();
         inserirButtonNovosBAs();
+        inserirButtonNovosAtendimentosCercamento();
         verificarNovosBAs();
     }
 
@@ -1738,6 +1758,36 @@ function inserirButtonNovosBAs() {
     }, 10000);
 }
 
+function inserirButtonNovosAtendimentosCercamento() {
+    const buttonNovosBAs = `<button id="btnNovosAtendimentosCercamentos" title="Registrar Novos Atendimentos do Cercamento" onclick="() => registrarNovosAtendimentosCercamento()" style="
+        display:none;
+        position:fixed;
+        top:20px;
+        right:20px;
+        z-index:999999;
+        background:#fff;
+        border:1px solid #ccc;
+        color: white;
+        background-color: #eb595e;
+        border-radius:10px;
+        padding:10px 10px;
+        align-items:center;
+        box-shadow:0 2px 10px rgba(0,0,0,.2);
+        cursor:pointer;
+        height:20px;
+        font-size:15px;
+        gap: 5px;
+    "
+>
+    <span id="contadorNovosBAs">0</span>
+    <i class="fa fa-camera-retro"></i>
+</button>`
+
+    const tituloCAD = document.querySelector('#page-wrapper h2');
+    if (tituloCAD.innerText != 'Central de Atendimento e Despacho') return;
+    tituloCAD.insertAdjacentHTML('beforeend', buttonNovosBAs);
+}
+
 async function verificarNovosBAs() {
     const response = await fetch("https://sentry.procempa.com.br/web/bos/list", {
         headers: {
@@ -1887,6 +1937,58 @@ setInterval(async () => {
     const enviado = await enviarChamadaRotinas(dadosAtendimentoNovo);
     if (enviado) localStorage.removeItem('atendimentoNovo');
 }, 1000);
+
+setInterval(() => {
+    const btnNovosAtendimentosCercamento = document.querySelector('#btnNovosAtendimentosCercamento');
+    if (!btnNovosAtendimentosCercamento) return;
+
+    const json = sessionStorage.getItem("atendimentosCercamento");
+    if (!json) return;
+
+    const atendimentos = JSON.parse(json);
+    if (!atendimentos.length) return;
+
+    btnNovosAtendimentosCercamento.style.display = '';
+}, 1000);
+
+async function registrarNovosAtendimentosCercamento() {
+    const json = sessionStorage.getItem("atendimentosCercamento");
+    if (!json) return;
+
+    const atendimentos = JSON.parse(json);
+    if (!atendimentos.length) return;
+
+    try {
+        await Promise.all(
+            atendimentos.map(atendimento => registrarAtendimento(atendimento))
+        );
+
+        sessionStorage.removeItem("atendimentosCercamento");
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+async function registrarAtendimento(model) {
+    const form = new FormData();
+    form.append("myModel", JSON.stringify(model));
+
+    const response = await fetch(
+        "https://sentry.procempa.com.br/despacho/attendance",
+        {
+            method: "POST",
+            credentials: "include",
+            body: form
+        }
+    );
+
+    if (!response.ok) {
+        const erro = await response.text();
+        throw new Error(`HTTP ${response.status}: ${erro}`);
+    }
+
+    return await response.json();
+}
 
 
 

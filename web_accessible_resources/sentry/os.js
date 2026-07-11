@@ -453,6 +453,7 @@ function conferirDados() {
 
     const linhas = document.querySelectorAll('#resultado tbody tr');
     linhas.forEach(linha => {
+        linha.classList.remove('errada');
         const celulas = linha.querySelectorAll('td');
         for (let index = 0; index < celulas.length; index++) {
             if ((index == 1 || index == 3 || index == 4 || index == 6) && celulas[index].innerText.trim() == '') {
@@ -472,6 +473,7 @@ function conferirDados() {
             }
             if (qthsNomes.find(qth => celulas[4].innerText.includes(qth))) {
                 celulas[5].querySelector('div.associacao').innerText = qthsNomes.find(qth => celulas[4].innerText.includes(qth));
+
             } else if (associacoes[celulas[4].innerText.trim()]) {
                 const ass = associacoes[celulas[4].innerText.trim()];
                 celulas[5].querySelector('div.associacao').innerText = `${ass.place} - ${ass.street}, ${ass.number} - ${ass.neighborhood}`;

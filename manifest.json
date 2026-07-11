@@ -4,30 +4,35 @@
   "version": "1.6.3.5",
   "description": "Conjunto de módulos de automação para o serviço na COGM-GM POA",
   "icons": {
-    "128": "icon.png"
+    "128": "assets/icon.png"
   },
   "action": {
-    "default_popup": "popup.html"
+    "default_popup": "popup/popup.html"
   },
   "background": {
-    "service_worker": "background.js",
+    "service_worker": "background/background.js",
     "type": "module"
+  },
+  "commands": {
+    "pesquisarEfetivo": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+E"
+      },
+      "description": "Abre a aba de efetivo no Sentry, caso não tenha, e seleciona o campo de pesquisa por nome de guerra"
+    },
+    "pesquisarQTH": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Q"
+      },
+      "description": "Abre as abas de QTH e mapa no Sentry Maps."
+    }
   },
   "web_accessible_resources": [
     {
       "resources": [
-        "consultas_integradas_tjrs_menu_lateral.js",
-        "consultas_integradas_tjrs_veiculos.js",
-        "consultas_integradas_tjrs_inicio.js",
-        "consultas_integradas_tjrs_img.js",
-        "consultas_integradas_tjrs_abas_acoes.js",
-        "consultas_integradas_tjrs_copiar_dados_basicos.js",
-        "consultas_integradas_tjrs_pesquisanome.js",
-        "consultas_integradas_tjrs_copiar_resultados_ocorrencias.js",
-        "consultas_integradas_tjrs_individuo_lista_nomes.js",
         "libs/firebase-app-compat.js",
         "libs/firebase-firestore-compat.js",
-        "versiculos.json"
+        "libs/versiculos.json"
       ],
       "matches": [
         "<all_urls>"
@@ -35,9 +40,9 @@
     },
     {
       "resources": [
-        "sentry.js",
-        "sentry_OS.js",
-        "jszip.js"
+        "web_accessible_resources/sentry/sentry.js",
+        "web_accessible_resources/sentry/OS.js",
+        "libs/jszip.js"
       ],
       "matches": [
         "https://sentry.procempa.com.br/*"
@@ -53,7 +58,7 @@
         "<all_urls>"
       ],
       "js": [
-        "content_script.js"
+        "content/content_script.js"
       ],
       "all_frames": true
     },
@@ -62,7 +67,7 @@
         "https://cadweb.sinesp.gov.br/paineis-estatisticos/app/discover*"
       ],
       "js": [
-        "cad_discover.js"
+        "content/sinesp/discover.js"
       ]
     },
     {
@@ -70,7 +75,7 @@
         "https://cadweb.sinesp.gov.br/cad-equipe-web/*"
       ],
       "js": [
-        "cad_equipes.js"
+        "content/sinesp/equipes.js"
       ]
     },
     {
@@ -78,7 +83,15 @@
         "https://cadweb.sinesp.gov.br/cad-ocorrencia-web/*"
       ],
       "js": [
-        "cad_ocorrencias.js"
+        "content/sinesp/ocorrencias.js"
+      ]
+    },
+    {
+      "matches": [
+        "https://infoseg.sinesp.gov.br/infoseg2/*"
+      ],
+      "js": [
+        "content/sinesp/infoseg.js"
       ]
     },
     {
@@ -86,7 +99,7 @@
         "https://portalbnmp.pdpj.jus.br/*"
       ],
       "js": [
-        "consulta_cnj.js"
+        "content/consultas/cnj.js"
       ]
     },
     {
@@ -95,7 +108,7 @@
         "https://secweb.intra.rs.gov.br/csi/csi/INTERFACE/jsp/Individuo_Lista_Nomes_NEW.jsp?*"
       ],
       "js": [
-        "consultas_integradas_tjrs_pega_nome.js"
+        "content/consultas/pega_nome.js"
       ],
       "all_frames": true
     },
@@ -105,7 +118,7 @@
         "https://secweb.intra.rs.gov.br/csi/csi/INTERFACE/jsp/Individuo_Consulta_DadosBasicos_NEW.jsp?*"
       ],
       "js": [
-        "consultas_integradas_tjrs_copiar_dados_basicos.js"
+        "content/consultas/dados_basicos.js"
       ],
       "all_frames": true
     },
@@ -115,7 +128,7 @@
         "https://www.consultasintegradas.rs.gov.br/csi/csi/INTERFACE/jsp/Individuo_Consulta_Ocorrencia_NEW.jsp?*"
       ],
       "js": [
-        "consultas_integradas_tjrs_copiar_resultados_ocorrencias.js"
+        "content/consultas/ocorrencias.js"
       ],
       "all_frames": true
     },
@@ -125,7 +138,7 @@
         "https://www.consultasintegradas.rs.gov.br/csi/csi/INTERFACE/jsp/Dados.jsp?*"
       ],
       "js": [
-        "consultas_integradas_tjrs_inicio.js"
+        "content/consultas/inicio.js"
       ],
       "all_frames": true
     },
@@ -135,7 +148,7 @@
         "https://www.consultasintegradas.rs.gov.br/csi/csi/INTERFACE/Html/MenuNovo.jsp"
       ],
       "js": [
-        "consultas_integradas_tjrs_menu_lateral.js"
+        "content/consultas/menu_lateral.js"
       ],
       "all_frames": true
     },
@@ -145,24 +158,17 @@
         "https://www.consultasintegradas.rs.gov.br/csi/mod-veiculo/*"
       ],
       "js": [
-        "consultas_integradas_tjrs_veiculos.js"
+        "content/consultas/veiculos.js"
       ],
       "all_frames": true
     },
+    
     {
       "matches": [
         "https://docs.google.com/forms*"
       ],
       "js": [
-        "formulario_psg_gs.js"
-      ]
-    },
-    {
-      "matches": [
-        "https://infoseg.sinesp.gov.br/infoseg2/*"
-      ],
-      "js": [
-        "infoseg.js"
+        "content/psg_servico/formulario_psg_gs.js"
       ]
     },
     {
@@ -170,7 +176,7 @@
         "https://web.whatsapp.com/"
       ],
       "js": [
-        "monitor_consulta_ceic.js"
+        "content/whatsapp/whatsapp.js"
       ]
     },
     {
@@ -178,7 +184,23 @@
         "https://app.wescctech.com.br/chats*"
       ],
       "js": [
-        "whu.js"
+        "content/whu/whu.js"
+      ]
+    },
+    {
+      "matches": [
+        "https://cercamento.procempa.com.br/*"
+      ],
+      "js": [
+        "content/cercamento/cercamento.js"
+      ]
+    },
+    {
+      "matches": [
+        "https://sso-pmpa.procempa.com.br/*"
+      ],
+      "js": [
+        "content/cercamento/loginAutoProcempa.js"
       ]
     }
   ],
