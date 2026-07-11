@@ -128,7 +128,6 @@ function extrairDados(doc) {
     const resultado = [];
 
     const elementos = Array.from(doc.body.children);
-    console.log(elementos.find(el => el.innerText.includes('ORDEM DE SERVIÇO'))?.innerText);
     let secaoAtual = '';
     let finalidadeAtual = '';
     let naturezaAtual = '';
@@ -453,7 +452,6 @@ function conferirDados() {
     const areas = ['CRUZEIRO', 'PARTENON', 'LESTE', 'RESTINGA', 'NORTE', 'EIXO BALTAZAR', 'PINHEIRO', 'EIXO SUL', 'CENTRO', 'CHARLIE', 'ROMU', 'DAZ'];
 
     const linhas = document.querySelectorAll('#resultado tbody tr');
-    console.log(associacoes);
     linhas.forEach(linha => {
         const celulas = linha.querySelectorAll('td');
         for (let index = 0; index < celulas.length; index++) {
@@ -589,7 +587,6 @@ async function importarOS() {
         const naturezas = ['Patrulhamento Preventivo', 'Ação Própria', 'Ação Integrada', 'Ação Conjunta', 'Fiscalização e Policiamento em Eventos'];
         const natureza = naturezas.find(nat => nat.toUpperCase().includes(celulas[3].innerText.substring(0, 10)));
         const local = verificarEndereco(celulas[4].innerText.split('<div')[0].trim());
-        console.log(local);
         const recurso = verificarQualArea(celulas[6].innerText);
         const dadosHorario = verificarHorario(celulas[7].innerText);
         const horárioInicial = dadosHorario.inicio;
@@ -622,7 +619,7 @@ async function importarOS() {
                     "endChangeDay": terminarOutroDia,
                     "allowRepeat": repetir
                 },
-                "duration": horarioFixo == 'FIXED' ? '' : duracao,
+                "duration": duracao,
                 "reason": natureza,
                 "description": atividade,
                 "address": local
