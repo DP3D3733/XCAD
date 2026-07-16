@@ -93,7 +93,7 @@ jobs:
 
 
       - name: Publish Chrome Extension
-        uses: mobilefirstllc/cws-publish@v2
+        uses: mobilefirstllc/cws-publish@2.1.1
         with:
           action: publish
 
