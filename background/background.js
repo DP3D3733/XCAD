@@ -130,6 +130,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
     if (message.action === "verificarIndividuoSentry") {
         const dados = await ajustarDadosIndividuo(message.data);
         const individuoSentry = await verificarExistenciaIndividuoBanco(dados);
+        if (individuoSentry == 'deslogado') return;
         if (!individuoSentry) return criarIndividuo(dados, message.foto);
         const bas = await buscarNumBAs(dados.CPF.replace(/\D/g, ""));
         const r = await Promise.all(
@@ -578,6 +579,11 @@ async function verificarExistenciaIndividuoBanco(dados) {
                 })
             }
         );
+        console.log(response);
+        if (!response) {
+            console.log('deslogado')
+            return 'deslogado';
+        }
 
         const resultado = await response.json();
         const individuoExiste = resultado.data.list.total == 0 ? false : true;
@@ -590,6 +596,7 @@ async function verificarExistenciaIndividuoBanco(dados) {
         return individuoExiste;
     } catch (erro) {
         console.error("Erro ao buscar indivíduo:", erro);
+        return 'deslogado';
     }
 
 
@@ -775,7 +782,8 @@ async function buscarBO(numeroBO, cpf) {
             'VICTIM': 'Vítima',
             'AUTHOR': 'Autor',
             'APPROACHED': 'Abordado',
-            'JUVENILE_OFFENDER': 'Menor infrator'
+            'JUVENILE_OFFENDER': 'Menor infrator',
+            'ARRESTED': 'Preso'
         };
         const condicao = JSON.parse(dados.data.data).individualList.find(individuo => individuo.cpf == cpf).conditions[0];
         const condicaoFormatada = dicCondicoes[condicao] || condicao;

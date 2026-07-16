@@ -94,7 +94,7 @@ window.addEventListener("message", (event) => {
           const textarea = document.getElementById('txt_resultados');
           textarea.innerHTML += '*OCORRÊNCIAS GCM*<br>';
           response.forEach(item => {
-            textarea.innerHTML += `${item.numeroBO} - {item.dataOcorrencia} - ${item.natureza} - ${item.condicaoFormatada}<br>`;
+            textarea.innerHTML += `${item.numeroBO} - ${item.dataOcorrencia} - ${item.natureza} - ${item.condicaoFormatada}<br>`;
           });
         }
         console.log("Resposta recebida:", response);
