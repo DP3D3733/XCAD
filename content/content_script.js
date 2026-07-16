@@ -90,6 +90,18 @@ if (url.includes('sentry')) {
   document.documentElement.appendChild(script);
 }
 
+if (url.includes('sentry.procempa.com.br/web/bos')) {
+  const script = document.createElement("script");
+  script.src = chrome.runtime.getURL("web_accessible_resources/sentry/ba.js");
+  document.documentElement.appendChild(script);
+}
+
+if (url.includes('sentry.procempa.com.br/web/despacho/dispatch/')) {
+  const script = document.createElement("script");
+  script.src = chrome.runtime.getURL("web_accessible_resources/sentry/despacho.js");
+  document.documentElement.appendChild(script);
+}
+
 if (url.includes('sentry.procempa.com.br/web/despacho/schedule-garrison')) {
   const scriptOS = document.createElement("script");
   scriptOS.src = chrome.runtime.getURL("web_accessible_resources/sentry/os.js");

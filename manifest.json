@@ -41,7 +41,9 @@
     {
       "resources": [
         "web_accessible_resources/sentry/sentry.js",
-        "web_accessible_resources/sentry/OS.js",
+        "web_accessible_resources/sentry/os.js",
+        "web_accessible_resources/sentry/ba.js",
+        "web_accessible_resources/sentry/despacho.js",
         "libs/jszip.js"
       ],
       "matches": [
@@ -162,7 +164,6 @@
       ],
       "all_frames": true
     },
-    
     {
       "matches": [
         "https://docs.google.com/forms*"

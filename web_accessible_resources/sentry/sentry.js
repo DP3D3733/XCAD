@@ -530,6 +530,78 @@ function sentry() {
     if (url.includes('despacho/attendance/')) {
         inserirBotaoEnviarChamadaRotinas();
     }
+
+    gerarBotaoTurnoAtual();
+}
+
+function gerarBotaoTurnoAtual() {
+    const botaoPesquisar = document.getElementById("btn-search") || document.getElementById("search");
+    const inputDtStart = document.getElementById("dtStart") || document.getElementById("start");;
+    const inputDtEnd = document.getElementById("dtEnd") || document.getElementById("end");
+
+    if (!botaoPesquisar || !inputDtStart || !inputDtEnd) return;
+
+    const botaoTurnoAtual = botaoPesquisar.cloneNode(true);
+    botaoTurnoAtual.id = "btn-turno-atual";
+    botaoTurnoAtual.textContent = "Turno Atual";
+
+    botaoTurnoAtual.addEventListener("click", () => {
+        const agora = new Date();
+
+        const formatar = (d) => {
+            const dia = String(d.getDate()).padStart(2, "0");
+            const mes = String(d.getMonth() + 1).padStart(2, "0");
+            const ano = d.getFullYear();
+            return `${dia}/${mes}/${ano}`;
+        };
+
+        const minutos = agora.getHours() * 60 + agora.getMinutes();
+
+        // 06:30 = 390 minutos
+        // 18:30 = 1110 minutos
+
+        if (minutos >= 390 && minutos < 1110) {
+            // Turno diurno: 06:30 -> 18:30
+            const data = formatar(agora);
+
+            inputDtStart.value = `${data} 06:00`;
+            inputDtStart.dispatchEvent(
+                new Event('change', {
+                    bubbles: true
+                }));
+            inputDtEnd.value = `${data} 18:30`;
+            inputDtEnd.dispatchEvent(
+                new Event('change', {
+                    bubbles: true
+                }));
+        } else {
+            const inicio = new Date(agora);
+            const fim = new Date(agora);
+
+            if (minutos < 390) {
+                // Entre 00:00 e 06:29
+                inicio.setDate(inicio.getDate() - 1);
+            } else {
+                // Entre 18:30 e 23:59
+                fim.setDate(fim.getDate() + 1);
+            }
+
+            inputDtStart.value = `${formatar(inicio)} 18:30`;
+            inputDtStart.dispatchEvent(
+                new Event('change', {
+                    bubbles: true
+                }));
+            inputDtEnd.value = `${formatar(fim)} 06:00`;
+            inputDtEnd.dispatchEvent(
+                new Event('change', {
+                    bubbles: true
+                }));
+        }
+
+        botaoPesquisar.click();
+    });
+
+    botaoPesquisar.insertAdjacentElement("afterend", botaoTurnoAtual);
 }
 
 //---------------SENTRY INDIVIDUOS-------------------------------------------------------------------------------------

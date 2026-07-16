@@ -702,7 +702,7 @@ function verificarHorario(texto) {
         return {
             inicio,
             fim: null,
-            duracao: "00:00",
+            duracao: null,
             iniciarOutroDia,
             terminarOutroDia: false
         };
