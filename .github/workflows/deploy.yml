@@ -2,8 +2,8 @@ name: Publish Chrome Extension
 
 on:
   push:
-    tags:
-      - "v*"
+    branches:
+      - main
 
   workflow_dispatch:
 
@@ -16,36 +16,62 @@ concurrency:
 
 jobs:
   publish:
+
+    # Evita executar novamente quando o próprio Action fizer o commit da versão
+    if: github.actor != 'github-actions[bot]'
+
     runs-on: ubuntu-latest
 
     timeout-minutes: 20
 
     steps:
+
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
 
       - name: Validate manifest
         run: |
           test -f manifest.json
           jq -e '.manifest_version' manifest.json
           jq -e '.version' manifest.json
-          jq .
 
-      - name: Read Version
+
+      - name: Auto increment version
         id: version
         run: |
-          VERSION=$(jq -r '.version' manifest.json)
-          TAG=${GITHUB_REF_NAME#v}
+          CURRENT=$(jq -r '.version' manifest.json)
 
-          echo "Manifest: $VERSION"
-          echo "Tag: $TAG"
+          echo "Current version: $CURRENT"
 
-          if [ "$VERSION" != "$TAG" ]; then
-            echo "::error::Manifest version differs from Git tag"
-            exit 1
-          fi
+          IFS='.' read -r MAJOR MINOR PATCH BUILD <<< "$CURRENT"
 
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          BUILD=$((BUILD + 1))
+
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH.$BUILD"
+
+          echo "New version: $NEW_VERSION"
+
+          jq --arg v "$NEW_VERSION" '.version=$v' manifest.json > manifest.tmp
+
+          mv manifest.tmp manifest.json
+
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+
+      - name: Commit version update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add manifest.json
+
+          git commit -m "chore: bump version ${{ steps.version.outputs.version }}" || exit 0
+
+          git push
+
 
       - name: Create ZIP
         run: |
@@ -58,11 +84,13 @@ jobs:
             -x "*.md" \
             -x "node_modules/*"
 
+
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: extension
           path: extension.zip
+
 
       - name: Publish Chrome Extension
         uses: mobilefirstllc/cws-publish@v2
@@ -77,10 +105,12 @@ jobs:
 
           zip_file: extension.zip
 
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.version.outputs.version }}
+
           name: XCAD v${{ steps.version.outputs.version }}
 
           generate_release_notes: true
