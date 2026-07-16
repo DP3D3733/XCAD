@@ -5,26 +5,26 @@ chrome.webNavigation.onCompleted.addListener(async (details) => {
         let scriptToInject = null;
 
         if (url.includes('https://www.consultasintegradas.rs.gov.br/csi/csi/INTERFACE/Html/Acoes.html') || url.includes('https://secweb.intra.rs.gov.br/csi/csi/INTERFACE/Html/Acoes.html')) {
-            scriptToInject = 'consultas_integradas_tjrs_abas_acoes.js';
+            scriptToInject = 'content/consultas/abas_acoes.js';
         } else if (url.includes('https://www.consultasintegradas.rs.gov.br/csi/csi/INTERFACE/jsp/Individuo-Pesquisa.jsp') || url.includes('https://secweb.intra.rs.gov.br/csi/csi/INTERFACE/jsp/Individuo-Pesquisa.jsp')) {
-            scriptToInject = 'consultas_integradas_tjrs_pesquisanome.js';
+            scriptToInject = 'content/consultas/pesquisa_nome.js';
         } else if (url.includes("https://www.consultasintegradas.rs.gov.br/csi/csi/INTERFACE/jsp/Individuo_Consulta_DadosBasicos_NEW.jsp?") || url.includes("https://secweb.intra.rs.gov.br/csi/csi/INTERFACE/jsp/Individuo_Consulta_DadosBasicos_NEW.jsp?")) {
-            scriptToInject = "consultas_integradas_tjrs_copiar_dados_basicos.js";
+            scriptToInject = "content/consultas/dados_basicos.js";
         }
         else if (url.includes("https://secweb.intra.rs.gov.br/csi/csi/INTERFACE/jsp/Individuo_Consulta_Ocorrencia_NEW.jsp?") || url.includes("https://www.consultasintegradas.rs.gov.br/csi/csi/INTERFACE/jsp/Individuo_Consulta_Ocorrencia_NEW.jsp?")) {
-            scriptToInject = "consultas_integradas_tjrs_copiar_resultados_ocorrencias.js";
+            scriptToInject = "content/consultas/ocorrencias.js";
         }
         else if (url.includes("https://secweb.intra.rs.gov.br/csi/csi/INTERFACE/jsp/Individuo_Consulta_Imagem2_NEW.jsp?N10_rg") || url.includes("https://www.consultasintegradas.rs.gov.br/csi/csi/INTERFACE/jsp/Individuo_Consulta_Imagem2_NEW.jsp?N10_rg")) {
-            scriptToInject = "consultas_integradas_tjrs_img.js";
+            scriptToInject = "content/consultas/img.js";
         }
         else if (url.includes("https://secweb.intra.rs.gov.br/csi/csi/INTERFACE/jsp/Dados.jsp?") || url.includes("https://www.consultasintegradas.rs.gov.br/csi/csi/INTERFACE/jsp/Dados.jsp?")) {
-            scriptToInject = "consultas_integradas_tjrs_inicio.js";
+            scriptToInject = "content/consultas/inicio.js";
         }
         else if (url.includes("https://secweb.intra.rs.gov.br/csi/csi/INTERFACE/Html/MenuNovo.jsp") || url.includes("https://www.consultasintegradas.rs.gov.br/csi/csi/INTERFACE/Html/MenuNovo.jsp")) {
-            scriptToInject = "consultas_integradas_tjrs_menu_lateral.js";
+            scriptToInject = "content/consultas/menu_lateral.js";
         }
         else if (url.includes("https://secweb.intra.rs.gov.br/csi/mod-veiculo/") || url.includes("https://www.consultasintegradas.rs.gov.br/csi/mod-veiculo/")) {
-            scriptToInject = "consultas_integradas_tjrs_veiculos.js";
+            scriptToInject = "content/consultas/veiculos.js";
         }
 
         if (scriptToInject) {

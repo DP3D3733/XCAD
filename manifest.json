@@ -49,6 +49,31 @@
       "matches": [
         "https://sentry.procempa.com.br/*"
       ]
+    },
+    {
+      "resources": [
+        "content/consultas/abas_acoes.js",
+        "content/consultas/dados_basicos.js",
+        "content/consultas/img.js",
+        "content/consultas/inicio.js",
+        "content/consultas/menu_lateral.js",
+        "content/consultas/ocorrencias.js",
+        "content/consultas/pega_nome.js",
+        "content/consultas/pesquisa_nome.js",
+        "content/consultas/veiculos.js"
+      ],
+      "matches": [
+        "https://www.consultasintegradas.rs.gov.br/*",
+        "https://secweb.intra.rs.gov.br/*"
+      ]
+    },
+    {
+      "resources": [
+        "content/consultas/cnj.js"
+      ],
+      "matches": [
+        "https://portalbnmp.pdpj.jus.br/*"
+      ]
     }
   ],
   "host_permissions": [
