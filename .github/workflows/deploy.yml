@@ -1,1 +1,89 @@
+name: Publish Chrome Extension
 
+on:
+  push:
+    tags:
+      - "v*"
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: chrome-extension-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate manifest
+        run: |
+          test -f manifest.json
+          jq -e '.manifest_version' manifest.json
+          jq -e '.version' manifest.json
+          jq .
+
+      - name: Read Version
+        id: version
+        run: |
+          VERSION=$(jq -r '.version' manifest.json)
+          TAG=${GITHUB_REF_NAME#v}
+
+          echo "Manifest: $VERSION"
+          echo "Tag: $TAG"
+
+          if [ "$VERSION" != "$TAG" ]; then
+            echo "::error::Manifest version differs from Git tag"
+            exit 1
+          fi
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create ZIP
+        run: |
+          zip -r extension.zip . \
+            -x ".git/*" \
+            -x ".github/*" \
+            -x ".gitignore" \
+            -x "README*" \
+            -x "LICENSE*" \
+            -x "*.md" \
+            -x "node_modules/*"
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: extension
+          path: extension.zip
+
+      - name: Publish Chrome Extension
+        uses: mobilefirstllc/cws-publish@v2
+        with:
+          action: publish
+
+          client_id: ${{ secrets.CHROME_CLIENT_ID }}
+          client_secret: ${{ secrets.CHROME_CLIENT_SECRET }}
+          refresh_token: ${{ secrets.CHROME_REFRESH_TOKEN }}
+
+          extension_id: ${{ secrets.CHROME_EXTENSION_ID }}
+
+          zip_file: extension.zip
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: XCAD v${{ steps.version.outputs.version }}
+
+          generate_release_notes: true
+
+          files: |
+            extension.zip
