@@ -74,6 +74,33 @@ window.addEventListener("message", (event) => {
   if (event.data.type === "novoAlertaCercamento") {
     chrome.runtime.sendMessage({ action: "novoAlertaCercamento", atendimento: event.data.data, endereco: event.data.endereco });
   }
+  if (event.data.type === "consultar") {
+    console.log(event.data.data);
+    chrome.runtime.sendMessage({ action: "consulta", data: event.data.data }, (response) => {
+      if (chrome.runtime.lastError) {
+        console.error("Erro ao enviar mensagem:", chrome.runtime.lastError.message);
+      } else {
+        console.log("Resposta recebida:", response);
+      }
+    });
+  }
+  if (event.data.type === "verificarIndividuoSentry") {
+    chrome.runtime.sendMessage({ action: "verificarIndividuoSentry", data: event.data.texto, foto: event.data.foto }, (response) => {
+      if (chrome.runtime.lastError) {
+        console.error("Erro ao enviar mensagem:", chrome.runtime.lastError.message);
+      } else {
+        if (!response.length) return;
+        if (document.getElementById('txt_resultados')) {
+          const textarea = document.getElementById('txt_resultados');
+          textarea.innerHTML += '*OCORRÊNCIAS GCM*<br>';
+          response.forEach(item => {
+            textarea.innerHTML += `${item.numeroBO} - {item.dataOcorrencia} - ${item.natureza} - ${item.condicaoFormatada}<br>`;
+          });
+        }
+        console.log("Resposta recebida:", response);
+      }
+    });
+  }
 
 });
 

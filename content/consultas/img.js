@@ -53,12 +53,17 @@ if (sessionStorage.getItem('img_n_repete')) {
     const interval_img = setInterval(() => {
         if (document.querySelector('img')) {
             clearInterval(interval_img);
-            document.querySelector('#botao_buscar_mandado').addEventListener('click', function (item) {
-                imageToBase64(document.querySelector('img'), tb, 'Portal BNMP');
+            verificarIndividuoSentry();
+            document.querySelector('#botao_buscar_mandado').addEventListener('click', async function (item) {
+                const img = await imageToBase64(document.querySelector('img'));
+                enviarDados(img, textarea.innerHTML.replaceAll('<br>', '\n').replaceAll('\n\n\n', '\n\n'), 'Portal BNMP');
+
             });
-            document.querySelector('#botao_buscar_mandado_Infoseg').addEventListener('click', function (item) {
-                imageToBase64(document.querySelector('img'), tb, 'Sinesp Infoseg');
+            document.querySelector('#botao_buscar_mandado_Infoseg').addEventListener('click', async function (item) {
+                const img = await imageToBase64(document.querySelector('img'));
+                enviarDados(img, textarea.innerHTML.replaceAll('<br>', '\n').replaceAll('\n\n\n', '\n\n'), 'Sinesp Infoseg');
             });
+
         }
     }, 100);
 
@@ -67,7 +72,14 @@ if (sessionStorage.getItem('img_n_repete')) {
     sessionStorage.setItem('img_n_repete', '1');
 }
 
-async function imageToBase64(img, tb, banco) {
+async function verificarIndividuoSentry() {
+    const dados = document.getElementById('txt_resultados').innerHTML;
+    if (dados.split('CPF:')[1].split('<br>')[0].trim() == '') return;
+    const img = await imageToBase64(document.querySelector('img'));
+    window.postMessage({ type: "verificarIndividuoSentry", texto: dados, foto: img }, "*");
+}
+
+async function imageToBase64(img) {
     return new Promise((resolve, reject) => {
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
@@ -81,9 +93,7 @@ async function imageToBase64(img, tb, banco) {
             try {
                 const dataURL = canvas.toDataURL(); // padrão PNG
                 resolve(dataURL);
-                window.postMessage({ type: "img", payload: dataURL }, "*");
-                window.postMessage({ type: "dados", payload: tb }, "*");
-                window.postMessage({ type: "banco", payload: banco }, "*");
+                return dataURL;
             } catch (e) {
                 reject(e);
             }
@@ -96,4 +106,9 @@ async function imageToBase64(img, tb, banco) {
             img.onload();
         }
     });
+}
+function enviarDados(img, tb, banco) {
+    window.postMessage({ type: "img", payload: img }, "*");
+    window.postMessage({ type: "dados", payload: tb }, "*");
+    window.postMessage({ type: "banco", payload: banco }, "*");
 }
