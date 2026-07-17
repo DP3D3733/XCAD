@@ -4,7 +4,7 @@ chrome.storage.local.get("ativa", (data) => {
         if (d['CAD Equipes'] == 'desativado') return;
 
         let versao, versiculo;
-        fetch(chrome.runtime.getURL("versiculos.json"))
+        fetch(chrome.runtime.getURL("libs/versiculos.json"))
             .then(response => response.json())
             .then(data => {
                 versiculo = data[Math.floor(Math.random() * data.length)].text;
@@ -266,30 +266,7 @@ chrome.storage.local.get("ativa", (data) => {
                         var cameras = ['Dia', ['1000', [1302, 1303, 1304, 1305, 1306, 1307, 1308, 1309, 1310, 1311, 1312, 1313, 1314, 1315, 1316, 1317, 1318, 1319, 1320, 1341, 1342, 1343, 1346, 1344, 1345, 1347, 1348, 1349, 1350], '1100', [1417, 1222, 1227, 1226, 1221], '1200', [1241, 1242, 1243, 1244, 1245, 1246, 1248, 1249, 1250, 1251, 1252, 1253, 1254, 1255, 1256, 1257, 1258, 1259, 1260, 1261, 1262, 1263, 1264, 1265, 1266, 1267, 1268, 1269, 1270, 1271, 1272, 1273, 1274, 1275, 1276, 1277, 1278, 1279, 1280, 1365], '200', [1389, 1397, 1398, 1399, 1400, 1401, 1402, 1403, 1404], '300', [1233, 1234, 1235, 1236, 1237, 1238, 1239, 1240], '400', [1351, 1352, 1353, 1354, 1355, 1356, 1357, 1358, 1458, 1460], '500', [1389, 1390, 1391, 1392, 1393, 1394, 1395, 1396], '600', [1454, 1455, 1456, 1457, 1459, 1460, 1469], '700', [1445, 1446, 1447, 1448, 1449, 1450, 1451, 1452], '800', [1381, 1382, 1383, 1384, 1385, 1386, 1387, 1388], '900', [1405, 1406, 1407, 1409, 1408, 1409, 1410, 1411, 1412]]];
                         var gms;
                         if (!localStorage.getItem('atualizacao_pessoas') || localStorage.getItem('atualizacao_pessoas') != new Date().getDate()) {
-                            let dados = [[], [], [], [], [], [], [], [], [], [], [], [], []];
-                            let areas = ['Subintendência Regional Cruzeiro', 'Subintendência Regional Partenon', 'Subintendência Regional Leste', 'Subintendência Regional Restinga', 'Subintendência Regional Norte', 'Subintendência Regional Eixo Baltazar', 'Subintendência Regional Lomba do Pinheiro', 'Subintendência Regional Eixo Sul', 'Subintendência da Ronda Ostensiva Municipal', 'Subintendência Regional Centro', 'Patrulha de Atendimento à Mulher', 'Central de Operações da Guarda Civil Metropolitana', 'Divisão de Ação Zoneada'];
-                            chrome.runtime.sendMessage({ action: "atualizar_banco_local_efetivo" }, response => {
-                                if (chrome.runtime.lastError) {
-                                    console.error("Erro na mensagem:", chrome.runtime.lastError.message);
-                                } else {
-                                    response.dados.forEach(element => {
-                                        for (let index = 0; index < areas.length; index++) {
-                                            if (areas[index] == element["lotacao"]) {
-                                                console.log(element.nomeFuncional);
-                                                const gm = element.nomeFuncional;
-                                                dados[index].push(gm);
-                                            }
-                                        }
-                                    });
-                                    gms = ['Dia', ['1000', dados[8], '1100', dados[10], '1200', dados[9], '200', dados[0], '300', dados[1], '400', dados[2], '500', dados[3], '600', dados[4], '700', dados[5], '800', dados[6], '900', dados[7], 'COGM', dados[11], '1500', dados[12]]];
-                                    localStorage.setItem('gms', JSON.stringify(gms));
-                                    localStorage.setItem('atualizacao_pessoas', new Date().getDate());
-                                    gms = JSON.parse(localStorage.getItem('gms'));
-                                    atualizarUuid();
-                                }
-                            });
-
-
+                            chrome.runtime.sendMessage({ action: "atualizar_banco_local_efetivo" });
                         } else {
                             gms = JSON.parse(localStorage.getItem('gms'));
                         }
@@ -1066,5 +1043,25 @@ async function selecionar50() {
     }
 
 }
-
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action == "atualizarEfetivo") {
+        let dados = [[], [], [], [], [], [], [], [], [], [], [], [], []];
+        let areas = ['Subintendência Regional Cruzeiro', 'Subintendência Regional Partenon', 'Subintendência Regional Leste', 'Subintendência Regional Restinga', 'Subintendência Regional Norte', 'Subintendência Regional Eixo Baltazar', 'Subintendência Regional Lomba do Pinheiro', 'Subintendência Regional Eixo Sul', 'Subintendência da Ronda Ostensiva Municipal', 'Subintendência Regional Centro', 'Patrulha de Atendimento à Mulher', 'Central de Operações da Guarda Civil Metropolitana', 'Divisão de Ação Zoneada'];
+        console.log(message);
+        message.dados.forEach(element => {
+            for (let index = 0; index < areas.length; index++) {
+                if (areas[index] == element["lotacao"]) {
+                    console.log(element.nomeFuncional);
+                    const gm = element.nomeFuncional;
+                    dados[index].push(gm);
+                }
+            }
+        });
+        gms = ['Dia', ['1000', dados[8], '1100', dados[10], '1200', dados[9], '200', dados[0], '300', dados[1], '400', dados[2], '500', dados[3], '600', dados[4], '700', dados[5], '800', dados[6], '900', dados[7], 'COGM', dados[11], '1500', dados[12]]];
+        localStorage.setItem('gms', JSON.stringify(gms));
+        localStorage.setItem('atualizacao_pessoas', new Date().getDate());
+        gms = JSON.parse(localStorage.getItem('gms'));
+        atualizarUuid();
+    }
+});
 selecionar50();

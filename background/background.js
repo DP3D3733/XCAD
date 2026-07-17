@@ -278,8 +278,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
                     }
                 }
-
-                sendResponse({ dados: dados.dados });
+                console.log(dados.dados);
+                if (sender.tab && sender.tab.id) {
+                    chrome.tabs.sendMessage(
+                        sender.tab.id, // <-- Correção aqui
+                        {
+                            action: "atualizarEfetivo",
+                            dados: dados.dados
+                        }
+                    );
+                }
             } catch (e) {
                 console.error("Erro Firebase:", e);
                 sendResponse({ dados: message.data, status: "erro", error: e.message });
