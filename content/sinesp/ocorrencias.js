@@ -4,13 +4,26 @@ localStorage.setItem('selecionaopcao', '');
 sessionStorage.removeItem('multicads_montar_cad');
 sessionStorage.removeItem('cod_montar_cad');
 
-chrome.runtime.sendMessage({ action: "atualizar_qths" }, (response_atualizar_qths) => {
-    if (!response_atualizar_qths?.dados?.qth) return;
-    const qths = response_atualizar_qths?.dados?.qth;
-    const qthsLimpos = qths.split('-++-').map(qth => {
-        return `<option>${qth.split('-()-')[1]}.-.${qth.split('-()-')[4]}.-.${qth.split('-()-')[2]}</option>`;
-    }).join("");
-    localStorage.setItem('qths', qthsLimpos);
+chrome.runtime.sendMessage({ action: "atualizar_qths" });
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action == "listaQthsAtualizada") {
+        const qths = message?.dados?.qth;
+        if (!qths || typeof qths !== 'string') {
+            console.warn("Nenhum QTH válido recebido ou formato incorreto:", response_atualizar_qths);
+            return;
+        }
+
+        const qthsLimpos = qths.split('-++-').map(qth => {
+            const partes = qth.split('-()-');
+            // Evita quebra de array se a linha estiver mal formatada
+            if (partes.length < 5) return "";
+            return `<option>${partes[1]}.-.${partes[4]}.-.${partes[2]}</option>`;
+        }).filter(Boolean).join(""); // Remove itens vazios se houver erro de split
+
+        localStorage.setItem('qths', qthsLimpos);
+        console.log("QTHs atualizados no localStorage!");
+    }
 });
 
 chrome.storage.local.get("ativa", (data) => {
@@ -18,7 +31,7 @@ chrome.storage.local.get("ativa", (data) => {
     chrome.storage.local.get("CAD Ocorrências", (d) => {
         if (d['CAD Ocorrências'] == 'desativado') return;
         let versao, versiculo;
-        fetch(chrome.runtime.getURL("versiculos.json"))
+        fetch(chrome.runtime.getURL("libs/versiculos.json"))
             .then(response => response.json())
             .then(data => {
                 versiculo = data[Math.floor(Math.random() * data.length)].text;
