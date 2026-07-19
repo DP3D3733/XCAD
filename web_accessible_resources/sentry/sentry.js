@@ -424,6 +424,7 @@ function sentry() {
             const lotacao = JSON.parse(pessoa.effective).sector;
             return { nomeFuncional: nomeFuncional, nomeCompleto: nomeCompleto, lotacao: lotacao };
         });
+        console.log(pessoas);
         window.postMessage({ type: "atualizar_efetivo", data: pessoas }, "*");
     }
 
@@ -2062,10 +2063,270 @@ async function registrarAtendimento(model) {
     return await response.json();
 }
 
+// ================= CONFIGURAÇÃO =================
+let USUARIO, SENHA;
+const INTERVALO_SEGUNDOS = 30; // Tempo entre cada consulta
+
+function baixarCredenciaisCercamento() {
+    const credenciais = localStorage.getItem('credenciaisCercamento');
+    if (credenciais) {
+        [USUARIO, SENHA] = credenciais.split('-++-');
+        return;
+    }
+    window.postMessage({
+        type: "buscarCredenciaisCercamento"
+    }, "*");
+}
+
+baixarCredenciaisCercamento();
+
+// ================================================
+
+let tokenSalvo = null;
+let tokenExpiracao = 0;
+
+// Função responsável por obter ou renovar o token apenas se expirado
+async function obterTokenValido(usuario, senha) {
+    const agora = Math.floor(Date.now() / 1000);
+
+    if (tokenSalvo && (tokenExpiracao - agora) > 30) {
+        return tokenSalvo;
+    }
+
+    const tokenUrl = "https://sso-pmpa.procempa.com.br/auth/realms/pmpa/protocol/openid-connect/token";
+    const payload = new URLSearchParams({
+        "client_id": "cercamento",
+        "grant_type": "password",
+        "username": usuario,
+        "password": senha,
+        "scope": "openid"
+    });
+
+    console.log("%c[Autenticação] Solicitando novo token de acesso...", "color: #ff9900;");
+    const authResponse = await fetch(tokenUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: payload.toString()
+    });
+
+    if (!authResponse.ok) {
+        const erroDados = await authResponse.json().catch(() => ({}));
+        throw new Error(`Falha na autenticação: ${authResponse.status} - ${erroDados.error_description || authResponse.statusText}`);
+    }
+
+    const authDados = await authResponse.json();
+    tokenSalvo = authDados.access_token;
+    tokenExpiracao = agora + (authDados.expires_in || 300);
+
+    return tokenSalvo;
+}
+
+// Executa a busca de vandalismo e exibe no console
+async function executarCicloDeBusca() {
+    try {
+        const token = await obterTokenValido(USUARIO, SENHA);
+
+        // Endpoint de vandalismo fornecido
+        const urlBusca = "https://cercamento-api.procempa.com.br/cercamento-api/service/vandalism?limit=LIMIT_ONLY_LATEST_10&onlyAlerts=Y&alertDetails=ONLY_NOT_RECOGNIZED";
+
+        const dadosResponse = await fetch(urlBusca, {
+            method: "GET",
+            headers: {
+                "accept": "application/json, text/plain, */*",
+                "accept-language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+                "authorization": `Bearer ${token}`,
+                "cache-control": "no-cache",
+                "pragma": "no-cache"
+            },
+            referrer: "https://cercamento.procempa.com.br/",
+            mode: "cors",
+            credentials: "include"
+        });
+
+        if (!dadosResponse.ok) {
+            throw new Error(`Erro na busca de dados: ${dadosResponse.status}`);
+        }
+
+        const dados = await dadosResponse.json();
+
+        console.clear();
+        console.log(
+            `%c[CERCAMENTO - VANDALISMO] Monitorando... Última atualização: ${new Date().toLocaleTimeString()} (Atualiza a cada ${INTERVALO_SEGUNDOS}s)`,
+            "color: #00ffff; font-weight: bold; font-size: 12px;"
+        );
+
+        if (!dados.length) {
+            console.log("%cNenhum registro de vandalismo retornado.", "color: #999;");
+        }
+
+        const resultados = await Promise.all(
+            dados.map(async acionamento => {
+                const reconheceuAlerta = await reconhecerAlerta(acionamento.id, 'calebe.silva', token, 'vandalism');
+                if (reconheceuAlerta?.status != 'sucesso') return;
+                const model = {
+                    createJanitorial: false,
+                    systemUpdate: null,
+                    start: `${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`,
+                    attendanceLinked: {},
+                    contactName: null,
+                    contactPhone: null,
+                    nature: "Averiguação de Disparo de Alarme",
+                    channel: "Cercamento",
+                    statusName: "ABERTO",
+                    status: true,
+                    anonymous: false,
+                    transcription: `${acionamento.descricao_alerta}
+                    ${acionamento.comentarios}`,
+                    factDistrict: "RS",
+                    sectors: [],
+                    attachment: [],
+                    factCity: '',
+                    factNeighborhood: '',
+                    factStreet: '',
+                    factLatitude: '',
+                    factLongitude: '',
+                    factNumber: ''
+                };
+
+                window.postMessage({
+                    type: "novoAlertaCercamento",
+                    model: model,
+                    endereco: acionamento.endereco
+                }, "*");
+            })
+        );
+
+        // Endpoint de vandalismo fornecido
+        const urlBuscaDesaparecidos = "https://cercamento-api.procempa.com.br/cercamento-api/service/analytics/person/data?limit=LIMIT_ONLY_LATEST_10&onlyAlerts=Y&alertDetails=ONLY_NOT_RECOGNIZED&confianca=75";
+
+        const dadosResponseDesaparecidos = await fetch(urlBuscaDesaparecidos, {
+            method: "GET",
+            headers: {
+                "accept": "application/json, text/plain, */*",
+                "accept-language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+                "authorization": `Bearer ${token}`,
+                "cache-control": "no-cache",
+                "pragma": "no-cache"
+            },
+            referrer: "https://cercamento.procempa.com.br/",
+            mode: "cors",
+            credentials: "include"
+        });
+
+        if (!dadosResponseDesaparecidos.ok) {
+            throw new Error(`Erro na busca de dados: ${dadosResponseDesaparecidos.status}`);
+        }
+
+        const dadosDesaparecidos = await dadosResponseDesaparecidos.json();
+
+        console.clear();
+        console.log(
+            `%c[CERCAMENTO - DESAPARECIDOS] Monitorando... Última atualização: ${new Date().toLocaleTimeString()} (Atualiza a cada ${INTERVALO_SEGUNDOS}s)`,
+            "color: #00ffff; font-weight: bold; font-size: 12px;"
+        );
+
+        if (!dadosDesaparecidos.length) {
+            console.log("%cNenhum registro de desaparecidos retornado.", "color: #999;");
+        }
+        const resultadosDesaparecidos = await Promise.all(
+            dadosDesaparecidos.map(async acionamento => {
+                const reconheceuAlerta = await reconhecerAlerta(acionamento.id_identificado, 'calebe.silva', token, 'analytics');
+                if (reconheceuAlerta?.status != 'sucesso') return;
+                const model = {
+                    createJanitorial: false,
+                    systemUpdate: null,
+                    start: `${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`,
+                    attendanceLinked: {},
+                    contactName: null,
+                    contactPhone: null,
+                    nature: "Encontro de Pessoa Desaparecida",
+                    channel: "Cercamento",
+                    statusName: "ABERTO",
+                    status: true,
+                    anonymous: false,
+                    transcription: `${acionamento.descricao_alerta}
+                    Nome Completo: ${acionamento.identificado}
+                    Documento: ${acionamento.matricula}`,
+                    factDistrict: "RS",
+                    sectors: [],
+                    attachment: [],
+                    factCity: '',
+                    factNeighborhood: '',
+                    factStreet: '',
+                    factLatitude: '',
+                    factLongitude: '',
+                    factNumber: ''
+                };
+
+                window.postMessage({
+                    type: "novoAlertaCercamento",
+                    model: model,
+                    endereco: acionamento.cameraEndereco
+                }, "*");
+            })
+        );
+
+
+    } catch (erro) {
+        console.error("%c[Erro no Monitoramento]:", "color: #ff0000; font-weight: bold;", erro.message);
+    }
+}
 
 
 
+window.addEventListener("message", (event) => {
+    if (event.source !== window) return;
+    if (event.data.type === "registrarAtendimentoCercamento") {
+        registrarAtendimento(event.data.atendimento);
+    }
+
+});
 
 
+
+// Inicializa o processo
+(function iniciarMonitoramento() {
+    if (USUARIO === "SEU_USUARIO_AQUI") {
+        console.error("%c[Erro] Altere as variáveis USUARIO e SENHA no topo do script antes de rodar!", "color: red; font-size: 14px;");
+        return;
+    }
+
+    console.log("%c[Iniciando] Autenticando e configurando monitoramento de vandalismo...", "color: #0088ff; font-weight: bold;");
+
+    executarCicloDeBusca();
+    setInterval(executarCicloDeBusca, INTERVALO_SEGUNDOS * 1000);
+})();
+
+async function reconhecerAlerta(idAlerta, operador, tokenBearer, secao) {
+    const url = `https://cercamento-api.procempa.com.br/cercamento-api/service/${secao}/alerts?id=${idAlerta}&operation=RECOGNIZE_ALERT&resolutionDescription=&operador=${operador}`;
+
+    try {
+        const response = await fetch(url, {
+            method: "POST",
+            mode: "cors",
+            credentials: "include",
+            headers: {
+                "accept": "application/json, text/plain, */* ",
+                "accept-language": "pt-BR,pt;q=0.9",
+                "authorization": `Bearer ${tokenBearer}`,
+                "cache-control": "no-cache",
+                "pragma": "no-cache"
+            },
+            body: null
+        });
+
+        if (!response.ok) {
+            throw new Error(`Erro na API Cercamento: ${response.status} -${response.statusText}`);
+        }
+
+        const dados = await response.json().catch(() => null); // Trata caso a resposta seja texto puro ou vazia
+        console.log(`Alerta ${idAlerta} reconhecido com sucesso por${operador}`, dados);
+        return { status: "sucesso", dados };
+
+    } catch (erro) {
+        console.error(`Falha ao reconhecer alerta ${idAlerta}:`, erro.message);
+        return { status: "erro", erro: erro.message };
+    }
+}
 
 

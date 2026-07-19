@@ -215,14 +215,6 @@
     },
     {
       "matches": [
-        "https://cercamento.procempa.com.br/*"
-      ],
-      "js": [
-        "content/cercamento/cercamento.js"
-      ]
-    },
-    {
-      "matches": [
         "https://sso-pmpa.procempa.com.br/*"
       ],
       "js": [

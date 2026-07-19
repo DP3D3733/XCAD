@@ -7,11 +7,11 @@ const iniciarLoginInterval = setInterval(() => {
     const msgErro = document.querySelector('.alert-error');
     if (msgErro) return;
 
-    logarAutomaticamente();
+    //logarAutomaticamente();
     clearInterval(iniciarLoginInterval);
 }, 100);
 
-function logarAutomaticamente() {
+/* function logarAutomaticamente() {
     const [login, senha] = (localStorage.getItem('loginSenha') || ',').split(',');
     if (login == '') return;
 
@@ -33,7 +33,7 @@ function logarAutomaticamente() {
     }))
 
     document.querySelector('#kc-form-login').submit();
-}
+} */
 
 function capturarCredenciais() {
     const inputUser = document.querySelector('#username');
@@ -44,7 +44,11 @@ function capturarCredenciais() {
 
     [inputUser, inputSenha].forEach(input => {
         input.addEventListener("input", () => {
-            localStorage.setItem('loginSenha', `${inputUser.value},${inputSenha.value}`);
+            window.postMessage({
+                type: "guardarCredenciaisCercamento",
+                login: inputUser.value,
+                senha: inputSenha.value
+            }, "*");
         });
     });
 }

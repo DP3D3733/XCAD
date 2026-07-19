@@ -331,27 +331,27 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         }
 
         if (message.action == 'novoAlertaCercamento') {
-            const endereco = await buscarEndereco(message.endereco);
-            message.atendimento.factCity = endereco.cidade;
-            message.atendimento.factNeighborhood = endereco.bairro;
-            message.atendimento.factStreet = endereco.rua;
-            message.atendimento.factLatitude = endereco.latitude;
-            message.atendimento.factLongitude = endereco.longitude;
-            message.atendimento.factNumber = endereco.numero;
+            try {
+                const endereco = await buscarEndereco(message.endereco);
+                message.atendimento.factCity = endereco.cidade;
+                message.atendimento.factNeighborhood = endereco.bairro;
+                message.atendimento.factStreet = endereco.rua;
+                message.atendimento.factLatitude = endereco.latitude;
+                message.atendimento.factLongitude = endereco.longitude;
+                message.atendimento.factNumber = endereco.numero;
 
-            const [tab] = await chrome.tabs.query({
-                url: "*://cercamento.procempa.com.br/*"
-            });
-
-            if (tab) {
-                await chrome.windows.update(tab.windowId, {
-                    state: "normal",
-                    focused: true
-                });
-
-                await chrome.tabs.update(tab.id, {
-                    active: true
-                });
+                if (sender.tab && sender.tab.id) {
+                    chrome.tabs.sendMessage(
+                        sender.tab.id, // <-- Correção aqui
+                        {
+                            action: "registrarAtendimentoCercamento",
+                            atendimento: message.atendimento
+                        }
+                    );
+                }
+            } catch (e) {
+                console.error(e);
+                sendResponse({ dados: message.data, status: "erro", error: e.message });
             }
         }
     })();
@@ -366,57 +366,30 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         getDoc(docRef)
             .then(docSnap => {
                 if (docSnap.exists()) {
-                    sendResponse({ dados: docSnap.data() });
+                    enviarMensagem(docSnap.data());
                 } else {
-                    sendResponse({ dados: "Não há tabela de QTH!" });
+                    enviarMensagem("Não há tabela de QTH!");
                 }
             })
             .catch(error => {
-                sendResponse({ status: "erro", error: error.message });
+                enviarMensagem(error.message);
             });
+        function enviarMensagem(mensagem) {
+            if (sender.tab && sender.tab.id) {
+                chrome.tabs.sendMessage(
+                    sender.tab.id, // <-- Correção aqui
+                    {
+                        action: "listaQthsAtualizada",
+                        dados: mensagem
+                    }
+                );
+            }
+        }
 
         return true;
     }
 });
 
-async function buscarEndereco(endereco) {
-    try {
-        const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${encodeURIComponent(endereco)}`;
-
-        const res = await fetch(url);
-
-        if (!res.ok) {
-            throw new Error(`HTTP ${res.status} - ${res.statusText}`);
-        }
-
-        const data = await res.json();
-
-        if (!Array.isArray(data) || data.length === 0) {
-            return null;
-        }
-
-        const item = data[0];
-        const addr = item.address ?? {};
-
-        return {
-            rua: addr.road ?? null,
-            numero: addr.house_number ?? null,
-            bairro: addr.suburb ?? addr.neighbourhood ?? null,
-            cidade: addr.city ?? addr.town ?? addr.village ?? null,
-            estado: addr.state ?? null,
-            cep: addr.postcode ?? null,
-            latitude: item.lat,
-            longitude: item.lon
-        };
-    } catch (err) {
-        console.error("Erro ao consultar endereço:", err);
-
-        return {
-            erro: true,
-            mensagem: err.message
-        };
-    }
-}
 
 chrome.commands.onCommand.addListener(async (command) => {
     if (command !== "pesquisarEfetivo" && command !== "pesquisarQTH") return;
@@ -791,7 +764,8 @@ async function buscarBO(numeroBO, cpf) {
             'AUTHOR': 'Autor',
             'APPROACHED': 'Abordado',
             'JUVENILE_OFFENDER': 'Menor infrator',
-            'ARRESTED': 'Preso'
+            'ARRESTED': 'Preso',
+            'ASCERTAINED': 'Averiguado'
         };
         const condicao = JSON.parse(dados.data.data).individualList.find(individuo => individuo.cpf == cpf).conditions[0];
         const condicaoFormatada = dicCondicoes[condicao] || condicao;
@@ -809,4 +783,56 @@ async function buscarBO(numeroBO, cpf) {
     }
 }
 
+async function buscarEndereco(endereco) {
+    try {
+        // Limpeza: Remove a palavra "CEP" e espaços extras para o Nominatim entender a query
+        let enderecoLimpo = endereco
+            .replace(/cep\s*/gi, '') // Remove "CEP " ou "cep"
+            .trim();
+
+        const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${encodeURIComponent(enderecoLimpo)}&countrycodes=br&limit=1`;
+
+        // É altamente recomendado incluir o User-Agent que o Nominatim exige para evitar bloqueios futuros
+        const res = await fetch(url, {
+            headers: {
+                "User-Agent": "MinhaExtensaoCercamento/1.0 (suporte@meudominio.com)"
+            }
+        });
+
+        console.log(res);
+
+        if (!res.ok) {
+            throw new Error(`HTTP ${res.status} - ${res.statusText}`);
+        }
+
+        const data = await res.json();
+
+        // Se o array vier vazio, printa no console para você debugar qual endereço falhou
+        if (!Array.isArray(data) || data.length === 0) {
+            console.warn("Nominatim não encontrou resultados para:", enderecoLimpo);
+            return null;
+        }
+
+        const item = data[0];
+        const addr = item.address ?? {};
+
+        return {
+            rua: addr.road ?? addr.pedestrian ?? addr.suburb ?? null,
+            numero: addr.house_number ?? null,
+            bairro: addr.suburb ?? addr.neighbourhood ?? addr.city_district ?? null,
+            cidade: addr.city ?? addr.town ?? addr.village ?? "Porto Alegre",
+            estado: addr.state ?? null,
+            cep: addr.postcode ?? null,
+            latitude: item.lat,
+            longitude: item.lon
+        };
+    } catch (err) {
+        console.error("Erro ao consultar endereço:", err);
+
+        return {
+            erro: true,
+            mensagem: err.message
+        };
+    }
+}
 

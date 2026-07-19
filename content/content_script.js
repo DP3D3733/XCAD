@@ -72,7 +72,7 @@ window.addEventListener("message", (event) => {
     window.reload();
   }
   if (event.data.type === "novoAlertaCercamento") {
-    chrome.runtime.sendMessage({ action: "novoAlertaCercamento", atendimento: event.data.data, endereco: event.data.endereco });
+    chrome.runtime.sendMessage({ action: "novoAlertaCercamento", atendimento: event.data.model, endereco: event.data.endereco });
   }
   if (event.data.type === "consultar") {
     console.log(event.data.data);
@@ -101,12 +101,24 @@ window.addEventListener("message", (event) => {
       }
     });
   }
+  if (event.data.type === "guardarCredenciaisCercamento") {
+    chrome.storage.local.set({ credenciaisCercamento: `${event.data.login}-++-${event.data.senha}` });
+  }
+  if (event.data.type === "buscarCredenciaisCercamento") {
+    chrome.storage.local.get('credenciaisCercamento', (response) => {
+      localStorage.setItem('credenciaisCercamento', response['credenciaisCercamento']);
+      console.log(response['credenciaisCercamento']);
+    });
+  }
 
 });
 
 chrome.runtime.onMessage.addListener((message) => {
   if (message.action === "focarEfetivo") {
     window.postMessage({ type: "focarEfetivo" }, "*");
+  }
+  if (message.action === "registrarAtendimentoCercamento") {
+    window.postMessage({ type: "registrarAtendimentoCercamento", atendimento: message.atendimento }, "*");
   }
 });
 
