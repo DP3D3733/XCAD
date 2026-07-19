@@ -44,59 +44,76 @@ jobs:
           REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
           EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
         run: |
-          echo "Resgatando Access Token temporário..."
+          set -e
+
+          echo "Obtendo Access Token..."
+
           TOKEN_RESPONSE=$(curl -s -X POST https://oauth2.googleapis.com/token \
-            -d client_id=$CLIENT_ID \
-            -d client_secret=$CLIENT_SECRET \
-            -d refresh_token=$REFRESH_TOKEN \
+            -d client_id="$CLIENT_ID" \
+            -d client_secret="$CLIENT_SECRET" \
+            -d refresh_token="$REFRESH_TOKEN" \
             -d grant_type=refresh_token)
 
-          ACCESS_TOKEN=$(echo "$TOKEN_RESPONSE" | jq -r '.access_token // empty')
-
-          if [ -z "$ACCESS_TOKEN" ] || [ "$ACCESS_TOKEN" == "null" ]; then
-            echo "❌ Falha ao obter Access Token. Resposta do Google Auth:"
-            echo "$TOKEN_RESPONSE"
+          if echo "$TOKEN_RESPONSE" | jq -e '.error' >/dev/null; then
+            echo "❌ Erro ao obter Access Token:"
+            echo "$TOKEN_RESPONSE" | jq .
             exit 1
           fi
 
-          echo "Buscando o Publisher ID correto associado à conta..."
-          PUBLISHER_RESPONSE=$(curl -s -H "Authorization: Bearer $ACCESS_TOKEN" \
-            "https://chromewebstore.googleapis.com/v2/publishers")
+          ACCESS_TOKEN=$(echo "$TOKEN_RESPONSE" | jq -r '.access_token')
 
-          # Valida se a resposta é um JSON válido antes de tentar usar o jq
-          if ! echo "$PUBLISHER_RESPONSE" | jq '.' > /dev/null 2>&1; then
-            echo "⚠️ Google não retornou um JSON válido ao buscar o Publisher. Resposta bruta:"
-            echo "$PUBLISHER_RESPONSE"
-            echo "Usando 'me' como fallback definitivo."
-            PUBLISHER_ID="me"
-          else
-            # Usa uma expressão regular simples no jq para capturar o ID após a última barra, evitando erros de sintaxe no Bash
-            PUBLISHER_ID=$(echo "$PUBLISHER_RESPONSE" | jq -r '.publishers[0].name // empty' | sed 's|.*/||')
-            
-            if [ -z "$PUBLISHER_ID" ] || [ "$PUBLISHER_ID" == "null" ]; then
-              echo "⚠️ Campo publishers não encontrado no JSON ou está vazio. Usando 'me' como fallback."
-              PUBLISHER_ID="me"
-            else
-              echo "✅ Publisher ID encontrado: $PUBLISHER_ID"
-            fi
+          if [ -z "$ACCESS_TOKEN" ] || [ "$ACCESS_TOKEN" = "null" ]; then
+            echo "❌ Access Token inválido."
+            exit 1
           fi
 
-          echo "Cancelando submissão pendente na Chrome Web Store..."
-          HTTP_STATUS=$(curl -s -o response.json -w "%{http_code}" -X POST \
+          echo "✅ Token obtido."
+
+          echo "Cancelando submissão pendente..."
+
+          HTTP_STATUS=$(curl -s \
+            -o response.json \
+            -w "%{http_code}" \
+            -X POST \
             -H "Authorization: Bearer $ACCESS_TOKEN" \
-            -H "Content-Length: 0" \
-            "https://chromewebstore.googleapis.com/v2/publishers/${PUBLISHER_ID}/items/${EXTENSION_ID}:cancelSubmission")
+            "https://chromewebstore.googleapis.com/v2/publishers/me/items/${EXTENSION_ID}:cancelSubmission")
 
-          echo "Resposta da API de Cancelamento (Status $HTTP_STATUS):"
-          cat response.json
+          echo
+          echo "Resposta da API (HTTP $HTTP_STATUS):"
 
-          if [ "$HTTP_STATUS" -eq 200 ]; then
-            echo "✅ Submissão cancelada ou nenhuma análise pendente ativa."
+          if jq empty response.json >/dev/null 2>&1; then
+            cat response.json | jq .
           else
-            echo "⚠️ A API retornou status $HTTP_STATUS. Se o erro for 403, verifique se o seu REFRESH_TOKEN possui o escopo 'https://www.googleapis.com/auth/chromewebstore'."
-            echo "Seguindo em frente com o restante do fluxo..."
+            cat response.json
           fi
 
+          case "$HTTP_STATUS" in
+            200)
+              echo "✅ Submissão cancelada com sucesso (ou não havia nenhuma pendente)."
+              ;;
+            404)
+              echo "ℹ️ Nenhuma submissão pendente encontrada."
+              ;;
+            409)
+              echo "ℹ️ A submissão já estava cancelada."
+              ;;
+            403)
+              echo "⚠️ Sem permissão para cancelar a submissão."
+              echo "Verifique se o Refresh Token possui o escopo:"
+              echo "https://www.googleapis.com/auth/chromewebstore"
+              ;;
+            *)
+              MESSAGE=$(jq -r '.error.message // .message // empty' response.json 2>/dev/null)
+
+              if [ -n "$MESSAGE" ]; then
+                echo "Mensagem: $MESSAGE"
+              fi
+
+              echo "⚠️ A API retornou HTTP $HTTP_STATUS."
+              ;;
+          esac
+
+          echo "Continuando o workflow..."
       - name: Auto increment version
         id: version
         run: |
