@@ -6,11 +6,10 @@ setInterval(() => {
     inserindoHorario = true;
 
     const [qualHorario, horario] = horarioDados.split(',');
-
     const qualCampo = {
-        inicio: '[name="myModel.start"],[name="myModel.goingDate"]',
+        início: '[name="myModel.start"],[name="myModel.goingDate"]',
         chegada: '[name="myModel.arrivalDate"]',
-        termino: '[name="myModel.end"]'
+        término: '[name="myModel.end"]'
     }
 
     document.querySelectorAll(qualCampo[qualHorario]).forEach(input => {

@@ -28,7 +28,9 @@ async function gerarBotaoInserirOutraNatureza() {
     `;
 
     document.head.appendChild(style);
-    const tabelaNaturezasLinhaTitulo = Array.from(document.querySelectorAll('strong')).find(elemento => elemento.innerText == 'NATUREZAS').closest('tr');
+    const linhaTituloNaturezas = Array.from(document.querySelectorAll('strong')).find(elemento => elemento.innerText == 'NATUREZAS');
+    if (!linhaTituloNaturezas) return;
+    const tabelaNaturezasLinhaTitulo = linhaTituloNaturezas.closest('tr');
     tabelaNaturezasLinhaTitulo.insertAdjacentHTML('beforeEnd', '<td class="text-center" colspan="3"><select id="selectNaturezas" multiple></select></td>');
     const naturezasDoBA = Array.from(tabelaNaturezasLinhaTitulo.parentNode.querySelectorAll('td')).filter(td => td.innerText.includes('Natureza')).map(natureza => natureza.querySelector('span').innerText);
     const selectNaturezas = document.getElementById('selectNaturezas');
@@ -128,13 +130,13 @@ async function buscarDespacho(somenteHorarios) {
 
     const dados = await response.json();
     if (!somenteHorarios) return dados;
-    const inicio = dados.dispatch?.start || '-';
+    const início = dados.dispatch?.start || '-';
     const partida = dados.dispatch.displacement[0]?.goingDate || '-';
     const chegada = dados.dispatch.displacement[0]?.arrivalDate || '-';
     const fim = dados.dispatch?.end || '-';
 
     return [
-        formatarDataHora(inicio),
+        formatarDataHora(início),
         formatarDataHora(partida),
         formatarDataHora(chegada),
         formatarDataHora(fim)
@@ -198,7 +200,9 @@ function reverterDataHora(dataHora) {
 }
 
 async function inserirHorariosDespacho() {
-    const linhaHorariosBA = Array.from(document.querySelectorAll('td.bo-key')).find(td => td.innerText.includes('D/H do fato'))?.parentNode;
+    const celulaHorariosBA = Array.from(document.querySelectorAll('td.bo-key')).find(td => td.innerText.includes('D/H do fato'));
+    if (!celulaHorariosBA) return;
+    const linhaHorariosBA = celulaHorariosBA.parentNode;
     const horariosBA = Array.from(linhaHorariosBA.querySelectorAll('td span')).map(horario => horario.innerText);
     const horariosDespacho = await buscarDespacho(true);
     const botaoSubstituirHorarioDespacho = '<button onclick="substituirHorarioDespacho(this)">⬆️</button>';
@@ -212,7 +216,7 @@ async function inserirHorariosDespacho() {
         </tr>`;
     const linhaBotoes = `
         <tr id="linhasBotoesAjusteHorarios">
-            <td horario="inicio">${horariosBA[0] != horariosDespacho[0] ? botaoSubstituirHorarioDespacho + botaoSubstituirHorarioBA : ''}</td>
+            <td horario="início">${horariosBA[0] != horariosDespacho[0] ? botaoSubstituirHorarioDespacho + botaoSubstituirHorarioBA : ''}</td>
             <td horario="chegada">${horariosBA[1] != horariosDespacho[2] ? botaoSubstituirHorarioDespacho + botaoSubstituirHorarioBA : ''}</td>
             <td horario="término">${horariosBA[2] != horariosDespacho[3] ? botaoSubstituirHorarioDespacho + botaoSubstituirHorarioBA : ''}</td>
         </tr>`;
@@ -229,12 +233,13 @@ async function inserirHorariosDespacho() {
 function substituirHorarioDespacho(botao) {
     const qualHorario = botao.parentNode.getAttribute('horario');
     const ordemColunas = {
-        inicio: 0,
-        chegada: 1,
-        término: 2
+        'início': 0,
+        'chegada': 1,
+        'término': 2
     };
     const linhaHorarios = Array.from(document.querySelectorAll('.bo-key')).find(td => td.innerText.includes('D/H do fato')).parentNode;
     const horarioBA = linhaHorarios.querySelectorAll('td')[ordemColunas[qualHorario]].querySelector('span').innerText;
+    console.log(horarioBA);
     localStorage.setItem('inserirHorariosDespacho', `${qualHorario},${horarioBA}`);
     document.querySelector('#modalDespacho').style.display = 'flex';
 
@@ -253,9 +258,9 @@ function substituirHorarioBA(botao) {
     const inputCorrecao = document.querySelector('#rejectObs');
     const qualHorario = botao.parentNode.getAttribute('horario');
     const ordemColunas = {
-        inicio: 0,
-        chegada: 1,
-        término: 2
+        'início': 0,
+        'chegada': 1,
+        'término': 2
     };
     const linhaHorarios = Array.from(document.querySelectorAll('.bo-key')).find(td => td.innerText.includes('D/H do fato')).parentNode;
     const linhaHorariosDespacho = document.getElementById('horariosDespacho');
