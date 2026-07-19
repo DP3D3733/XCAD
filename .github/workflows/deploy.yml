@@ -92,6 +92,68 @@ jobs:
           path: extension.zip
 
 
+      # NOVO PASSO: Cancela qualquer versão em rascunho ou em análise pendente
+      - name: Discard pending review
+        run: |
+          cat << 'EOF' > discard.js
+          const fs = require('fs');
+
+          async function main() {
+            const clientId = process.env.CLIENT_ID;
+            const clientSecret = process.env.CLIENT_SECRET;
+            const refreshToken = process.env.REFRESH_TOKEN;
+            const extensionId = process.env.EXTENSION_ID;
+
+            // 1. Obter Access Token atualizado
+            const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+              body: new URLSearchParams({
+                client_id: clientId,
+                client_secret: clientSecret,
+                refresh_token: refreshToken,
+                grant_type: 'refresh_token'
+              })
+            });
+            const tokenData = await tokenResponse.json();
+            if (!tokenData.access_token) {
+              console.error('Erro ao obter access token:', tokenData);
+              process.exit(1);
+            }
+
+            // 2. Chamar endpoint da Chrome Web Store para descartar rascunho/análise pendente
+            console.log('Tentando descartar rascunho ou análise existente...');
+            const discardResponse = await fetch(`https://www.googleapis.com/chromewebstore/v1.1/items/${extensionId}/discardDraft`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${tokenData.access_token}`,
+                'x-goog-api-version': '2'
+              }
+            });
+
+            const discardData = await discardResponse.json();
+            
+            // O Google retorna erro se não houver rascunho para descartar, o que é esperado se a loja estiver limpa
+            if (discardResponse.ok) {
+              console.log('Análise/Rascunho anterior cancelado com sucesso.');
+            } else {
+              console.log('Nenhuma análise ativa encontrada para descartar ou ação não necessária:', discardData.error?.message || discardData);
+            }
+          }
+
+          main().catch(err => {
+            console.error(err);
+            process.exit(1);
+          });
+          EOF
+          node discard.js
+        env:
+          CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+          EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+
+
       - name: Publish Chrome Extension
         uses: mobilefirstllc/cws-publish@2.1.1
         with:
