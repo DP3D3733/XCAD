@@ -1,32 +1,43 @@
-name: Chrome Web Store Deploy
+name: Publish Chrome Extension
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch: # Permite disparar manualmente pelo painel do GitHub se necessário
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: chrome-extension-publish
+  cancel-in-progress: false
 
 jobs:
-  deploy:
-    name: Build, Cancel Pending and Deploy
+  publish:
+
+    # Evita executar novamente quando o próprio Action fizer o commit da versão
+    if: github.actor != 'github-actions[bot]'
+
     runs-on: ubuntu-latest
 
+    timeout-minutes: 20
+
     steps:
-      - name: Checkout code
+
+      - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          fetch-depth: 0
 
-      # Substitua este comando pelo fluxo real de build do seu projeto (ex: npm ci && npm run build)
-      # Aqui estamos apenas compactando os arquivos do repositório
-      - name: Build Extension ZIP
+
+      - name: Validate manifest
         run: |
-          zip -r extension.zip . -x "*.git*" ".github*"
+          test -f manifest.json
+          jq -e '.manifest_version' manifest.json
+          jq -e '.version' manifest.json
 
-      # Usa o curl e o jq nativos para chamar a API v2 e destravar a loja antes do upload
       - name: Force Cancel Pending Review via API v2
         env:
           CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
@@ -61,13 +72,82 @@ jobs:
             echo "⚠️ A API retornou status $HTTP_STATUS. Prosseguindo para tentar o upload..."
           fi
 
-      # Faz o upload oficial utilizando a sua action atual
-      - name: Upload & Publish Extension
+      - name: Auto increment version
+        id: version
+        run: |
+          CURRENT=$(jq -r '.version' manifest.json)
+
+          echo "Current version: $CURRENT"
+
+          IFS='.' read -r MAJOR MINOR PATCH BUILD <<< "$CURRENT"
+
+          BUILD=$((BUILD + 1))
+
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH.$BUILD"
+
+          echo "New version: $NEW_VERSION"
+
+          jq --arg v "$NEW_VERSION" '.version=$v' manifest.json > manifest.tmp
+
+          mv manifest.tmp manifest.json
+
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+
+      - name: Commit version update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add manifest.json
+
+          git commit -m "chore: bump version ${{ steps.version.outputs.version }}" || exit 0
+
+          git push
+
+
+      - name: Create ZIP
+        run: |
+          zip -r extension.zip . \
+            -x ".git/*" \
+            -x ".github/*" \
+            -x ".gitignore" \
+            -x "README*" \
+            -x "LICENSE*" \
+            -x "*.md" \
+            -x "node_modules/*"
+
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: extension
+          path: extension.zip
+
+
+     
+      - name: Publish Chrome Extension
         uses: mobilefirstllc/cws-publish@2.1.1
         with:
           action: publish
+
           client_id: ${{ secrets.CHROME_CLIENT_ID }}
           client_secret: ${{ secrets.CHROME_CLIENT_SECRET }}
           refresh_token: ${{ secrets.CHROME_REFRESH_TOKEN }}
+
           extension_id: ${{ secrets.CHROME_EXTENSION_ID }}
+
           zip_file: extension.zip
+
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+
+          name: XCAD v${{ steps.version.outputs.version }}
+
+          generate_release_notes: true
+
+          files: |
+            extension.zip
