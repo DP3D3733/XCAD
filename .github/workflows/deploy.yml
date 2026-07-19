@@ -57,11 +57,23 @@ jobs:
             exit 1
           fi
 
+          echo "Buscando o Publisher ID correto associado à conta..."
+          # Obtém a lista de publishers e pega o ID numérico do primeiro disponível
+          PUBLISHER_ID=$(curl -s -H "Authorization: Bearer $ACCESS_TOKEN" \
+            "https://chromewebstore.googleapis.com/v2/publishers" | jq -r '.publishers[0].name | split("/")[-1]')
+
+          if [ -z "$PUBLISHER_ID" ] || [ "$PUBLISHER_ID" == "null" ]; then
+            echo "⚠️ Não foi possível mapear o Publisher ID automaticamente. Usando 'me' como fallback."
+            PUBLISHER_ID="me"
+          else
+            echo "✅ Publisher ID encontrado: $PUBLISHER_ID"
+          fi
+
           echo "Cancelando submissão pendente na Chrome Web Store..."
           HTTP_STATUS=$(curl -s -o response.json -w "%{http_code}" -X POST \
             -H "Authorization: Bearer $ACCESS_TOKEN" \
             -H "Content-Length: 0" \
-            "https://chromewebstore.googleapis.com/v2/publishers/me/items/${EXTENSION_ID}:cancelSubmission")
+            "https://chromewebstore.googleapis.com/v2/publishers/${PUBLISHER_ID}/items/${EXTENSION_ID}:cancelSubmission")
 
           echo "Resposta da API (Status $HTTP_STATUS):"
           cat response.json
@@ -69,9 +81,9 @@ jobs:
           if [ "$HTTP_STATUS" -eq 200 ]; then
             echo "✅ Submissão cancelada ou nenhuma análise pendente ativa."
           else
-            echo "⚠️ A API retornou status $HTTP_STATUS. Prosseguindo para tentar o upload..."
+            echo "⚠️ A API retornou status $HTTP_STATUS."
+            echo "Se o erro for 403, verifique se o seu REFRESH_TOKEN possui o escopo 'https://www.googleapis.com/auth/chromewebstore'."
           fi
-
       - name: Auto increment version
         id: version
         run: |
