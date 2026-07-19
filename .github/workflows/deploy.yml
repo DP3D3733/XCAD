@@ -96,8 +96,6 @@ jobs:
       - name: Discard pending review
         run: |
           cat << 'EOF' > discard.js
-          const fs = require('fs');
-
           async function main() {
             const clientId = process.env.CLIENT_ID;
             const clientSecret = process.env.CLIENT_SECRET;
@@ -115,9 +113,18 @@ jobs:
                 grant_type: 'refresh_token'
               })
             });
-            const tokenData = await tokenResponse.json();
+
+            const tokenText = await tokenResponse.text();
+            let tokenData;
+            try {
+              tokenData = JSON.parse(tokenText);
+            } catch (e) {
+              console.error('Erro ao ler resposta do OAuth (não é JSON):', tokenText);
+              process.exit(1);
+            }
+
             if (!tokenData.access_token) {
-              console.error('Erro ao obter access token:', tokenData);
+              console.error('Erro nas credenciais ou ao obter access token:', tokenData);
               process.exit(1);
             }
 
@@ -127,22 +134,29 @@ jobs:
               method: 'POST',
               headers: {
                 'Authorization': `Bearer ${tokenData.access_token}`,
-                'x-goog-api-version': '2'
+                'x-goog-api-version': '2',
+                'Content-Length': '0'
               }
             });
 
-            const discardData = await discardResponse.json();
+            const responseText = await discardResponse.text();
             
-            // O Google retorna erro se não houver rascunho para descartar, o que é esperado se a loja estiver limpa
             if (discardResponse.ok) {
-              console.log('Análise/Rascunho anterior cancelado com sucesso.');
-            } else {
-              console.log('Nenhuma análise ativa encontrada para descartar ou ação não necessária:', discardData.error?.message || discardData);
+              console.log('Análise/Rascunho anterior cancelado com sucesso (ou já estava limpo).');
+              return;
+            }
+
+            // Se deu erro, tenta interpretar se realmente foi um problema crítico
+            try {
+              const errorData = JSON.parse(responseText);
+              console.log('Aviso da API (pode ser ignorado se não houver análise ativa):', errorData.error?.message || errorData);
+            } catch (e) {
+              console.log('Resposta da API recebida (não-JSON):', responseText);
             }
           }
 
           main().catch(err => {
-            console.error(err);
+            console.error('Erro na execução do script:', err);
             process.exit(1);
           });
           EOF
@@ -152,7 +166,6 @@ jobs:
           CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
           REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
           EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
-
 
       - name: Publish Chrome Extension
         uses: mobilefirstllc/cws-publish@2.1.1
