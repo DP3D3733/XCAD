@@ -63,24 +63,23 @@ jobs:
           PUBLISHER_RESPONSE=$(curl -s -H "Authorization: Bearer $ACCESS_TOKEN" \
             "https://chromewebstore.googleapis.com/v2/publishers")
 
-          # Valida se a resposta é um JSON válido antes de tentar quebrar a string no jq
+          # Valida se a resposta é um JSON válido antes de tentar usar o jq
           if ! echo "$PUBLISHER_RESPONSE" | jq '.' > /dev/null 2>&1; then
             echo "⚠️ Google não retornou um JSON válido ao buscar o Publisher. Resposta bruta:"
             echo "$PUBLISHER_RESPONSE"
             echo "Usando 'me' como fallback definitivo."
             PUBLISHER_ID="me"
           else
-            PUBLISHER_ID=$(echo "$PUBLISHER_RESPONSE" | jq -r '.publishers[0].name // empty' | split("/")[-1])
+            # Usa uma expressão regular simples no jq para capturar o ID após a última barra, evitando erros de sintaxe no Bash
+            PUBLISHER_ID=$(echo "$PUBLISHER_RESPONSE" | jq -r '.publishers[0].name // empty' | sed 's|.*/||')
+            
             if [ -z "$PUBLISHER_ID" ] || [ "$PUBLISHER_ID" == "null" ]; then
-              echo "⚠️ Campo publishers não encontrado no JSON. Usando 'me' como fallback."
+              echo "⚠️ Campo publishers não encontrado no JSON ou está vazio. Usando 'me' como fallback."
               PUBLISHER_ID="me"
             else
               echo "✅ Publisher ID encontrado: $PUBLISHER_ID"
             fi
           fi
-
-          echo "Se o Publisher ID falhou ou veio vazio acima, garantindo fallback..."
-          if [ -z "$PUBLISHER_ID" ]; then PUBLISHER_ID="me"; fi
 
           echo "Cancelando submissão pendente na Chrome Web Store..."
           HTTP_STATUS=$(curl -s -o response.json -w "%{http_code}" -X POST \
