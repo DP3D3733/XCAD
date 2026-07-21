@@ -1,16 +1,346 @@
 let qths;
 let associacoes;
-let dadosAssociacoesEAtendimentos;
+let dadosAssociacoes;
+inserirCheckboxAtividadesProgramadas();
 main();
 async function main() {
-    dadosAssociacoesEAtendimentos = await buscarAssociacoesEAtendimentos();
-    associacoes = dadosAssociacoesEAtendimentos;
+    dadosAssociacoes = await buscarassociacoes();
+    associacoes = dadosAssociacoes;
     qths = await listarLocais();
     criarBotaoImportarOS();
 
 }
 
-async function buscarAssociacoesEAtendimentos() {
+function inserirCheckboxAtividadesProgramadas() {
+    if (url != 'https://sentry.procempa.com.br/web/despacho/schedule-garrison') return;
+
+    const inserirCheckInterval = setInterval(() => {
+        const tabela = document.querySelector('#table.tabulator');
+        if (!tabela) return;
+        const linhas = Array
+            .from(tabela.querySelectorAll('div.tabulator-tableholder div[role=row]'))
+            .filter(row => {
+                const prev = row.previousElementSibling;
+                return !(prev && prev.tagName === 'INPUT');
+            });
+        if (linhas.length == 0) return;
+        linhas.forEach(linha => {
+            const checkbox = document.createElement('input');
+            checkbox.setAttribute('type', 'checkbox');
+            checkbox.addEventListener('change', () => mostrarEsconderMenuDeOpcoes());
+            linha.insertAdjacentElement('beforebegin', checkbox);
+        });
+        //clearInterval(inserirCheckInterval);
+    }, 1000);
+}
+
+function mostrarEsconderMenuDeOpcoes() {
+    const atividadesSelecionadas = Array.from(document.querySelectorAll('#table.tabulator input[type=checkbox]')).filter(check => check.checked);
+    const buttonCopiarAtividade = document.getElementById('copiarAtividadeButton');
+    const inputNumOS = document.getElementById('inputNumOS');
+    const dataOSInput = document.getElementById('dataOSInput');
+    if (atividadesSelecionadas.length == 0 && !buttonCopiarAtividade) return;
+    if (atividadesSelecionadas.length == 0 && buttonCopiarAtividade) {
+        buttonCopiarAtividade.remove();
+        inputNumOS.remove();
+        dataOSInput.remove();
+    };
+    if (atividadesSelecionadas.length > 0 && !buttonCopiarAtividade) {
+        const buttonCadastrarNovaAtividade = Array.from(document.querySelectorAll('button')).find(button => button.innerText == ' Cadastrar atividade programada');
+        const novoButtonCopiarAtividade = buttonCadastrarNovaAtividade.parentNode.cloneNode(true);
+        novoButtonCopiarAtividade.querySelector('button').removeAttribute('onclick');
+        novoButtonCopiarAtividade.querySelector('button').innerText = 'Copiar Atividade';
+        novoButtonCopiarAtividade.querySelector('button').setAttribute('id', 'copiarAtividadeButton');
+        buttonCadastrarNovaAtividade.parentNode.insertAdjacentElement('afterbegin', novoButtonCopiarAtividade);
+        const buttonExcluirAtividade = buttonCadastrarNovaAtividade.cloneNode(true);
+        buttonExcluirAtividade.removeAttribute('onclick');
+        buttonExcluirAtividade.innerText = 'Excluir Atividade';
+        buttonExcluirAtividade.setAttribute('id', 'excluirAtividadeButton');
+        buttonExcluirAtividade.style.backgroundColor = 'red';
+        buttonCadastrarNovaAtividade.insertAdjacentElement('beforeBegin', buttonExcluirAtividade);
+
+        const dataOSInput = document.createElement('input');
+        dataOSInput.setAttribute('type', 'date');
+        dataOSInput.setAttribute('id', 'dataOSInput');
+        novoButtonCopiarAtividade.insertAdjacentElement('beforeBegin', dataOSInput);
+        const numeroOSInput = document.createElement('input');
+        numeroOSInput.setAttribute('type', 'text');
+        numeroOSInput.setAttribute('id', 'inputNumOS');
+        novoButtonCopiarAtividade.insertAdjacentElement('beforeBegin', numeroOSInput);
+
+        buttonExcluirAtividade.addEventListener('click', () => excluirAtividades());
+        novoButtonCopiarAtividade.addEventListener('click', () => copiarAtividades());
+        dataOSInput.addEventListener('change', () => ajustaNumOS());
+    }
+}
+
+function ajustaNumOS() {
+    const dataValue = document.querySelector('#dataOSInput')?.value;
+    if (!dataValue || dataValue == 'Selecione') return;
+    const dataObj = new Date(dataValue);
+    const anoAtual = dataObj.getFullYear();
+    const primeiroDeJaneiro = new Date(anoAtual, 0, 1);
+    const diasDesdePrimeiroDeJaneiro =
+        Math.ceil(
+            (dataObj - primeiroDeJaneiro)
+            / (1000 * 60 * 60 * 24)
+        );
+
+    const numeroOSInput = document.querySelector('#inputNumOS');
+    numeroOSInput.value = `OS n.º ${diasDesdePrimeiroDeJaneiro * 2 + 1}/${anoAtual}`
+}
+
+async function copiarAtividades() {
+    const dataValue = document.querySelector('#dataOSInput').value;
+    const numeroOSValue = document.querySelector('#inputNumOS').value;
+
+    const atividadesSelecionadas = Array
+        .from(
+            document.querySelectorAll(
+                '#table.tabulator input[type=checkbox]'
+            )
+        )
+        .filter(check => check.checked)
+        .map(check => check.nextElementSibling);
+
+    let todasCopiadas = true;
+    for (const atividade of atividadesSelecionadas) {
+
+        const id = atividade
+            .querySelector('div[tabulator-field="id"]')
+            .innerText;
+
+        const dadosAtividade =
+            await buscarAtividadeProgramada(id);
+
+        if (!dadosAtividade)
+            continue;
+
+        const atividadeProntaPraInserir = prepararNovaAtividadeObjeto(dadosAtividade.schedule, numeroOSValue, dataValue);
+
+        const atividadeCadastrada =
+            await cadastrarAtividadeProgramada(atividadeProntaPraInserir);
+
+        if (!atividadeCadastrada) {
+            todasCopiadas = false;
+        }
+    }
+    if (todasCopiadas) window.location.reload();
+}
+
+
+
+
+
+
+
+function prepararNovaAtividadeObjeto(atividade, novoNrOs, novaData) {
+    const tituloAtividadeCru = atividade.name;
+    if (!tituloAtividadeCru) return;
+    let tituloAtividadePronto;
+    if (tituloAtividadeCru.includes(novoNrOs) && !tituloAtividadeCru.match(/\((\d+)\)/)) tituloAtividadePronto = tituloAtividadeCru + ' (2)'; //caso tenha sido copiado pra mesma OS
+    if (tituloAtividadeCru.includes(novoNrOs) && tituloAtividadeCru.match(/\((\d+)\)/)) { //caso já tenha uma cópia ele aumenta um dígito do final (1) -> (2)
+        const numCopia = parseInt(tituloAtividadeCru.match(/\((\d+)\)/)[1]);
+        const novoNumCopia = numCopia + 1;
+        tituloAtividadePronto = tituloAtividadeCru.replace(tituloAtividadeCru.match(/\((\d+)\)/)[0], `(${novoNumCopia})`);
+    }
+    if (!tituloAtividadeCru.includes(novoNrOs)) tituloAtividadePronto = novoNrOs + tituloAtividadeCru.substr(15);
+
+    atividade.name = tituloAtividadePronto;
+    atividade.dateUsageMin = novaData;
+    atividade.dateUsageMax = novaData;
+
+    atividade.activities.forEach(atv => delete atv.itemId);
+    delete atividade.id;
+    delete atividade.inactive;
+    delete atividade.systemCreation;
+    delete atividade.systemUpdate;
+    delete atividade.userSystemId;
+    return atividade;
+}
+
+async function cadastrarAtividadeProgramada(
+    dadosDaAtividade
+) {
+    if (!dadosDaAtividade) return;
+    console.log(dadosDaAtividade);
+    const anexosOriginais =
+        [...(dadosDaAtividade.attachment || [])];
+
+    // limpa referências antigas
+    dadosDaAtividade.attachment = [];
+    dadosDaAtividade.attachmentDescription = null;
+
+    const fd = new FormData();
+
+    fd.append(
+        "myModel",
+        JSON.stringify(dadosDaAtividade)
+    );
+
+    // reenvia arquivos binários
+    for (const anexo of anexosOriginais) {
+
+        const response = await fetch(
+            `/despacho/attachment/get/${anexo.id}`,
+            {
+                credentials: "include"
+            }
+        );
+
+        const blob =
+            await response.blob();
+
+        const file =
+            new File(
+                [blob],
+                anexo.name,
+                {
+                    type: anexo.type
+                }
+            );
+
+        fd.append(
+            "attachFiles",
+            file
+        );
+    }
+
+    const response = await fetch(
+        "/despacho/schedule-garrison",
+        {
+            method: "POST",
+            body: fd,
+            credentials: "include"
+        }
+    );
+
+    console.log(response.status);
+
+    const text =
+        await response.text();
+
+    console.log(text);
+
+    return response.ok;
+}
+
+async function excluirAtividades() {
+    const atividadesSelecionadas = Array
+        .from(
+            document.querySelectorAll(
+                '#table.tabulator input[type=checkbox]'
+            )
+        )
+        .filter(check => check.checked)
+        .map(check => check.nextElementSibling);
+
+    let todasExcluidas = true;
+    let atividadesExcluidasNoRotinas = true;
+    for (const atividade of atividadesSelecionadas) {
+
+        const id = atividade
+            .querySelector('div[tabulator-field="id"]')
+            .innerText;
+
+        const atividadeExcluida =
+            await excluirAtividade(id);
+
+        if (!atividadeExcluida) {
+            todasExcluidas = false;
+            continue;
+        }
+
+        atividadesExcluidasNoRotinas = await excluirDemandaOSRotinas(id);
+
+        if (!atividadesExcluidasNoRotinas) {
+            todasExcluidas = false;
+        }
+
+    }
+
+
+    if (todasExcluidas) window.location.reload();
+}
+
+async function excluirDemandaOSRotinas(id) {
+    return new Promise((resolve, reject) => {
+
+        function listener(event) {
+            if (event.data.type !== "excluirDemandaOSRotinasResposta") {
+                return;
+            }
+
+            window.removeEventListener("message", listener);
+
+            if (event.data.status === "ok") {
+                resolve(true);
+            } else {
+                reject(event.data.erro);
+            }
+        }
+
+        window.addEventListener("message", listener);
+
+        window.postMessage({
+            type: "excluirDemandaOSRotinas",
+            id
+        }, "*");
+    });
+}
+
+async function excluirAtividade(id) {
+
+    const response = await fetch(
+        `/despacho/schedule-garrison/${id}`,
+        {
+            method: "DELETE",
+            credentials: "include"
+        }
+    );
+
+    console.log(response.status);
+
+    if (!response.ok) {
+
+        console.error(
+            await response.text()
+        );
+
+        return false;
+    }
+
+    return true;
+}
+
+function ajustarCodigoAreaNomeAtividadeProgramada() {
+    const nomeAtividadeInput = document.querySelector("#myModel\\.name");
+    const nomeAtividade = nomeAtividadeInput.value.replaceAll(', ', ',').replace(/\s+\S+$/, "");;
+    const selectSetores = document.querySelector("#sectors");
+    const codigoSetores = {
+        'Subintendência Regional Cruzeiro': 200,
+        'Subintendência Regional Partenon': 300,
+        'Subintendência Regional Leste': 400,
+        'Subintendência Regional Restinga': 500,
+        'Subintendência Regional Norte': 600,
+        'Subintendência Regional Eixo Baltazar': 700,
+        'Subintendência Regional Pinheiro': 800,
+        'Subintendência Regional Eixo Sul': 900,
+        'Subintendência da Ronda Ostensiva Municipal': 1000,
+        'Subintendência Regional Centro': 1200
+    }
+    if (!nomeAtividadeInput || !selectSetores) return;
+    selectSetores.addEventListener('change', () => {
+        const opcoesSelecionadas = Array.from(selectSetores.selectedOptions).map(opcao => codigoSetores[opcao.value]).join(', ');
+        nomeAtividadeInput.value = `${nomeAtividade} ${opcoesSelecionadas}`;
+        nomeAtividadeInput.dispatchEvent(new Event('input', {
+            bubbles: true,
+            cancelable: true
+        }));
+    })
+}
+
+async function buscarassociacoes() {
 
     const response = await fetch(
         `https://sentry.procempa.com.br/despacho/activity/8`,
@@ -95,7 +425,7 @@ function criarBotaoImportarOS() {
 
         renderizarTabela(dados);
         qths = await listarLocais();
-        associacoes = await buscarAssociacoesEAtendimentos();
+        associacoes = await buscarassociacoes();
 
         conferirDados();
 
@@ -546,8 +876,8 @@ async function associarLocal(local) {
 
         const associacaoPronta = JSON.parse(sessionStorage.getItem('associarLocal'));
         Object.assign(associacoes, associacaoPronta);
-        dadosAssociacoesEAtendimentos = associacoes;
-        await salvarAssociacoesEAtendimentos(dadosAssociacoesEAtendimentos);
+        dadosAssociacoes = associacoes;
+        await salvarAssociacoes(dadosAssociacoes);
         conferirDados();
         sessionStorage.removeItem('associacao');
         sessionStorage.removeItem('associarLocal');

@@ -129,24 +129,51 @@ if (url.includes('sentry')) {
   document.documentElement.appendChild(script);
 }
 
-if (url.includes('sentry.procempa.com.br/web/bos')) {
-  const script = document.createElement("script");
-  script.src = chrome.runtime.getURL("web_accessible_resources/sentry/ba.js");
-  document.documentElement.appendChild(script);
-}
+setTimeout(() => {
+  if (url.includes('sentry.procempa.com.br/web/bos')) {
+    const script = document.createElement("script");
+    script.src = chrome.runtime.getURL("web_accessible_resources/sentry/ba.js");
+    document.documentElement.appendChild(script);
+  }
 
-if (url.includes('sentry.procempa.com.br/web/despacho/dispatch/')) {
-  const script = document.createElement("script");
-  script.src = chrome.runtime.getURL("web_accessible_resources/sentry/despacho.js");
-  document.documentElement.appendChild(script);
-}
+  if (url.includes('sentry.procempa.com.br/web/despacho/dispatch/')) {
+    const script = document.createElement("script");
+    script.src = chrome.runtime.getURL("web_accessible_resources/sentry/despacho.js");
+    document.documentElement.appendChild(script);
+  }
 
-if (url.includes('sentry.procempa.com.br/web/despacho/schedule-garrison')) {
-  const scriptOS = document.createElement("script");
-  scriptOS.src = chrome.runtime.getURL("web_accessible_resources/sentry/os.js");
-  document.documentElement.appendChild(scriptOS);
+  if (url.includes('sentry.procempa.com.br/web/effectives')) {
+    const script = document.createElement("script");
+    script.src = chrome.runtime.getURL("web_accessible_resources/sentry/efetivo.js");
+    document.documentElement.appendChild(script);
+  }
 
-  const scriptJSZip = document.createElement("script");
-  scriptJSZip.src = chrome.runtime.getURL("libs/jszip.js");
-  document.documentElement.appendChild(scriptJSZip);
-}
+  if (url.includes('sentry.procempa.com.br/web/individual')) {
+    const script = document.createElement("script");
+    script.src = chrome.runtime.getURL("web_accessible_resources/sentry/individuo.js");
+    document.documentElement.appendChild(script);
+  }
+
+  if (url.includes('sentry.procempa.com.br/web/despacho/dashboard')) {
+    const script = document.createElement("script");
+    script.src = chrome.runtime.getURL("web_accessible_resources/sentry/cad.js");
+    document.documentElement.appendChild(script);
+  }
+
+  if (url.includes('sentry.procempa.com.br/web/despacho/attendance/')) {
+    const script = document.createElement("script");
+    script.src = chrome.runtime.getURL("web_accessible_resources/sentry/atendimento.js");
+    document.documentElement.appendChild(script);
+  }
+
+  if (url.includes('sentry.procempa.com.br/web/despacho/schedule-garrison')) {
+    const scriptOS = document.createElement("script");
+    scriptOS.src = chrome.runtime.getURL("web_accessible_resources/sentry/os.js");
+    document.documentElement.appendChild(scriptOS);
+
+    const scriptJSZip = document.createElement("script");
+    scriptJSZip.src = chrome.runtime.getURL("libs/jszip.js");
+    document.documentElement.appendChild(scriptJSZip);
+  }
+}, 500);
+
