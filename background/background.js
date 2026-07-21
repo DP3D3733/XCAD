@@ -333,13 +333,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         if (message.action == 'novoAlertaCercamento') {
             try {
                 const endereco = await buscarEndereco(message.endereco);
-                message.atendimento.factCity = endereco.cidade;
-                message.atendimento.factNeighborhood = endereco.bairro;
-                message.atendimento.factStreet = endereco.rua;
-                message.atendimento.factLatitude = endereco.latitude;
-                message.atendimento.factLongitude = endereco.longitude;
-                message.atendimento.factNumber = endereco.numero;
+                if (endereco) {
+                    message.atendimento.factCity = endereco.cidade;
+                    message.atendimento.factNeighborhood = endereco.bairro;
+                    message.atendimento.factStreet = endereco.rua;
+                    message.atendimento.factLatitude = endereco.latitude;
+                    message.atendimento.factLongitude = endereco.longitude;
+                    message.atendimento.factNumber = endereco.numero;
+                } else {
+                    message.atendimento.transcription += message.endereco;
+                }
 
+                console.log(message.atendimento);
                 if (sender.tab && sender.tab.id) {
                     chrome.tabs.sendMessage(
                         sender.tab.id, // <-- Correção aqui
