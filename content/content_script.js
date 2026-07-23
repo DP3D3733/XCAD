@@ -72,7 +72,13 @@ window.addEventListener("message", (event) => {
     window.reload();
   }
   if (event.data.type === "novoAlertaCercamento") {
-    chrome.runtime.sendMessage({ action: "novoAlertaCercamento", atendimento: event.data.model, endereco: event.data.endereco });
+    chrome.runtime.sendMessage({
+      action: "novoAlertaCercamento",
+      atendimento: event.data.model,
+      endereco: event.data.endereco,
+      fotoAgoraId: event.data.fotoAgoraId,
+      fotoOriginalId: event.data.fotoOriginalId
+    });
   }
   if (event.data.type === "consultar") {
     console.log(event.data.data);
@@ -118,7 +124,12 @@ chrome.runtime.onMessage.addListener((message) => {
     window.postMessage({ type: "focarEfetivo" }, "*");
   }
   if (message.action === "registrarAtendimentoCercamento") {
-    window.postMessage({ type: "registrarAtendimentoCercamento", atendimento: message.atendimento }, "*");
+    window.postMessage({
+      type: "registrarAtendimentoCercamento",
+      atendimento: message.atendimento,
+      fotoAgoraId: message.fotoAgoraId,
+      fotoOriginalId: message.fotoOriginalId
+    }, "*");
   }
 });
 

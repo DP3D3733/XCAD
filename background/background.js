@@ -350,7 +350,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                         sender.tab.id, // <-- Correção aqui
                         {
                             action: "registrarAtendimentoCercamento",
-                            atendimento: message.atendimento
+                            atendimento: message.atendimento,
+                            fotoAgoraId: message.fotoAgoraId,
+                            fotoOriginalId: message.fotoOriginalId
                         }
                     );
                 }

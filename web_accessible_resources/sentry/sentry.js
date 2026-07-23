@@ -110,6 +110,7 @@ if (url.includes('despacho/attendance/')) {
 
 gerarBotaoTurnoAtual();
 async function buscarAtividadeProgramada(id) {
+    ''
 
     const response = await fetch(
         `https://sentry.procempa.com.br/despacho/schedule-garrison/${id}`,
@@ -270,7 +271,7 @@ async function enviarChamadaRotinas(atendimento) {
     });
 }
 //cercamento: inserir os dados, resgatar o id do atendimento, inserir as fotos com a função abaixo
-async function enviarAtendimentoComFoto() {
+/* async function enviarAtendimentoComFoto() {
     try {
         // 1. Obtém o token e o blob da foto
         const token = await obterTokenValido(USUARIO, SENHA);
@@ -299,7 +300,7 @@ async function enviarAtendimentoComFoto() {
     } catch (error) {
         console.error("Erro ao enviar atendimento:", error.response?.data || error.message);
     }
-}
+} */
 async function buscarAtendimento(id) {
 
     const response = await fetch(
@@ -380,52 +381,33 @@ async function registrarNovosAtendimentosCercamento() {
     }
 }
 
-async function registrarAtendimento(model, arquivo) {
+async function registrarAtendimento(model, fotoAgoraId, fotoOriginalId) {
     try {
-        // 1. Cria o atendimento no sistema
-        const formModel = new FormData();
-        formModel.append("myModel", JSON.stringify(model));
-        formModel.append("attachFiles", arquivo);
+        const formData = new FormData();
+        formData.append("myModel", JSON.stringify(model));
 
-        // 4. Anexa o arquivo na chave EXATA que o backend Spring espera!
+        if (fotoAgoraId) {
+            const token = await obterTokenValido(USUARIO, SENHA);
+            const fotoAgoraBlob = await buscarFotoAutenticada(fotoAgoraId, token);
+            const fotoOriginalBlob = await buscarFotoAutenticada(fotoOriginalId, token);
 
-        // 5. Envia a requisição exatamente igual à função submit original do sistema
-        const response = await axios.post(
-            `${projectUtils.properties.DESPACHO}/attendance`,
-            formData
-        );
+            const fotoAgoraAnexo = new File([fotoAgoraBlob], "foto_agora.jpg", {
+                type: fotoAgoraBlob?.type || "image/jpeg"
+            });
+            const fotoOriginalAnexo = new File([fotoOriginalBlob], "foto_original.jpg", {
+                type: fotoOriginalBlob?.type || "image/jpeg"
+            });
 
-        return dadosAtendimento;
-    } catch (error) {
-        console.error("Erro ao enviar atendimento:", error.response?.data || error.message);
-    }
-}
+            formData.append("attachFiles", fotoAgoraAnexo);
+            formData.append("attachFiles", fotoOriginalAnexo);
+        }
 
-async function enviarAtendimentoComFoto() {
-    try {
-        // 1. Obtém o token e o blob da foto
-        const token = await obterTokenValido(USUARIO, SENHA);
-        const fotoBlob = await buscarFotoAutenticada("7131062965", token);
-
-        // 2. Cria o objeto File
-        const arquivoParaAnexo = new File([fotoBlob], "foto_reconhecimento.jpg", {
-            type: fotoBlob.type || "image/jpeg"
-        });
-
-        // 3. Obtém o FormData padrão que o próprio sistema gera
-        const formData = preparedData(false);
-
-        // 4. Anexa o arquivo na chave EXATA que o backend Spring espera!
-        formData.append("attachFiles", arquivoParaAnexo);
-
-        // 5. Envia a requisição exatamente igual à função submit original do sistema
         const response = await axios.post(
             `${projectUtils.properties.DESPACHO}/attendance`,
             formData
         );
 
         console.log("Atendimento criado com foto com sucesso!", response.data);
-        localStorage.setItem('success', 'Salvo com sucesso.');
 
     } catch (error) {
         console.error("Erro ao enviar atendimento:", error.response?.data || error.message);
@@ -489,7 +471,6 @@ async function obterTokenValido(usuario, senha) {
 
     return tokenSalvo;
 }
-
 // Executa a busca de vandalismo e exibe no console
 async function executarCicloDeBusca() {
     try {
@@ -527,11 +508,14 @@ async function executarCicloDeBusca() {
         if (!dados.length) {
             console.log("%cNenhum registro de vandalismo retornado.", "color: #999;");
         }
+        const acionamentosId = sessionStorage.getItem('acionamentosId')?.split(',') || [];
 
         const resultados = await Promise.all(
             dados.map(async acionamento => {
+                if (acionamentosId.includes(acionamento.id)) return;
                 const reconheceuAlerta = await reconhecerAlerta(acionamento.id, 'calebe.silva', token, 'vandalism');
                 if (reconheceuAlerta?.status != 'sucesso') return;
+                acionamentosId.push(acionamento.id);
                 const model = {
                     createJanitorial: false,
                     systemUpdate: null,
@@ -556,17 +540,16 @@ async function executarCicloDeBusca() {
                     factLongitude: '',
                     factNumber: ''
                 };
-
                 window.postMessage({
                     type: "novoAlertaCercamento",
                     model: model,
                     endereco: acionamento.endereco,
                 }, "*");
+
             })
         );
 
-        const urlBuscaDesaparecidos = "https://cercamento-api.procempa.com.br/cercamento-api/service/analytics/person/data?limit=LIMIT_ONLY_LATEST_10&onlyAlerts=Y&alertDetails=ONLY_DISPACHED&confianca=75";
-
+        const urlBuscaDesaparecidos = "https://cercamento-api.procempa.com.br/cercamento-api/service/analytics/person/data?limit=LIMIT_ONLY_LATEST_10&onlyAlerts=Y&alertDetails=ONLY_NOT_RECOGNIZED&confianca=75";
         const dadosResponseDesaparecidos = await fetch(urlBuscaDesaparecidos, {
             method: "GET",
             headers: {
@@ -598,12 +581,10 @@ async function executarCicloDeBusca() {
         }
         const resultadosDesaparecidos = await Promise.all(
             dadosDesaparecidos.map(async acionamento => {
-                /* const reconheceuAlerta = await reconhecerAlerta(acionamento.id_identificado, 'calebe.silva', token, 'analytics');
-                if (reconheceuAlerta?.status != 'sucesso') return; */
-                const foto = await buscarFotoAutenticada(acionamento.matricula, token);
-                const arquivoParaAnexo = new File([foto], "foto_reconhecimento.jpg", {
-                    type: foto.type || "image/jpeg"
-                });
+                if (acionamentosId.includes(acionamento.id_identificado)) return;
+                const reconheceuAlerta = await reconhecerAlerta(acionamento.id_identificado, 'calebe.silva', token, 'analytics');
+                if (reconheceuAlerta?.status != 'sucesso') return;
+                acionamentosId.push(acionamento.id_identificado);
                 const model = {
                     createJanitorial: false,
                     systemUpdate: null,
@@ -629,15 +610,17 @@ async function executarCicloDeBusca() {
                     factLongitude: '',
                     factNumber: ''
                 };
-
-                /*  window.postMessage({
-                     type: "novoAlertaCercamento",
-                     model: model,
-                     endereco: acionamento.cameraEndereco,
-                     foto: arquivoParaAnexo
-                 }, "*");*/
+                window.postMessage({
+                    type: "novoAlertaCercamento",
+                    model: model,
+                    endereco: acionamento.cameraEndereco,
+                    fotoAgoraId: `https://cercamento-api.procempa.com.br/cercamento-api/service/analytics/person/image/${acionamento.url.replace(/\D/g, '')}`,
+                    fotoOriginalId: `https://cercamento-api.procempa.com.br/cercamento-api/service/analytics/image/${acionamento.matricula}`
+                }, "*");
             })
         );
+
+        sessionStorage.setItem('acionamentosId', acionamentosId);
 
 
     } catch (erro) {
@@ -645,10 +628,8 @@ async function executarCicloDeBusca() {
     }
 }
 
-async function buscarFotoAutenticada(caminhoImagem, token) {
-    if (!caminhoImagem) return null;
-    const baseUrl = "https://cercamento-api.procempa.com.br/cercamento-api/service/analytics/image/";
-    const urlCompleta = `${baseUrl}${caminhoImagem}`;
+async function buscarFotoAutenticada(urlCompleta, token) {
+    if (!urlCompleta) return null;
 
     try {
         const response = await fetch(urlCompleta, {
@@ -679,7 +660,7 @@ async function buscarFotoAutenticada(caminhoImagem, token) {
 window.addEventListener("message", (event) => {
     if (event.source !== window) return;
     if (event.data.type === "registrarAtendimentoCercamento") {
-        registrarAtendimento(event.data.atendimento, event.data.foto);
+        registrarAtendimento(event.data.atendimento, event.data.fotoAgoraId, event.data.fotoOriginalId);
     }
 
 });
