@@ -199,6 +199,32 @@ function gerarBotaoTurnoAtual() {
     botaoLimpar.insertAdjacentElement("afterend", botaoTurnoAtual);
 }
 
+async function buscarOS(numOS) {
+    const response = await fetch(
+        "https://sentry.procempa.com.br/despacho/schedule-garrison/list",
+        {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                filter: [
+                    {
+                        field: "name",
+                        type: "like",
+                        value: numOS
+                    }
+                ]
+            })
+        }
+    );
+
+    const data = await response.json();
+
+    return data.data
+}
+
 
 
 
@@ -243,7 +269,37 @@ async function enviarChamadaRotinas(atendimento) {
         }, "*");
     });
 }
+//cercamento: inserir os dados, resgatar o id do atendimento, inserir as fotos com a função abaixo
+async function enviarAtendimentoComFoto() {
+    try {
+        // 1. Obtém o token e o blob da foto
+        const token = await obterTokenValido(USUARIO, SENHA);
+        const fotoBlob = await buscarFotoAutenticada("7131062965", token);
 
+        // 2. Cria o objeto File
+        const arquivoParaAnexo = new File([fotoBlob], "foto_reconhecimento.jpg", {
+            type: fotoBlob.type || "image/jpeg"
+        });
+
+        // 3. Obtém o FormData padrão que o próprio sistema gera
+        const formData = preparedData(false);
+
+        // 4. Anexa o arquivo na chave EXATA que o backend Spring espera!
+        formData.append("attachFiles", arquivoParaAnexo);
+
+        // 5. Envia a requisição exatamente igual à função submit original do sistema
+        const response = await axios.post(
+            `${projectUtils.properties.DESPACHO}/attendance`,
+            formData
+        );
+
+        console.log("Atendimento criado com foto com sucesso!", response.data);
+        localStorage.setItem('success', 'Salvo com sucesso.');
+
+    } catch (error) {
+        console.error("Erro ao enviar atendimento:", error.response?.data || error.message);
+    }
+}
 async function buscarAtendimento(id) {
 
     const response = await fetch(
@@ -324,25 +380,56 @@ async function registrarNovosAtendimentosCercamento() {
     }
 }
 
-async function registrarAtendimento(model) {
-    const form = new FormData();
-    form.append("myModel", JSON.stringify(model));
+async function registrarAtendimento(model, arquivo) {
+    try {
+        // 1. Cria o atendimento no sistema
+        const formModel = new FormData();
+        formModel.append("myModel", JSON.stringify(model));
+        formModel.append("attachFiles", arquivo);
 
-    const response = await fetch(
-        "https://sentry.procempa.com.br/despacho/attendance",
-        {
-            method: "POST",
-            credentials: "include",
-            body: form
-        }
-    );
+        // 4. Anexa o arquivo na chave EXATA que o backend Spring espera!
 
-    if (!response.ok) {
-        const erro = await response.text();
-        throw new Error(`HTTP ${response.status}: ${erro}`);
+        // 5. Envia a requisição exatamente igual à função submit original do sistema
+        const response = await axios.post(
+            `${projectUtils.properties.DESPACHO}/attendance`,
+            formData
+        );
+
+        return dadosAtendimento;
+    } catch (error) {
+        console.error("Erro ao enviar atendimento:", error.response?.data || error.message);
     }
+}
 
-    return await response.json();
+async function enviarAtendimentoComFoto() {
+    try {
+        // 1. Obtém o token e o blob da foto
+        const token = await obterTokenValido(USUARIO, SENHA);
+        const fotoBlob = await buscarFotoAutenticada("7131062965", token);
+
+        // 2. Cria o objeto File
+        const arquivoParaAnexo = new File([fotoBlob], "foto_reconhecimento.jpg", {
+            type: fotoBlob.type || "image/jpeg"
+        });
+
+        // 3. Obtém o FormData padrão que o próprio sistema gera
+        const formData = preparedData(false);
+
+        // 4. Anexa o arquivo na chave EXATA que o backend Spring espera!
+        formData.append("attachFiles", arquivoParaAnexo);
+
+        // 5. Envia a requisição exatamente igual à função submit original do sistema
+        const response = await axios.post(
+            `${projectUtils.properties.DESPACHO}/attendance`,
+            formData
+        );
+
+        console.log("Atendimento criado com foto com sucesso!", response.data);
+        localStorage.setItem('success', 'Salvo com sucesso.');
+
+    } catch (error) {
+        console.error("Erro ao enviar atendimento:", error.response?.data || error.message);
+    }
 }
 
 // ================= CONFIGURAÇÃO =================
@@ -473,13 +560,12 @@ async function executarCicloDeBusca() {
                 window.postMessage({
                     type: "novoAlertaCercamento",
                     model: model,
-                    endereco: acionamento.endereco
+                    endereco: acionamento.endereco,
                 }, "*");
             })
         );
 
-        // Endpoint de vandalismo fornecido
-        const urlBuscaDesaparecidos = "https://cercamento-api.procempa.com.br/cercamento-api/service/analytics/person/data?limit=LIMIT_ONLY_LATEST_10&onlyAlerts=Y&alertDetails=ONLY_NOT_RECOGNIZED&confianca=75";
+        const urlBuscaDesaparecidos = "https://cercamento-api.procempa.com.br/cercamento-api/service/analytics/person/data?limit=LIMIT_ONLY_LATEST_10&onlyAlerts=Y&alertDetails=ONLY_DISPACHED&confianca=75";
 
         const dadosResponseDesaparecidos = await fetch(urlBuscaDesaparecidos, {
             method: "GET",
@@ -512,8 +598,12 @@ async function executarCicloDeBusca() {
         }
         const resultadosDesaparecidos = await Promise.all(
             dadosDesaparecidos.map(async acionamento => {
-                const reconheceuAlerta = await reconhecerAlerta(acionamento.id_identificado, 'calebe.silva', token, 'analytics');
-                if (reconheceuAlerta?.status != 'sucesso') return;
+                /* const reconheceuAlerta = await reconhecerAlerta(acionamento.id_identificado, 'calebe.silva', token, 'analytics');
+                if (reconheceuAlerta?.status != 'sucesso') return; */
+                const foto = await buscarFotoAutenticada(acionamento.matricula, token);
+                const arquivoParaAnexo = new File([foto], "foto_reconhecimento.jpg", {
+                    type: foto.type || "image/jpeg"
+                });
                 const model = {
                     createJanitorial: false,
                     systemUpdate: null,
@@ -540,11 +630,12 @@ async function executarCicloDeBusca() {
                     factNumber: ''
                 };
 
-                window.postMessage({
-                    type: "novoAlertaCercamento",
-                    model: model,
-                    endereco: acionamento.cameraEndereco
-                }, "*");
+                /*  window.postMessage({
+                     type: "novoAlertaCercamento",
+                     model: model,
+                     endereco: acionamento.cameraEndereco,
+                     foto: arquivoParaAnexo
+                 }, "*");*/
             })
         );
 
@@ -554,12 +645,41 @@ async function executarCicloDeBusca() {
     }
 }
 
+async function buscarFotoAutenticada(caminhoImagem, token) {
+    if (!caminhoImagem) return null;
+    const baseUrl = "https://cercamento-api.procempa.com.br/cercamento-api/service/analytics/image/";
+    const urlCompleta = `${baseUrl}${caminhoImagem}`;
+
+    try {
+        const response = await fetch(urlCompleta, {
+            method: "GET",
+            headers: {
+                "authorization": `Bearer ${token}`,
+                "accept": "image/*, */*"
+            },
+            mode: "cors",
+            credentials: "include"
+        });
+
+        if (!response.ok) return null;
+
+        // Converte o arquivo recebido em Blob
+        const imageBlob = await response.blob();
+
+        // Cria uma URL temporária em memória para usar no src da tag <img>
+        return imageBlob;
+    } catch (erro) {
+        console.error("Erro ao carregar foto:", erro);
+        return null;
+    }
+}
+
 
 
 window.addEventListener("message", (event) => {
     if (event.source !== window) return;
     if (event.data.type === "registrarAtendimentoCercamento") {
-        registrarAtendimento(event.data.atendimento);
+        registrarAtendimento(event.data.atendimento, event.data.foto);
     }
 
 });
