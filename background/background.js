@@ -400,7 +400,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 chrome.commands.onCommand.addListener(async (command) => {
     if (command !== "pesquisarEfetivo" && command !== "pesquisarQTH") return;
-
     const urls = { "pesquisarEfetivo": "https://sentry.procempa.com.br/web/effectives", "pesquisarQTH": "https://www.google.com/maps/d/u/0/edit?mid=1bfLD9QS9_oIRo5AXkl9IaIpvcfDkiAw&ll=-30.00223405574897%2C-51.2272405&z=12" };
 
     console.log(urls[command]);
@@ -796,6 +795,7 @@ async function buscarEndereco(endereco) {
         let enderecoLimpo = endereco
             .replace(/cep\s*/gi, '') // Remove "CEP " ou "cep"
             .trim();
+        if (!enderecoLimpo.includes('Porto Alegre')) enderecoLimpo += ' - Porto Alegre';
 
         const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${encodeURIComponent(enderecoLimpo)}&countrycodes=br&limit=1`;
 

@@ -1125,6 +1125,43 @@ async function atualizarOSRotinas(numOS) {
     window.postMessage({ type: "enviarOSRotinas", data: atividadesProntasParaEnvio }, "*");
 }
 
+async function salvarAssociacoes(associacoes) {
+    const activityObservation = JSON.stringify(associacoes);
+    const dados = await fetch(
+        'https://sentry.procempa.com.br/despacho/activity/8',
+        {
+            credentials: 'include'
+        }
+    ).then(r => r.json());
+
+    const atividade = dados.activity;
+
+    const payload = {
+        onDuty: atividade.onDuty.split('-').reverse().join('/'),
+        activityObservation: activityObservation,
+        bossInspector: String(atividade.bossInspector),
+        garrison: atividade.garrison,
+        bos: atividade.bos,
+        systemUpdate: atividade.systemUpdate
+    };
+
+    const response = await fetch(
+        'https://sentry.procempa.com.br/despacho/activity/8',
+        {
+            method: 'PUT',
+            credentials: 'include',
+            headers: {
+                'Accept': 'application/json, text/plain, */*',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        }
+    );
+
+    const texto = await response.text();
+
+    return texto;
+}
 
 
 
