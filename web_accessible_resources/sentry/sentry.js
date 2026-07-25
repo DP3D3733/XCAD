@@ -1,4 +1,5 @@
 const url = window.location.href;
+if (url == 'https://sentry.procempa.com.br/web/') localStorage.removeItem('atendimentosJaNotificados');
 
 atualizarEfetivo();
 async function atualizarEfetivo(modo) {

@@ -2,6 +2,7 @@ criarBotaoVisualizarOS();
 inserirBotaoCopiarAtendimento();
 inserirButtonNovosBAs();
 verificarNovosBAs();
+inserirBotaoQTHs();
 
 
 function criarBotaoVisualizarOS() {
@@ -446,6 +447,317 @@ function inserirBotaoCopiarAtendimento() {
     }, 1000);
 }
 
+function inserirBotaoQTHs() {
+    setInterval(() => {
+        const buttonAjuda = document.querySelector('button[data-mdb-target="#garrison-help"]');
+        if (!buttonAjuda) return;
+
+        const buttonVerQTHs = document.querySelector('#buttonVerQTHs');
+        if (buttonVerQTHs) return;
+
+        buttonAjuda.insertAdjacentHTML('beforeBegin', `
+        <button type="button" class="btn btn-xs btn-help-cards" id="buttonVerQTHs" onclick="verQTHS()" title="QTHs">
+            <i class="fa fa-map-pin"></i>
+        </button>`);
+
+        buttonAjuda.parentNode.setAttribute('style', 'display: inline-flex;align-items: center;gap: 4px;width: fit-content');
+    }, 1000);
+}
+
+async function verQTHS() {
+    const modalQTH = document.querySelector('#modalQTH');
+    if (!modalQTH) {
+        const qths = await baixarQTHs();
+        if (!qths) return;
+        inserirModalQTHs(qths);
+
+
+        criarTabelaQth(qths);
+    }
+    document.querySelector('#modalQTH').style.display = 'block';
+
+}
+
+function inserirModalQTHs(qths) {
+    if (document.querySelector('#modalQTH')) return;
+    const modal = document.createElement('div');
+    modal.setAttribute('class', "modal inmodal");
+    modal.setAttribute('id', "modalQTH");
+    modal.setAttribute('style', "display:none");
+    modal.innerHTML = `
+        <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Setores</h3>
+                </div>
+                <div class="modal-body">
+                    <div id="tabela-qth"></div>
+                    <br><br>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default" data-mdb-dismiss="modal" aria-label="Close">Ok</button>
+                    <button id="baixarQTHsButton" class="btn btn-default" aria-label="Baixar">Baixar</button>
+                </div>
+            </div>
+        </div>`
+    document.querySelector('body').insertAdjacentElement('beforeEnd', modal);
+    document.addEventListener("mousedown", (e) => {
+        const modal = document.querySelector("#modalQTH .modal-content");
+        if (!modal.contains(e.target)) {
+            document.querySelector("#modalQTH").style.display = 'none';
+        }
+    });
+    modal.querySelector('button[data-mdb-dismiss="modal"]').addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+    modal.querySelector('#baixarQTHsButton').addEventListener('click', () => {
+        baixarCSV(qths);
+    });
+
+}
+
+function baixarCSV(jsonData, filename = "dados.csv") {
+    if (!jsonData || !jsonData.length) {
+        console.warn("Nenhum dado encontrado para exportar.");
+        return;
+    }
+
+    const headers = Object.keys(jsonData[0]);
+    const csvRows = [];
+
+    // Cabeçalho
+    csvRows.push(headers.join(";"));
+
+    // Dados
+    for (const row of jsonData) {
+        const values = headers.map(header => {
+            let val = row[header] === null || row[header] === undefined ? "" : row[header];
+
+            // Se for número (como lat/lng -29.99387), converte para string
+            if (typeof val === "number") {
+                val = String(val);
+            } else {
+                val = String(val);
+            }
+
+            // Se for um valor numérico com ponto decimal (ex: -29.99387 ou -51.22184),
+            // troca o ponto por vírgula para o Excel do Brasil não inventar pontos de milhar
+            if (/^-?\d+\.\d+$/.test(val.trim())) {
+                val = val.trim().replace(".", ",");
+            }
+
+            // Escapa aspas duplas
+            val = val.replace(/"/g, '""');
+
+            // Envolve em aspas apenas se contiver ponto e vírgula ou quebras de linha
+            if (val.includes(";") || val.includes('"') || val.includes("\n") || val.includes("\r")) {
+                val = `"${val}"`;
+            }
+
+            return val;
+        });
+
+        csvRows.push(values.join(";"));
+    }
+
+    const csvString = csvRows.join("\r\n");
+
+    // UTF-8 BOM para abrir com acentuação correta no Excel
+    const blob = new Blob(["\uFEFF" + csvString], { type: "text/csv;charset=utf-8;" });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", filename);
+    link.style.visibility = "hidden";
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    URL.revokeObjectURL(url);
+}
+
+function criarTabelaQth(qths) {
+    const tabela = new Tabulator("#tabela-qth", {
+        maxHeight: "500px",
+        data: qths,
+        persistentConfig: true,
+        pagination: "local",
+        locale: "pt-br",
+        // 2. Personaliza ou traduz os termos da tabela
+        langs: {
+            "pt-br": {
+                "pagination": {
+                    "page_size": "Mostrar",             // Rótulo do seletor de quantidade (ex: "Mostrar 10")
+                    "page_title": "Ir para a página",    // Tooltip dos números das páginas
+                    "first": "Primeira",                 // Botão Primeira Página
+                    "first_title": "Primeira Página",    // Tooltip do botão Primeira
+                    "last": "Última",                    // Botão Última Página
+                    "last_title": "Última Página",       // Tooltip do botão Última
+                    "prev": "Anterior",                  // Botão Página Anterior
+                    "prev_title": "Página Anterior",     // Tooltip do botão Anterior
+                    "next": "Próxima",                   // Botão Próxima Página
+                    "next_title": "Próxima Página",      // Tooltip do botão Próxima
+                    "all": "Todos",                      // Texto para a opção 'true' do selector
+                }
+            }
+        },
+
+        // 2. Define a quantidade de itens por página
+        paginationSize: 10,
+
+        // 3. (Opcional) Adiciona o seletor para o usuário escolher o tamanho (ex: 5, 10, 20, 50)
+        paginationSizeSelector: [5, 10, 20, 50, true], // 'true' adiciona a opção "Todos"
+
+        // 4. (Opcional) Define quantas páginas são mostradas nos botões do rodapé
+        paginationButtonCount: 5,
+
+        persistence: {
+            columns: true,      // ordem, largura e visibilidade
+            filter: true,       // filtros
+            sort: true,         // ordenação
+            headerFilter: true  // filtros do cabeçalho
+        },
+
+        layout: "fitColumns",
+
+        rowFormatter: function (row) {
+
+            const data = row.getData();
+
+            const element = row.getElement();
+
+            row.getElement().style.cursor = "pointer";
+
+            element.addEventListener("click", () => {
+                const data = row.getData();
+
+                if (data.id == '-') return;
+
+                window.open(
+                    `https://www.google.com/maps/d/u/0/viewer?mid=1bfLD9QS9_oIRo5AXkl9IaIpvcfDkiAw&ll=${data.latitude}%2C${data.longitude}&z=20`,
+                    "_blank"
+                );
+            });
+        },
+
+        initialSort: [
+            {
+                column: "name",
+                dir: "asc"
+            }
+        ],
+
+        columns: [
+            {
+                title: "Nome",
+                field: "name",
+                headerFilter: "input",
+                sorter: function (a, b) {
+                    // Força conversão para string e remove espaços das pontas
+                    var strA = String(a || "").trim();
+                    var strB = String(b || "").trim();
+
+                    // Extrai a primeira sequência numérica encontrada no início do texto
+                    var matchA = strA.match(/^\d+/);
+                    var matchB = strB.match(/^\d+/);
+
+                    // Converte explicitamente para número (ou NaN se não houver número)
+                    var numA = matchA ? Number(matchA[0]) : NaN;
+                    var numB = matchB ? Number(matchB[0]) : NaN;
+                    var temNumA = !isNaN(numA);
+                    var temNumB = !isNaN(numB);
+
+                    // 1. Caso ambos comecem com número
+                    if (temNumA && temNumB) {
+                        if (numA !== numB) {
+                            return numA - numB; // Ordenação numérica pura (101 < 1000)
+                        }
+                        // Se os números forem iguais (ex: "100 RUA A" vs "100 RUA B"), ordena o restante alfabeticamente
+                        return strA.localeCompare(strB, "pt-BR", { sensitivity: "base" });
+                    }
+
+                    // 2. Se apenas 'A' tem número -> 'A' vem primeiro
+                    if (temNumA) return -1;
+
+                    // 3. Se apenas 'B' tem número -> 'B' vem primeiro
+                    if (temNumB) return 1;
+
+                    // 4. Se nenhum tem número -> Ordenação alfabética simples
+                    return strA.localeCompare(strB, "pt-BR", { sensitivity: "base" });
+                }
+            },
+            {
+                title: "Endereço",
+                field: "street",
+                headerFilter: "input",
+                formatter: function (cell, formatterParams, onRendered) {
+                    var rowData = cell.getData(); // Pega o objeto da linha inteira
+                    const ruaNumero = rowData.street ? `${rowData.street} ${rowData.number},` : '';
+                    const bairro = rowData.neighborhood ? `${rowData.neighborhood} -` : '';
+                    // Retorna a combinação de HTML que você precisa
+                    return `${ruaNumero} ${bairro} ${rowData.citystate}`;
+                },
+            },
+            {
+                title: "Latitude",
+                field: "latitude",
+                headerFilter: "input"
+            },
+            {
+                title: "Longitude",
+                field: "longitude",
+                headerFilter: "input"
+            },
+            {
+                title: "Tipo",
+                field: "type",
+                headerFilter: "input"
+            },
+            {
+                title: "Contato",
+                field: "contact",
+                headerFilter: "input"
+            },
+            {
+                title: "Telefone",
+                field: "phone",
+                headerFilter: "input"
+
+            }
+        ]
+    });
+}
+
+async function baixarQTHs() {
+    const response = await fetch("https://sentry.procempa.com.br/web/place/list", {
+        headers: {
+            "accept": "application/json",
+            "content-type": "application/json",
+            "x-requested-with": "XMLHttpRequest"
+        },
+        body: JSON.stringify({
+            filter: [],
+            page: 1,
+            size: 2000,
+            sort: [
+                {
+                    field: "id",
+                    dir: "desc"
+                }
+            ]
+        }),
+        method: "POST",
+        credentials: "include"
+    });
+
+    if (!response) return false;
+
+    const dados = await response.json();
+    return dados.data.data;
+}
+
 async function copiarAtendimentoParaWhatsApp(id) {
     let dadosAtendimento = await buscarAtendimento(id);
     if (!dadosAtendimento) return;
@@ -565,4 +877,230 @@ async function verificarNovosBAs() {
     document.querySelector('#contadorNovosBAs').innerText = qtdNovosBAs;
     document.querySelector('#btnNovosBAs').style.display = 'flex';
 }
+inserirFiltroEquipes();
+function inserirFiltroEquipes() {
+    const filtroOrigem = document.querySelector('#garrisons-subtitles div.div-garrison-filter-counter:nth-child(2)');
+    if (!filtroOrigem) return;
+
+    const filtroEquipes = filtroOrigem.cloneNode(true);
+    const areasId = ['2', '3', '4', '5', '6', '7', '8', '9', 'C', 'R', 'D'];
+    const areasNome = [
+        "Subintendência Regional Cruzeiro",
+        "Subintendência Regional Partenon",
+        "Subintendência Regional Leste",
+        "Subintendência Regional Restinga",
+        "Subintendência Regional Norte",
+        "Subintendência Regional Eixo Baltazar",
+        "Subintendência Regional Pinheiro",
+        "Subintendência Regional Eixo Sul",
+        "Subintendência Regional Centro",
+        "Subintendência da Ronda Ostensiva Municipal",
+        "Divisão de Ação Zoneada"
+    ];
+    filtroEquipes.querySelector('h5').setAttribute('style', 'display:flex;gap:5px');
+    filtroEquipes.querySelector('h5').setAttribute('id', 'filtroEquipes');
+    filtroEquipes.querySelector('h5').innerHTML = ``;
+    filtroEquipes.querySelector('label').innerHTML = `Equipes`;
+    areasId.forEach(item => {
+        filtroEquipes.querySelector('h5').innerHTML += `<span area="${areasNome[areasId.indexOf(item)]}" class="span-garrisonsubtitles-custom-source source" onclick="ativarDesativarFiltro(this)" data-placement="top" title="Filtrar Equipes da ${areasNome[areasId.indexOf(item)]}">${item}</span>`;
+    });
+
+    filtroOrigem.insertAdjacentElement('afterend', filtroEquipes);
+}
+
+function ativarDesativarFiltro(botao) {
+    botao.classList.toggle('filter-garrison');
+    botao.parentNode.querySelectorAll('span').forEach(span => {
+        if (botao != span) span.classList.remove('filter-garrison');
+    });
+    const inputFiltro = document.querySelector("#garrison-input-search");
+    if (botao.classList.contains('filter-garrison')) {
+        inputFiltro.value = botao.getAttribute('area');
+        inputFiltro.dispatchEvent(new Event('input', {
+            bubbles: true,
+            cancelable: true
+        }));
+        return;
+    }
+    inputFiltro.value = '';
+    inputFiltro.dispatchEvent(new Event('input', {
+        bubbles: true,
+        cancelable: true
+    }));
+}
+ouvirNovosAtendimentos();
+
+function ouvirNovosAtendimentos() {
+    let buscandoAtendimentos = false;
+
+    // Recomendo aumentar de 1s para 5s/10s para não sobrecarregar o servidor
+    setInterval(async () => {
+        if (buscandoAtendimentos) return;
+        buscandoAtendimentos = true;
+
+        try {
+            const atendimentosAbertos = await buscarAtendimentosAbertos();
+
+            if (!atendimentosAbertos || !atendimentosAbertos.data) {
+                return;
+            }
+
+            // Recupera IDs notificados do sessionStorage tratando corretamente o array
+            const rawNotificados = localStorage.getItem('atendimentosJaNotificados');
+            const atendimentosAlertados = rawNotificados ? rawNotificados.split(',') : [];
+
+            atendimentosAbertos.data.forEach(atendimento => {
+                const idString = atendimento.attendance_id;
+
+                // Se já foi notificado ou ID é inválido, ignora
+                if (!idString || atendimentosAlertados.includes(idString)) return;
+
+                // Dispara notificação no Chrome
+                enviarNotificacao('Novo Atendimento!', {
+                    body: `${atendimento.attendance_nature || 'Atendimento'}\n${atendimento.attendance_factaddress || ''}`,
+                    url: `https://sentry.procempa.com.br/web/despacho/attendance/${idString}/edit`
+                });
+
+                // Adiciona à lista de já alertados
+                atendimentosAlertados.push(idString);
+            });
+
+            // Atualiza o storage com os novos IDs
+            localStorage.setItem('atendimentosJaNotificados', atendimentosAlertados.join(','));
+
+        } catch (error) {
+            console.error("Erro ao verificar novos atendimentos:", error);
+        } finally {
+            // Garante que a flag seja liberada mesmo em caso de erro na requisição
+            buscandoAtendimentos = false;
+        }
+
+    }, 3000); // 3 segundos é um intervalo mais seguro que 1 segundo
+}
+
+async function enviarNotificacao(titulo, opcoes = {}) {
+    // 1. Verifica se o navegador suporta notificações
+    if (!("Notification" in window)) {
+        console.warn("Este navegador não suporta notificações de área de trabalho.");
+        return;
+    }
+
+    // 2. Solicita permissão se ainda não foi concedida/negada
+    if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+        await Notification.requestPermission();
+    }
+
+    // 3. Se tiver permissão, dispara a notificação
+    if (Notification.permission === "granted") {
+        const notificacao = new Notification(titulo, {
+            icon: "https://sentry.procempa.com.br/web/public/assets/img/favicon.ico", // Ícone da notificação (opcional)
+            badge: "https://sentry.procempa.com.br/web/public/assets/img/favicon.ico", // Ícone menor para mobile/Android
+            body: opcoes.body || "",
+        });
+        // Ação ao clicar na notificação (ex: focar na janela do sistema)
+        notificacao.onclick = function (event) {
+            event.preventDefault();
+            window.focus();
+            if (opcoes.url) {
+                // Abre o link do atendimento em uma nova aba (_blank)
+                window.open(opcoes.url, '_blank');
+            } else {
+                // Se não houver URL específica, apenas foca na janela atual
+                window.focus();
+            }
+            notificacao.close();
+        };
+    } else {
+        console.warn("Permissão de notificação foi negada pelo usuário.");
+    }
+}
+
+async function buscarAtendimentosAbertos() {
+    const url = "https://sentry.procempa.com.br/despacho/attendance/list";
+
+    // Body padrão baseado na sua requisição original
+    const bodyPadrao = {
+        filter: [
+            { field: "attendance_statusname", type: "like", value: "ABERTO" }
+        ]
+    };
+
+    const options = {
+        method: "POST",
+        mode: "cors",
+        credentials: "include", // Envia os cookies de sessão do usuário
+        headers: {
+            "accept": "application/json",
+            "accept-language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+            "cache-control": "no-cache",
+            "content-type": "application/json",
+            "pragma": "no-cache",
+            "x-requested-with": "XMLHttpRequest"
+        },
+        // Usa o filtro passado por parâmetro ou o padrão se não for informado
+        body: JSON.stringify(bodyPadrao)
+    };
+
+    try {
+        const response = await fetch(url, options);
+
+        if (!response.ok) {
+            throw new Error(`Erro na requisição: ${response.status} - ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        return data;
+
+    } catch (error) {
+        console.error("Falha ao buscar atendimentos:", error);
+        throw error;
+    }
+}
+ajustarNomeGuarniçãoTabelaGuarnicoesDisponiveis();
+
+function ajustarNomeGuarniçãoTabelaGuarnicoesDisponiveis() {
+    const intervalAguardarListagem = setInterval(() => {
+        const osData = Tabulator.findTable("#tabela-os")[0] ? Tabulator.findTable("#tabela-os")[0].getData() : null;
+        const tabelaGuarnicoesDisponiveis = document.querySelector("#garrisonNearby");
+        if (!tabelaGuarnicoesDisponiveis) return;
+        const linhas = Array.from(tabelaGuarnicoesDisponiveis.querySelectorAll('tr'));
+        // Pega o cabeçalho
+        linhas.shift();
+        const cabecalho = linhas.shift();
+
+        if (cabecalho && cabecalho.querySelectorAll('th')[1].innerText != 'OS') {
+            // Adiciona a célula de cabeçalho no FIM do tr (use 'th' ou 'td')
+            cabecalho.querySelectorAll('th')[1].innerText = 'OS';
+        }
+
+        const botoesDespachar = tabelaGuarnicoesDisponiveis.querySelectorAll('button');
+        if (!botoesDespachar.length) return;
+        botoesDespachar.forEach(botao => {
+            const celulas = botao.closest('tr').querySelectorAll('td');
+            const guarnicaoId = botao.getAttribute('garrisonid');
+            const guarnicaoCard = document.querySelector(`#garrisons-cards-panel div[garrisonid='${guarnicaoId}']`);
+            if (!guarnicaoCard) return;
+            const guarnicaoNomeSpan = Array.from(guarnicaoCard.querySelectorAll('span')).find(span =>
+                span.innerText.includes(' - Dia') ||
+                span.innerText.includes(' - Noite') ||
+                span.innerText.includes('Daz - ')
+            );
+            const subintendenciaSpan = Array.from(guarnicaoCard.querySelectorAll('span')).find(span =>
+                span.innerText.includes('Subintendência') ||
+                span.innerText.includes('Divisão')
+            );
+            if (subintendenciaSpan && osData) {
+                const atividadesSubintendencia = osData.filter(atividade => subintendenciaSpan.innerText.includes(atividade.area));
+                if (celulas[1].innerText != atividadesSubintendencia.map(atividade => `${atividade.nome.substring(0, 15)} - ${atividade.inicio.replace(/\b\d{2}\/\d{2}\/\d{4}\b/g, "")}`).join('\n'))
+                    celulas[1].innerText = atividadesSubintendencia.map(atividade => `${atividade.nome.substring(0, 15)} - ${atividade.inicio.replace(/\b\d{2}\/\d{2}\/\d{4}\b/g, "")}`).join('\n');
+            }
+            if (!guarnicaoNomeSpan) return;
+            if (celulas[0].innerText == guarnicaoNomeSpan.innerText) return;
+            celulas[0].innerText = guarnicaoNomeSpan.innerText;
+        })
+
+    }, 100);
+}
+
+
 
