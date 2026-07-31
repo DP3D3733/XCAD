@@ -153,7 +153,7 @@ async function montarOS(numOS) {
             item.atividadesProgramadas.forEach(atividade => {
                 atividade.activities.forEach(act => {
                     const pesquisa = {};
-                    pesquisa.nome = atividade.name.substring(18);
+                    pesquisa.nome = atividade.name.substring(18).split('-')[0];
                     pesquisa.area = atividade.area;
                     pesquisa.atividadeId = atividade.id;
                     pesquisa.id = act.dispatchList[0]?.dispatchId || '-';
@@ -174,7 +174,7 @@ async function montarOS(numOS) {
             const demanda = result.atividadeProgramada;
             demanda.schedule.activities.forEach(atv => {
                 const pesquisa = {};
-                pesquisa.nome = demanda.schedule.name.substring(18);
+                pesquisa.nome = demanda.schedule.name.substring(18).split('-')[0];
                 pesquisa.area = demanda.schedule.groups.sectors[0].replaceAll('Subintendência', '').replaceAll('Regional', '').replaceAll(' da', '').trim();
                 pesquisa.id = '-';
                 pesquisa.local = atv.address.place || atv.address.street;
