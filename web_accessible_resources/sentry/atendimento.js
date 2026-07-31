@@ -240,6 +240,7 @@ function selecionarModelo(modelo) {
     if (!form) return;
 
     Object.entries(modelo).forEach(([nomeCampo, valor]) => {
+        console.log(nomeCampo);
         const campo = form.querySelector(`[name="${nomeCampo}"]`);
         if (!campo) return;
         if (!valor || valor == '') return;
@@ -262,6 +263,10 @@ function selecionarModelo(modelo) {
             $campo.append(novaOpcao);
         } else {
             $campo.val(valor);
+        }
+
+        if (nomeCampo == 'contactName') {
+            $('#selectSolicitante').val(valor).trigger('change');
         }
 
         $campo.addClass('active');

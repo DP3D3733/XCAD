@@ -248,6 +248,17 @@ function criarTabelaOS() {
             }
         ],
 
+        columnDefaults: {
+            tooltip: function (e, cell) {
+                const el = cell.getElement();
+                if (el.scrollWidth > el.clientWidth) {
+                    return cell.getValue();
+                }
+
+                return null;
+            }
+        },
+
         columns: [
             {
                 title: "Título",
@@ -635,6 +646,14 @@ function criarTabelaQth(qths) {
 
                 if (data.id == '-') return;
 
+                if (event.ctrlKey) {
+                    window.open(
+                        `https://sentry.procempa.com.br/web/place/${data.id}/edit`,
+                        "_blank"
+                    );
+                    return;
+                }
+
                 window.open(
                     `https://www.google.com/maps/d/u/0/viewer?mid=1bfLD9QS9_oIRo5AXkl9IaIpvcfDkiAw&ll=${data.latitude}%2C${data.longitude}&z=20`,
                     "_blank"
@@ -648,6 +667,18 @@ function criarTabelaQth(qths) {
                 dir: "asc"
             }
         ],
+
+
+        columnDefaults: {
+            tooltip: function (e, cell) {
+                const el = cell.getElement();
+                if (el.scrollWidth > el.clientWidth) {
+                    return cell.getValue();
+                }
+
+                return null;
+            }
+        },
 
         columns: [
             {
@@ -721,7 +752,7 @@ function criarTabelaQth(qths) {
                 headerFilter: "input"
             },
             {
-                title: "Telefone",
+                title: "Ramal",
                 field: "phone",
                 headerFilter: "input"
 
@@ -1100,6 +1131,18 @@ function ajustarNomeGuarniçãoTabelaGuarnicoesDisponiveis() {
         })
 
     }, 100);
+}
+inserirAtalhoBoletins();
+function inserirAtalhoBoletins() {
+    const botaoMenuAtendimentos = document.querySelector("#menu-attendance");
+    if (!botaoMenuAtendimentos) return;
+    const botaoMenuBAs = botaoMenuAtendimentos.cloneNode(true);
+    botaoMenuBAs.setAttribute('id', 'menu-bas');
+    botaoMenuBAs.querySelector('a').setAttribute('href', '/web/bos');
+    botaoMenuBAs.querySelector('i').setAttribute('class', 'fa fa-file');
+    botaoMenuBAs.querySelector('span').setAttribute('id', 'icon-span-bas');
+    botaoMenuBAs.querySelector('span').innerText = 'Boletins';
+    botaoMenuAtendimentos.insertAdjacentElement('afterend', botaoMenuBAs);
 }
 
 
