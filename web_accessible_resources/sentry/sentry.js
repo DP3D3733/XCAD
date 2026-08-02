@@ -136,11 +136,11 @@ function gerarBotaoTurnoAtual() {
 
     const botaoTurnoAtual = botaoLimpar.cloneNode(true);
     botaoTurnoAtual.id = "btn-turno-atual";
-    botaoTurnoAtual.style['margin'] = "0px 5px 0px 5px";
+    botaoTurnoAtual.style['margin'] = '0px 0px 0px 5px';
     botaoTurnoAtual.title = 'Turno Atual';
     botaoPesquisar.parentNode.style.width = '120px';
 
-    botaoTurnoAtual.innerHTML = `<i class="fas fa-clock"></i>`;
+    botaoTurnoAtual.innerHTML = `<i class="fas fa-bolt"></i>`;
 
     botaoTurnoAtual.addEventListener("click", () => {
         const agora = new Date();
@@ -199,6 +199,10 @@ function gerarBotaoTurnoAtual() {
     });
 
     botaoLimpar.insertAdjacentElement("afterend", botaoTurnoAtual);
+    if (url.includes('web/bos')) return;
+    setTimeout(() => {
+        botaoTurnoAtual.click();
+    }, 500);
 }
 
 async function buscarOS(numOS) {

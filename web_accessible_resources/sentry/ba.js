@@ -346,7 +346,10 @@ async function verificarEnvolvidos() {
                 if (!relacaoDadosBABD[chave]?.trim()) return;
                 if (resultados[cpfElement.innerText][relacaoDadosBABD[chave]].trim() != valor.trim()) {
                     const botaoReinserirCPF = cpfElement.parentNode.querySelector('button');
-                    if (!botaoReinserirCPF) cpfElement.parentNode.insertAdjacentHTML('beforeend', `<button onclick="reinserir(this)"><i class="fas fa-redo"></i></button>`)
+                    if (!botaoReinserirCPF) cpfElement.parentNode.insertAdjacentHTML('beforeend', `
+                        <button onclick="reinserir(this)"><i class="fas fa-redo"></i></button>
+                        <button onclick="copiar(this)"><i class="fas fa-copy"></i></button>
+                    `)
                     dado.innerHTML += `<span class="adicionar">${resultados[cpfElement.innerText][relacaoDadosBABD[chave]].trim()}</span>`;
                 }
             });
@@ -366,6 +369,31 @@ function reinserir(botao) {
     inputCorrecao.value += `Reinserir o CPF ${cpf} no envolvido ${idEnvolvidoBA} e selecionar a opção para substituir os dados. Não tocar no botão em formato de bandeira.\n`;
 
 }
+
+async function copiar(botao) {
+    const idEnvolvidoBA = botao.closest('tr.individual-component-print').querySelector('strong').innerText.replace(/[^0-9]/g, '');
+    const dadosSolicitados = ['CPF:', 'Nome completo:', 'Data de nasc.:', 'Sexo:', 'Mãe:', 'Pai:', 'Nacionalidade:', 'Naturalidade:', 'Cútis:', 'RG:'];
+    const dadosEnvolvidoCelulas = Array.from(document.querySelectorAll(`tr[class=" individual-component-${idEnvolvidoBA}"] td.bo-key`));
+        /* .filter(celula => dadosSolicitados.includes(celula.innerHTML.split('<span')[0].trim())); */
+    const texto = `
+        Nome: ${dadosEnvolvidoCelulas.find(celula => celula.innerHTML.split('<span')[0].trim().includes('Nome').querySelector('span').innerText.trim())}
+        Sexo: ${dadosEnvolvidoCelulas.find(celula => celula.innerHTML.split('<span')[0].trim().includes('Sexo').querySelector('span').innerText.trim())}
+        Cor da pele: ${dadosEnvolvidoCelulas.find(celula => celula.innerHTML.split('<span')[0].trim().includes('Cútis').querySelector('span').innerText.trim())}
+        Naturalidade: ${dadosEnvolvidoCelulas.find(celula => celula.innerHTML.split('<span')[0].trim().includes('Naturalidade').querySelector('span').innerText.trim())}
+        Nascimento: ${dadosEnvolvidoCelulas.find(celula => celula.innerHTML.split('<span')[0].trim().includes('Data de nasc.:').querySelector('span').innerText.trim())}
+        Nome da mãe: ${dadosEnvolvidoCelulas.find(celula => celula.innerHTML.split('<span')[0].trim().includes('Mãe').querySelector('span').innerText.trim())}
+        Nome do pai: ${dadosEnvolvidoCelulas.find(celula => celula.innerHTML.split('<span')[0].trim().includes('Pai:').querySelector('span').innerText.trim())}
+        CPF: ${dadosEnvolvidoCelulas.find(celula => celula.innerHTML.split('<span')[0].trim().includes('Naturalidade').querySelector('span').innerText.trim())}
+        RG: ${dadosEnvolvidoCelulas.find(celula => celula.innerHTML.split('<span')[0].trim().includes('RG:').querySelector('span').innerText.trim())}
+    `;
+    try {
+        await navigator.clipboard.writeText(texto);
+        console.log("Texto copiado!");
+    } catch (err) {
+        console.error("Erro ao copiar:", err);
+    }
+}
+
 
 async function buscarEnvolvido(cpf) {
     try {

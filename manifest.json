@@ -48,6 +48,7 @@
         "web_accessible_resources/sentry/individuo.js",
         "web_accessible_resources/sentry/cad.js",
         "web_accessible_resources/sentry/atendimento.js",
+        "web_accessible_resources/sentry/guarnicoes.js",
         "libs/jszip.js"
       ],
       "matches": [

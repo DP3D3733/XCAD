@@ -984,20 +984,25 @@ chrome.storage.local.get("ativa", (data) => {
                     campo_insere_qap.setAttribute("id", "campo_insere_qap");
                     document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 200"]').parentNode.insertBefore(campo_insere_qap, document.querySelector('div[data-params*="QAP(CIENTE DA OS) - 200"]'));
                     campo_insere_qap.addEventListener('input', function () {
-                        let gus_extenso = ['CRUZEIRO', 'PARTENON', 'LESTE', 'RESTINGA', 'NORTE', 'BALTAZAR', 'PINHEIRO', 'SUL', 'CENTRO', 'ROMU', 'PATAM'];
-                        let gus_numero = ['21', '31', '41', '51', '61', '71', '81', '91', 'C1', 'R1', 'PATAM'];
+                        let gus_extenso = ['200', '300', '400', '500', '600', '700', '800', '900', '1200', '1000', '1100', '1500'];
+                        let gus_numero = ['21', '31', '41', '51', '61', '71', '81', '91', 'C1', 'R1', 'PATAM', 'DAZ'];
                         campo_insere_qap.value.split('\n').forEach(function (item) {
                             if (item.includes('-')) {
-                                let hora = item.substring(0, 2);
-                                let min = item.substring(3, 5);
-                                let gu = item.split('-')[1].trim();
-                                if (gus_extenso.includes(gu)) {
-                                    gu = gus_numero[gus_extenso.indexOf(gu)];
+                                let [gu, horario] = item.split(' - ');
+                                const [hora, min] = horario.split(':');
+                                if (gus_numero.includes(gu)) {
+                                    gu = gus_extenso[gus_numero.indexOf(gu)];
                                 }
-                                document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA ' + gu + '"] input[aria-label="Hora"]').value = hora;
-                                document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA ' + gu + '"] input[aria-label="Minuto"]').value = min;
-                                document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA ' + gu + '"] input[aria-label="Hora"]').dispatchEvent(new Event('input', { bubbles: true }));
-                                document.querySelector('div[data-params*="QAP(CIENTE DA OS) DA ' + gu + '"] input[aria-label="Minuto"]').dispatchEvent(new Event('input', { bubbles: true }));
+
+                                const divQAP = document.querySelector(`div[data-params*="QAP(CIENTE DA OS) - ${gu}"]`);
+                                if (!divQAP) {
+                                    console.log(gu);
+                                    return;
+                                }
+                                divQAP.querySelector('input[aria-label= "Hora"]').value = hora;
+                                divQAP.querySelector('input[aria-label="Minuto"]').value = min;
+                                divQAP.querySelector('input[aria-label="Hora"]').dispatchEvent(new Event('input', { bubbles: true }));
+                                divQAP.querySelector('input[aria-label="Minuto"]').dispatchEvent(new Event('input', { bubbles: true }));
                             }
                         });
                     });

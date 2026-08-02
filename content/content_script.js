@@ -177,6 +177,12 @@ setTimeout(() => {
     document.documentElement.appendChild(script);
   }
 
+  if (url.includes('sentry.procempa.com.br/web/despacho/garrison')) {
+    const script = document.createElement("script");
+    script.src = chrome.runtime.getURL("web_accessible_resources/sentry/guarnicoes.js");
+    document.documentElement.appendChild(script);
+  }
+
   if (url.includes('sentry.procempa.com.br/web/despacho/schedule-garrison')) {
     const scriptOS = document.createElement("script");
     scriptOS.src = chrome.runtime.getURL("web_accessible_resources/sentry/os.js");
