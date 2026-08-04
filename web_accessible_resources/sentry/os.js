@@ -4,12 +4,28 @@ let dadosAssociacoes;
 inserirCheckboxAtividadesProgramadas();
 main();
 async function main() {
+    const style = document.createElement("style");
+    style.textContent = `
+       .excluida {
+            opacity: 0.5;
+        }
+
+        .excluida td {
+            background-color: #808080 !important;
+            color: white;
+            text-decoration: line-through;
+        }
+    `;
+    document.head.appendChild(style);
+
     dadosAssociacoes = await buscarassociacoes();
     associacoes = dadosAssociacoes;
     qths = await listarLocais();
     criarBotaoImportarOS();
 
 }
+
+
 
 function inserirCheckboxAtividadesProgramadas() {
     if (url != 'https://sentry.procempa.com.br/web/despacho/schedule-garrison') return;
@@ -375,7 +391,7 @@ function criarBotaoImportarOS() {
                     <input type="number" id="numOS" placeholder="001" value="${numOSInicial[0]}" /><input type="number" id="ano" placeholder="2026"  value="${numOSInicial[1]}" />
                 </div>
                 <div class="modal-body">
-                    <input type="file" id="arquivo" accept=".zip"><label><input id=checkVerCertas type=checkbox checked=true />Certas</label><label><input id=checkVerErradas type=checkbox checked=true />Erradas</label>
+                    <input type="file" id="arquivo" accept=".zip"><label><input id=checkVerCertas onchange="filtroVerCertas(this)" type=checkbox checked=true />Certas</label><label><input id=checkVerErradas onchange="filtroVerErradas(this)" type=checkbox checked=true />Erradas</label><input id=checkVerExcluidas onchange="filtroVerExcluidas(this)" type=checkbox checked=true />Excluídas</label>
                     <div id="resultado"></div>
                 </div>
                 <div class="modal-footer">
@@ -675,7 +691,8 @@ function renderizarTabela(dados) {
         </thead>
         <tbody>
 `;
-
+    const PBs = localStorage.getItem('PBs') ? localStorage.getItem('PBs').split('-()-') : [];
+    const repetirDemandas = localStorage.getItem('repetirDemandas') ? localStorage.getItem('repetirDemandas').split('-()-') : [];
     for (const item of dados) {
 
         html += `
@@ -709,8 +726,8 @@ function renderizarTabela(dados) {
                 <td contenteditable="true" style="border:1px solid #ccc;padding:8px">${escapeHtml(item.recurso)}</td>
                 <td contenteditable="true" style="border:1px solid #ccc;padding:8px">${escapeHtml(item.horario)}</td>
                 <td contenteditable="true" style="border:1px solid #ccc;padding:8px">${escapeHtml(item.atividade).replaceAll('\n', '<br>')}</td>
-                <td style="border:1px solid #ccc;padding:8px"><input type="checkbox" /></td>
-                <td style="border:1px solid #ccc;padding:8px"><input type="checkbox" /></td>
+                <td style="border:1px solid #ccc;padding:8px"><input onchange="atualizarPB(this)" type="checkbox" ${PBs.includes(item.secao) ? 'checked' : ''} /></td>
+                <td style="border:1px solid #ccc;padding:8px"><input onchange="atualizarRepetir(this)" type="checkbox" ${repetirDemandas.includes(item.secao) ? 'checked' : ''} /></td>
             </tr>
         `;
     }
@@ -724,8 +741,10 @@ function renderizarTabela(dados) {
     document.getElementById('resultado').innerHTML = html;
 
     document.querySelectorAll('#resultado tbody td').forEach(td => {
+        if (td.querySelector('input[type=checkbox]')) return;
         td.addEventListener('input', () => conferirDados());
     });
+
 }
 
 function escapeHtml(texto) {
@@ -755,13 +774,108 @@ function gerarBotoesOS() {
 }
 
 function excluirDemandaOS(botao) {
+    botao.innerText = '♻️';
+    botao.setAttribute("onclick", "reciclarDemandaOS(this)");
     if (!botao.closest('th')) {
-        botao.closest('tr').remove();
+        botao.closest('tr').classList.add('excluida');
+        guardarDemandaExcluidaLocalStorage(botao.closest('tr'));
+        filtroVerExcluidas(document.querySelector('#checkVerExcluidas'));
         return;
     }
     const inputsMarcados = Array.from(document.querySelectorAll('#resultado tbody tr:not([style="display: none;"]) input.selecionaDemanda:checked'));
     inputsMarcados.forEach(input => {
-        input.closest('tr').remove();
+        input.nextElementSibling.innerText = '♻️';
+        input.closest('tr').classList.add('excluida');
+        input.nextElementSibling.setAttribute("onclick", "reciclarDemandaOS(this)");
+        guardarDemandaExcluidaLocalStorage(input.closest('tr'));
+    });
+    filtroVerExcluidas(document.querySelector('#checkVerExcluidas'));
+}
+
+function guardarDemandaExcluidaLocalStorage(linha) {
+    const demandasExcluidas = (localStorage.getItem('demandasExcluidas') || '').split('-()-');
+    const textoDemandaExcluida = [...linha.querySelectorAll("td")].slice(1).map(td => td.innerText).join('');
+    if (demandasExcluidas.includes(textoDemandaExcluida)) return;
+    demandasExcluidas.push(textoDemandaExcluida);
+    localStorage.setItem('demandasExcluidas', demandasExcluidas.join('-()-'));
+}
+
+function reciclarDemandaOS(botao) {
+    botao.innerText = '🗑️';
+    botao.setAttribute("onclick", "excluirDemandaOS(this)");
+    if (!botao.closest('th')) {
+        botao.closest('tr').classList.remove('excluida');
+        removerDemandaExcluidaLocalStorage(botao.closest('tr'));
+        filtroVerExcluidas(document.querySelector('#checkVerExcluidas'));
+        return;
+    }
+    const inputsMarcados = Array.from(document.querySelectorAll('#resultado tbody tr:not([style="display: none;"]) input.selecionaDemanda:checked'));
+    inputsMarcados.forEach(input => {
+        input.nextElementSibling.innerText = '🗑️';
+        input.closest('tr').classList.remove('excluida');
+        input.nextElementSibling.setAttribute("onclick", "excluirDemandaOS(this)");
+        removerDemandaExcluidaLocalStorage(input.closest('tr'));
+    });
+    filtroVerExcluidas(document.querySelector('#checkVerExcluidas'));
+}
+
+function removerDemandaExcluidaLocalStorage(linha) {
+    const demandasExcluidas = (localStorage.getItem('demandasExcluidas') || '').split('-()-');
+    const textoDemandaExcluida = [...linha.querySelectorAll("td")].slice(1).map(td => td.innerText).join('');
+    const indice = demandasExcluidas.indexOf(textoDemandaExcluida);
+    if (indice == -1) return;
+    demandasExcluidas.splice(indice, 1);
+    localStorage.setItem('demandasExcluidas', demandasExcluidas.join('-()-'));
+}
+
+function atualizarPB(input) {
+    const PBs = (localStorage.getItem('PBs') || '').split('-()-');
+    const linha = input.closest('tr');
+    const textoPB = linha.querySelectorAll('td')[1].innerText;
+    const indice = PBs.indexOf(textoPB);
+    if (!input.checked && indice !== -1) {
+        PBs.splice(indice, 1);
+        localStorage.setItem('PBs', PBs.join('-()-'));
+    }
+    if (input.checked && indice == -1) {
+        PBs.push(textoPB);
+        localStorage.setItem('PBs', PBs.join('-()-'));
+    }
+}
+
+function atualizarRepetir(input) {
+    const repetirDemandas = (localStorage.getItem('repetirDemandas') || '').split('-()-');
+    const linha = input.closest('tr');
+    const textoPB = linha.querySelectorAll('td')[1].innerText;
+    const indice = repetirDemandas.indexOf(textoPB);
+    if (!input.checked && indice !== -1) {
+        repetirDemandas.splice(indice, 1);
+        localStorage.setItem('repetirDemandas', repetirDemandas.join('-()-'));
+    }
+    if (input.checked && indice == -1) {
+        repetirDemandas.push(textoPB);
+        localStorage.setItem('repetirDemandas', repetirDemandas.join('-()-'));
+    }
+}
+
+function filtroVerCertas(inputVerCertas) {
+    const linhasCertas = Array.from(document.querySelectorAll('#resultado tbody tr')).filter(linha => !linha.classList.contains('errada') && !linha.classList.contains('excluida'));
+    linhasCertas.forEach(linha => {
+        linha.style.display = inputVerCertas.checked ? '' : 'none';
+    })
+}
+
+function filtroVerErradas(inputVerErradas) {
+    const linhasErradas = Array.from(document.querySelectorAll('#resultado tbody tr')).filter(linha => linha.classList.contains('errada'));
+    linhasErradas.forEach(linha => {
+        linha.style.display = inputVerErradas.checked ? '' : 'none';
+    })
+}
+
+function filtroVerExcluidas(inputVerExcluidas) {
+    const linhasExcluidas = Array.from(document.querySelectorAll('#resultado tbody tr')).filter(linha => linha.classList.contains('excluida'));
+    linhasExcluidas.forEach(linha => {
+        linha.style.display = inputVerExcluidas.checked ? '' : 'none';
     })
 }
 
@@ -776,6 +890,7 @@ function filtrarDemandas(campo) {
 }
 
 function conferirDados() {
+    const demandasExcluidas = (localStorage.getItem('demandasExcluidas') || '').split('-()-');
     const qthsNomes = qths.data.data.map(qth => qth.name);
     const naturezas = ['PATRULHAMENTO PREVENTIVO', 'AÇÃO PRÓPRIA', 'AÇÃO INTEGRADA', 'AÇÃO CONJUNTA', 'FISCALIZAÇÃO E POLICIAMENTO - EVENTOS'];
     const guarnicoes = ['21', '31', '41', '51', '61', '71', '81', '91', '22', '32', '42', '52', '62', '72', '82', '92', 'C1', 'C2', 'C3', 'C4', 'C5'];
@@ -815,7 +930,15 @@ function conferirDados() {
             }
             celulas[index].style.backgroundColor = "white";
         }
-    })
+        const textoDemandaExcluida = [...linha.querySelectorAll("td")].slice(1).map(td => td.innerText).join('');
+        if (!demandasExcluidas.includes(textoDemandaExcluida)) return;
+        linha.querySelector('button').click();
+        document.querySelectorAll('#checkVerCertas, #checkVerErradas, #checkVerExcluidas').forEach(input =>
+            input.dispatchEvent(new Event("change", {
+                bubbles: true
+            }))
+        )
+    });
 }
 
 async function listarLocais() {
@@ -907,7 +1030,11 @@ function ajustaNumOSInicial() {
 
 async function importarOS() {
     const numOS = `OS n.º ${document.querySelector('#numOS').value}/${document.querySelector('#ano').value}`
-    const demandas = Array.from(document.querySelectorAll('#resultado tbody tr:not([class="errada"])'));
+    const demandas = Array.from(
+        document.querySelectorAll(
+            '#resultado tbody tr:not(.errada):not(.excluida)'
+        )
+    );
     const demandasProntas = demandas.map(demanda => {
         /*
         {"name":"OS n.º 315/2026 - PARQUES E PRAÇAS - 700 (2)","dateUsageMin":"2026-06-07","dateUsageMax":"2026-06-07","description":"Efetuar patrulhamentos preventivos com a finalidade de garantir a segurança dos munícipes e usuários dos parques urbanos. Inspecionar locais e instalações com intuito de verificar se há indícios de depredação, furto de fios e cabos, invasão ou ocupação irregular de próprio municipal. Efetuar abordagens a indivíduos em atividades que consistam em atitudes suspeitas. Inibir a ação de guardadores de veículos nas vias.","attachment":[],"groups":{"teams":[],"intendedFunctions":[],"sectors":["Subintendência Regional Eixo Baltazar"],"weekdays":[]},"activities":[{"hours":{"type":"FIXED","startHour":"15:00","startChangeDay":false,"endChangeDay":false,"allowRepeat":false},"duration":"03:00","reason":"Patrulhamento Preventivo","description":"Ponto de parada base visando inibir ação de ambulantes.","address":{"district":"RS","city":"PORTO ALEGRE","neighborhood":"PRAIA DE BELAS","street":"Avenida Edvaldo Pereira Paiva","number":"458","latitude":-30.055608,"longitude":-51.233739,"sectors":[]}}]}
