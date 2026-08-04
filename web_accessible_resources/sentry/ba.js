@@ -374,7 +374,7 @@ async function copiar(botao) {
     const idEnvolvidoBA = botao.closest('tr.individual-component-print').querySelector('strong').innerText.replace(/[^0-9]/g, '');
     const dadosSolicitados = ['CPF:', 'Nome completo:', 'Data de nasc.:', 'Sexo:', 'Mãe:', 'Pai:', 'Nacionalidade:', 'Naturalidade:', 'Cútis:', 'RG:'];
     const dadosEnvolvidoCelulas = Array.from(document.querySelectorAll(`tr[class=" individual-component-${idEnvolvidoBA}"] td.bo-key`));
-        /* .filter(celula => dadosSolicitados.includes(celula.innerHTML.split('<span')[0].trim())); */
+    /* .filter(celula => dadosSolicitados.includes(celula.innerHTML.split('<span')[0].trim())); */
     const texto = `
         Nome: ${dadosEnvolvidoCelulas.find(celula => celula.innerHTML.split('<span')[0].trim().includes('Nome').querySelector('span').innerText.trim())}
         Sexo: ${dadosEnvolvidoCelulas.find(celula => celula.innerHTML.split('<span')[0].trim().includes('Sexo').querySelector('span').innerText.trim())}
@@ -463,6 +463,96 @@ if (url.includes('/bos?pendentes=true')) {
     }, 1000);
 }
 
+if (!url.includes('/edit')) {
+    setTimeout(() => {
+        verificarBAsTurnoAtual();
+    }, 1000);
+}
 
+
+async function buscarNumeroBAs() {
+    const response = await fetch("https://sentry.procempa.com.br/web/bos/list", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "X-Requested-With": "XMLHttpRequest"
+        },
+        body: JSON.stringify({
+            filter: [{
+                field: "status",
+                type: "in",
+                value: [
+                    "NUMBER_GENERATED",
+                    "STARTED_IN_APP",
+                    "FILE_SENT",
+                    "APPROVED",
+                    "PENDING",
+                    "REJECTED"
+                ]
+            }],
+            page: 1,
+            size: 20,
+            sort: [{
+                field: "id",
+                dir: "desc"
+            }]
+        })
+    });
+
+    const dados = await response.json();
+    return dados.data.data.map(ba => ba.id.replace('/', '-'));
+}
+
+async function buscarBA(id) {
+    const response = await fetch(
+        `https://sentry.procempa.com.br/web/bos/getBo/${id}`,
+        {
+            credentials: "include"
+        }
+    );
+
+    const bo = await response.json();
+    return (bo);
+}
+
+async function verificarBAsTurnoAtual() {
+    const agora = new Date();
+
+    const limite = new Date(agora);
+
+    const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
+
+    if (minutosAgora >= 390 && minutosAgora < 1080) {
+        // 06:30 até 18:00 -> início do turno diurno
+        limite.setHours(6, 30, 0, 0);
+    } else {
+        // 18:00 até 06:29 -> início do turno noturno
+        if (minutosAgora < 390) {
+            limite.setDate(limite.getDate() - 1);
+        }
+        limite.setHours(18, 0, 0, 0);
+    }
+
+    const numBAs = await buscarNumeroBAs();
+    const bas = [];
+
+    for (const numero of numBAs) {
+        const ba = await buscarBA(numero);
+        if (!ba.data.dt_create) return;
+        const dataCriacao = new Date(
+            ba.data.dt_create.replace(" ", "T") + "Z"
+        );
+
+        if (dataCriacao < limite) {
+            break;
+        }
+
+        bas.push(ba);
+    }
+
+    document.querySelector('h2.actual-title').innerText += ` - ${bas.length} no turno atual`
+}
 
 main();
