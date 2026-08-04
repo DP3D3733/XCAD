@@ -959,7 +959,7 @@ function ativarDesativarFiltro(botao) {
         cancelable: true
     }));
 }
-ouvirNovosAtendimentos();
+//ouvirNovosAtendimentos();
 
 function ouvirNovosAtendimentos() {
     let buscandoAtendimentos = false;

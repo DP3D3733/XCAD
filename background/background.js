@@ -843,3 +843,123 @@ async function buscarEndereco(endereco) {
     }
 }
 
+ouvirNovosAtendimentos();
+
+function ouvirNovosAtendimentos() {
+    let buscandoAtendimentos = false;
+
+    // Recomendo aumentar de 1s para 5s/10s para não sobrecarregar o servidor
+    setInterval(async () => {
+        if (buscandoAtendimentos) return;
+        buscandoAtendimentos = true;
+
+        try {
+            const atendimentosAbertos = await buscarAtendimentosAbertos();
+
+            if (!atendimentosAbertos || !atendimentosAbertos.data) {
+                return;
+            }
+
+            // Recupera IDs notificados do sessionStorage tratando corretamente o array
+            const {
+                atendimentosJaNotificados = []
+            } = await chrome.storage.session.get("atendimentosJaNotificados");
+
+            atendimentosAbertos.data.forEach(atendimento => {
+                const idString = atendimento.attendance_id;
+
+                // Se já foi notificado ou ID é inválido, ignora
+                if (!idString || atendimentosJaNotificados.includes(idString)) return;
+
+                // Dispara notificação no Chrome
+                enviarNotificacao('Novo Atendimento!', {
+                    body: `${atendimento.attendance_nature || 'Atendimento'}\n${atendimento.attendance_factaddress || ''}`,
+                    url: `https://sentry.procempa.com.br/web/despacho/attendance/${idString}/edit`
+                });
+
+                // Adiciona à lista de já alertados
+                atendimentosJaNotificados.push(idString);
+            });
+
+            // Atualiza o storage com os novos IDs
+            await chrome.storage.session.set({
+                atendimentosJaNotificados: atendimentosJaNotificados
+            });
+
+        } catch (error) {
+            console.error("Erro ao verificar novos atendimentos:", error);
+        } finally {
+            // Garante que a flag seja liberada mesmo em caso de erro na requisição
+            buscandoAtendimentos = false;
+        }
+
+    }, 3000); // 3 segundos é um intervalo mais seguro que 1 segundo
+}
+
+const notificacoes = new Map();
+
+async function enviarNotificacao(titulo, opcoes = {}) {
+    const id = crypto.randomUUID();
+
+    notificacoes.set(id, opcoes.url);
+    await chrome.notifications.create(id, {
+        iconUrl: "https://sentry.procempa.com.br/web/public/assets/img/favicon.ico",
+        type: "basic",
+        title: titulo,
+        message: opcoes.body || ""
+    });
+}
+
+chrome.notifications.onClicked.addListener(async (notificationId) => {
+    const url = notificacoes.get(notificationId);
+
+    if (url) {
+        await chrome.tabs.create({ url });
+        notificacoes.delete(notificationId);
+    }
+
+    chrome.notifications.clear(notificationId);
+});
+
+async function buscarAtendimentosAbertos() {
+    const url = "https://sentry.procempa.com.br/despacho/attendance/list";
+
+    // Body padrão baseado na sua requisição original
+    const bodyPadrao = {
+        filter: [
+            { field: "attendance_statusname", type: "like", value: "ABERTO" }
+        ]
+    };
+
+    const options = {
+        method: "POST",
+        mode: "cors",
+        credentials: "include", // Envia os cookies de sessão do usuário
+        headers: {
+            "accept": "application/json",
+            "accept-language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+            "cache-control": "no-cache",
+            "content-type": "application/json",
+            "pragma": "no-cache",
+            "x-requested-with": "XMLHttpRequest"
+        },
+        // Usa o filtro passado por parâmetro ou o padrão se não for informado
+        body: JSON.stringify(bodyPadrao)
+    };
+
+    try {
+        const response = await fetch(url, options);
+
+        if (!response.ok) {
+            throw new Error(`Erro na requisição: ${response.status} - ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        return data;
+
+    } catch (error) {
+        console.error("Falha ao buscar atendimentos:", error);
+        throw error;
+    }
+}
+

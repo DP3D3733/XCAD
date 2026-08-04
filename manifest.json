@@ -232,6 +232,7 @@
     "tabs",
     "scripting",
     "webNavigation",
+    "notifications",
     "https://*.firebaseio.com/"
   ]
 }
