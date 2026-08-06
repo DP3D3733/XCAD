@@ -44,6 +44,7 @@
         "web_accessible_resources/sentry/os.js",
         "web_accessible_resources/sentry/ba.js",
         "web_accessible_resources/sentry/despacho.js",
+        "web_accessible_resources/sentry/despachos.js",
         "web_accessible_resources/sentry/efetivo.js",
         "web_accessible_resources/sentry/individuo.js",
         "web_accessible_resources/sentry/cad.js",

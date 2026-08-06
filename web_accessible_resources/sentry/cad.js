@@ -3,7 +3,7 @@ inserirBotaoCopiarAtendimento();
 inserirButtonNovosBAs();
 verificarNovosBAs();
 inserirBotaoQTHs();
-
+inserirButtonDespachosSemCad();
 
 function criarBotaoVisualizarOS() {
     setInterval(() => {
@@ -859,7 +859,7 @@ function inserirButtonNovosBAs() {
         align-items:center;
         box-shadow:0 2px 10px rgba(0,0,0,.2);
         cursor:pointer;
-        height:20px;
+        height:25px;
         font-size:15px;
         gap: 5px;
     "
@@ -1145,5 +1145,192 @@ function inserirAtalhoBoletins() {
     botaoMenuAtendimentos.insertAdjacentElement('afterend', botaoMenuBAs);
 }
 
+function inserirButtonDespachosSemCad() {
+    const tituloCAD = document.querySelector('#page-wrapper h2');
+    if (tituloCAD.innerText != 'Central de Atendimento e Despacho') return;
+    const container = document.createElement("div");
+    container.id = "containerDespachosCAD";
+    container.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 70px;
+    display: flex;
+    gap: 5px;
+    z-index: 999999;
+`;
+
+    document.body.appendChild(container);
+
+    for (let index = 1; index < 5; index++) {
+        const button = `
+        <button class="despachosSemCAD"
+            qualCad="${index}"
+            title="Abrir Despachos Sem CAD"
+            onclick="window.location.href='https://sentry.procempa.com.br/web/despacho/dispatch?pendentes='"
+            style="
+                display:none;
+                background:#eb595e;
+                border:1px solid #ccc;
+                color:white;
+                border-radius:10px;
+                padding:0 10px 10px 10px;
+                align-items:center;
+                box-shadow:0 2px 10px rgba(0,0,0,.2);
+                cursor:pointer;
+                height:25px;
+                font-size:15px;
+                gap:5px;
+            ">
+            <span>CAD ${index} - <b>0</b></span>
+            <i class="fa-solid fa-clipboard-list"></i>
+        </button>`;
+
+        container.insertAdjacentHTML("beforeend", button);
+    }
+
+    setInterval(async () => {
+        const despachosSemCad = await verificarDespachosSemCad();
+        if (!despachosSemCad.length) return;
+        const cadSeparados = separarCads(despachosSemCad);
+        console.log(cadSeparados);
+        const botoesDespachosSemCad = document.querySelectorAll('.despachosSemCAD');
+        for (let index = 0; index < cadSeparados.length; index++) {
+            const cads = cadSeparados[index];
+            botoesDespachosSemCad[index].querySelector('b').innerText = cads.length;
+            botoesDespachosSemCad[index].setAttribute('onclick', `window.location.href='https://sentry.procempa.com.br/web/despacho/dispatch?pendentes=${cads.join('_')}'`);
+            botoesDespachosSemCad[index].style.display = cads.length ? '' : 'none';
+        }
+    }, 1000);
+}
+
+async function verificarDespachosSemCad() {
+    const dtStartObj = new Date(Date.now() - 12 * 60 * 60 * 1000);
+
+    const dtStartFormatado =
+        `${String(dtStartObj.getDate()).padStart(2, "0")}/` +
+        `${String(dtStartObj.getMonth() + 1).padStart(2, "0")}/` +
+        `${dtStartObj.getFullYear()} ` +
+        `${String(dtStartObj.getHours()).padStart(2, "0")}:` +
+        `${String(dtStartObj.getMinutes()).padStart(2, "0")}`;
+
+    const dtEndObj = new Date();
+
+    const dtEndFormatado =
+        `${String(dtEndObj.getDate()).padStart(2, "0")}/` +
+        `${String(dtEndObj.getMonth() + 1).padStart(2, "0")}/` +
+        `${dtEndObj.getFullYear()} ` +
+        `${String(dtEndObj.getHours()).padStart(2, "0")}:` +
+        `${String(dtEndObj.getMinutes()).padStart(2, "0")}`;
+
+    const despachos = await listarDespachos(dtStartFormatado, dtEndFormatado);
+    if (!despachos || !despachos.data.length) return;
+    const resultados = await Promise.all(
+        despachos.data.map(async despacho => {
+            const despachoDados = await buscarDespacho(despacho.id);
+            if (!despachoDados) {
+                return null;
+            }
+            const inicial = despachoDados.dispatch?.initialObservation ?? "";
+            const final = despachoDados.dispatch?.finalObservation ?? "";
+            if (inicial.toUpperCase().includes("QTA") || final.toUpperCase().includes("QTA") || inicial.includes("GCM-POA202") || final.includes("GCM-POA202")) {
+                return null
+            };
+
+            return {
+                despacho,
+                despachoDados
+            };
+        })
+    );
+
+    const despachosSemCad = resultados.filter(Boolean);
+    return despachosSemCad;
+
+}
+
+function separarCads(despachos) {
+    const divisoesCads = [[], [], [], []]; //Norte, Sul, Centro, Outras
+    despachos.forEach(despacho => {
+        const subintendencia = despacho.despachoDados.dispatch.garrison?.sectors || [];
+        if (
+            subintendencia[0].includes('Norte') ||
+            subintendencia[0].includes('Baltazar') ||
+            subintendencia[0].includes('Leste') ||
+            subintendencia[0].includes('Partenon')
+        ) {
+            divisoesCads[0].push(despacho.despacho.id);
+            return;
+        };
+        if (
+            subintendencia[0].includes('Cruzeiro') ||
+            subintendencia[0].includes('Sul') ||
+            subintendencia[0].includes('Pinheiro') ||
+            subintendencia[0].includes('Restinga')
+        ) {
+            divisoesCads[1].push(despacho.despacho.id);
+            return;
+        };
+        if (subintendencia[0].includes('Centro')) {
+            divisoesCads[2].push(despacho.despacho.id);
+            return;
+        };
+        divisoesCads[3].push(despacho.despacho.id);
+    })
+    return divisoesCads;
+}
 
 
+
+async function listarDespachos(dtStart, dtEnd) {
+    const response = await fetch("https://sentry.procempa.com.br/despacho/dispatch/list", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "X-Requested-With": "XMLHttpRequest"
+        },
+        body: JSON.stringify({
+            filter: [
+                {
+                    field: "date",
+                    type: "keywords",
+                    value: {
+                        dtStart,
+                        dtEnd
+                    }
+                },
+                {
+                    field: "has_bo",
+                    type: "like",
+                    value: "withBO"
+                }
+            ]
+        })
+    });
+
+    if (!response.ok) {
+        throw new Error(`Erro ${response.status}`);
+    }
+
+    return await response.json();
+}
+
+async function buscarDespacho(id) {
+    const response = await fetch(
+        `https://sentry.procempa.com.br/despacho/dispatch/${id}`,
+        {
+            method: "GET",
+            credentials: "include",
+            headers: {
+                "Accept": "application/json, text/plain, */*"
+            }
+        }
+    );
+
+    if (!response.ok) {
+        throw new Error(`Erro ${response.status}`);
+    }
+
+    return await response.json();
+}

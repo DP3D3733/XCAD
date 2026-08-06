@@ -147,9 +147,15 @@ setTimeout(() => {
     document.documentElement.appendChild(script);
   }
 
-  if (url.includes('sentry.procempa.com.br/web/despacho/dispatch/')) {
+  if (url.includes('sentry.procempa.com.br/web/despacho/dispatch/') && url.includes('edit')) {
     const script = document.createElement("script");
     script.src = chrome.runtime.getURL("web_accessible_resources/sentry/despacho.js");
+    document.documentElement.appendChild(script);
+  }
+
+  if (url.includes('sentry.procempa.com.br/web/despacho/dispatch?pendentes')) {
+    const script = document.createElement("script");
+    script.src = chrome.runtime.getURL("web_accessible_resources/sentry/despachos.js");
     document.documentElement.appendChild(script);
   }
 

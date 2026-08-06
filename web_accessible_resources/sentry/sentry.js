@@ -194,12 +194,11 @@ function gerarBotaoTurnoAtual() {
                     bubbles: true
                 }));
         }
-
         botaoPesquisar.click();
     });
 
     botaoLimpar.insertAdjacentElement("afterend", botaoTurnoAtual);
-    if (url.includes('web/bos')) return;
+    if (url.includes('web/bos') || url.includes('pendentes')) return;
     setTimeout(() => {
         botaoTurnoAtual.click();
     }, 500);
