@@ -1190,10 +1190,15 @@ function inserirButtonDespachosSemCad() {
 
     setInterval(async () => {
         const despachosSemCad = await verificarDespachosSemCad();
-        if (!despachosSemCad.length) return;
-        const cadSeparados = separarCads(despachosSemCad);
-        console.log(cadSeparados);
         const botoesDespachosSemCad = document.querySelectorAll('.despachosSemCAD');
+        if (!despachosSemCad.length) {
+            botoesDespachosSemCad.forEach(botao => {
+                botao.style.display = 'none';
+            });
+            return;
+        }
+        const cadSeparados = separarCads(despachosSemCad);
+
         for (let index = 0; index < cadSeparados.length; index++) {
             const cads = cadSeparados[index];
             botoesDespachosSemCad[index].querySelector('b').innerText = cads.length;
