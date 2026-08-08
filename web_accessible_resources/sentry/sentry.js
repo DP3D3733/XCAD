@@ -542,7 +542,8 @@ async function executarCicloDeBusca() {
                     factStreet: '',
                     factLatitude: '',
                     factLongitude: '',
-                    factNumber: ''
+                    factNumber: '',
+                    observation: `N.º chamado no cercamento: ${acionamento.id}/Outros`
                 };
                 window.postMessage({
                     type: "novoAlertaCercamento",
@@ -612,7 +613,8 @@ async function executarCicloDeBusca() {
                     factStreet: '',
                     factLatitude: '',
                     factLongitude: '',
-                    factNumber: ''
+                    factNumber: '',
+                    observation: `N.º chamado no cercamento: ${acionamento.id_identificado}/Reconhecimento`
                 };
                 window.postMessage({
                     type: "novoAlertaCercamento",
@@ -712,6 +714,38 @@ async function reconhecerAlerta(idAlerta, operador, tokenBearer, secao) {
 
     } catch (erro) {
         console.error(`Falha ao reconhecer alerta ${idAlerta}:`, erro.message);
+        return { status: "erro", erro: erro.message };
+    }
+}
+
+async function resolverAlerta(idAlerta, operador, tokenBearer, secao, descricao) {
+    const url = `https://cercamento-api.procempa.com.br/cercamento-api/service/${secao}/alerts?id=${idAlerta}&operation=RESOLVE_ALERT&resolutionDescription=${descricao}&operador=${operador}`;
+
+    try {
+        const response = await fetch(url, {
+            method: "POST",
+            mode: "cors",
+            credentials: "include",
+            headers: {
+                "accept": "application/json, text/plain, */* ",
+                "accept-language": "pt-BR,pt;q=0.9",
+                "authorization": `Bearer ${tokenBearer}`,
+                "cache-control": "no-cache",
+                "pragma": "no-cache"
+            },
+            body: null
+        });
+
+        if (!response.ok) {
+            throw new Error(`Erro na API Cercamento: ${response.status} -${response.statusText}`);
+        }
+
+        const dados = await response.json().catch(() => null); // Trata caso a resposta seja texto puro ou vazia
+        console.log(`Alerta ${idAlerta} resolvido com sucesso por ${operador}`, dados);
+        return { status: "sucesso", dados };
+
+    } catch (erro) {
+        console.error(`Falha ao resolver alerta ${idAlerta}:`, erro.message);
         return { status: "erro", erro: erro.message };
     }
 }

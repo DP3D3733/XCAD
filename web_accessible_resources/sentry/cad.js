@@ -1339,3 +1339,31 @@ async function buscarDespacho(id) {
 
     return await response.json();
 }
+inserirBotaoResolverCercamento();
+function inserirBotaoResolverCercamento() {
+    setInterval(() => {
+        const botaoEncerrarAtendimento = document.querySelector("#end-attendance");
+        if (!botaoEncerrarAtendimento) return;
+        const botaoResolverCercamento = document.querySelector("#resolverCercamento");
+        if (botaoResolverCercamento) return;
+        const botaoHtml = '<button id="resolverCercamento" onclick="resolverEsteAtendimento()" class="btn btn-primary">Salvar</button>'
+        botaoEncerrarAtendimento.insertAdjacentHTML('afterend', botaoHtml);
+        botaoEncerrarAtendimento.style.display = 'none';
+    }, 1000);
+}
+
+async function resolverEsteAtendimento() {
+    const observacao = document.querySelector("#observation");
+    if (!observacao.value.includes('N.º chamado no cercamento')) return document.querySelector("#end-attendance").click();
+    const [id, tipo] = observacao.value
+        .split(": ")[1]
+        .split('\n')[0]
+        .split("/");
+    const status = encodeURIComponent(document.querySelector("#attendance-status").value);
+    const operador = document.querySelector("#icon-span-myUser").innerText.toLowerCase();
+    const token = await obterTokenValido(USUARIO, SENHA);
+    const secao = tipo == 'Reconhecimento' ? 'analytics' : 'vandalism';
+    const resolveu = await resolverAlerta(id, operador, token, secao, status);
+    if (resolveu)
+        document.querySelector("#end-attendance").click();
+}
