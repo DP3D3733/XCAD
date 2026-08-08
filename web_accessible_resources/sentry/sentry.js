@@ -513,11 +513,11 @@ async function executarCicloDeBusca() {
             console.log("%cNenhum registro de vandalismo retornado.", "color: #999;");
         }
         const acionamentosId = sessionStorage.getItem('acionamentosId')?.split(',') || [];
-
+        const user = document.querySelector("#icon-span-myUser").innerText.toLowerCase();
         const resultados = await Promise.all(
             dados.map(async acionamento => {
                 //if (acionamentosId.includes(acionamento.id)) return;
-                const reconheceuAlerta = await reconhecerAlerta(acionamento.id, 'calebe.silva', token, 'vandalism');
+                const reconheceuAlerta = await reconhecerAlerta(acionamento.id, user, token, 'vandalism');
                 if (reconheceuAlerta?.status != 'sucesso') return;
                 acionamentosId.push(acionamento.id);
                 const model = {
@@ -586,7 +586,7 @@ async function executarCicloDeBusca() {
         const resultadosDesaparecidos = await Promise.all(
             dadosDesaparecidos.map(async acionamento => {
                 if (acionamentosId.includes(acionamento.id_identificado)) return;
-                const reconheceuAlerta = await reconhecerAlerta(acionamento.id_identificado, 'calebe.silva', token, 'analytics');
+                const reconheceuAlerta = await reconhecerAlerta(acionamento.id_identificado, user, token, 'analytics');
                 if (reconheceuAlerta?.status != 'sucesso') return;
                 acionamentosId.push(acionamento.id_identificado);
                 const model = {
