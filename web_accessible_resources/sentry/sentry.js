@@ -512,11 +512,11 @@ async function executarCicloDeBusca() {
         if (!dados.length) {
             console.log("%cNenhum registro de vandalismo retornado.", "color: #999;");
         }
-        const acionamentosId = sessionStorage.getItem('acionamentosId')?.split(',') || [];
+        const acionamentosId = (localStorage.getItem('acionamentosId') || '').split(',');
         const user = document.querySelector("#icon-span-myUser").innerText.toLowerCase();
         const resultados = await Promise.all(
             dados.map(async acionamento => {
-                //if (acionamentosId.includes(acionamento.id)) return;
+                if (acionamentosId.includes(acionamento.id)) return;
                 const reconheceuAlerta = await reconhecerAlerta(acionamento.id, user, token, 'vandalism');
                 if (reconheceuAlerta?.status != 'sucesso') return;
                 acionamentosId.push(acionamento.id);
@@ -626,7 +626,7 @@ async function executarCicloDeBusca() {
             })
         );
 
-        sessionStorage.setItem('acionamentosId', acionamentosId);
+        localStorage.setItem('acionamentosId', acionamentosId.join(','));
 
 
     } catch (erro) {
