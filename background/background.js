@@ -88,14 +88,37 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
         return true;
     }
     if (message.action === "retorna_consulta") {
-        chrome.storage.local.set({ status_consulta: 'pronto' }, () => {
-            chrome.tabs.query({ currentWindow: true }, (tabs) => {
-                const targetTab = tabs.find(tab => tab.title.includes('WhatsApp'));
-                if (targetTab) {
-                    chrome.tabs.update(targetTab.id, { active: true });
-                }
+        async function enviarDadosParaWhatsApp() {
+            // 1. Busca as abas na janela atual
+            const tabs = await chrome.tabs.query({ currentWindow: true });
+            const targetTab = tabs.find(tab => tab.title && tab.title.includes('WhatsApp'));
+
+            if (!targetTab) {
+                console.warn("Aba do WhatsApp não encontrada.");
+                return;
+            }
+
+            // 2. Ativa a aba encontrada
+            await chrome.tabs.update(targetTab.id, { active: true });
+
+            // 3. Busca ambos os dados do storage em uma única chamada
+            const data = await chrome.storage.local.get(['imagem_consulta', 'dados_consulta']);
+            const imagem = data.imagem_consulta;
+            const dadosConsulta = data.dados_consulta;
+
+            // 4. Remove as chaves do storage
+            await chrome.storage.local.remove(['imagem_consulta', 'dados_consulta']);
+
+            // 5. Envia a mensagem usando o ID da aba (targetTab.id)
+            await chrome.tabs.sendMessage(targetTab.id, {
+                action: "consultaDados",
+                imagem: imagem,
+                dadosConsulta: dadosConsulta
             });
-        });
+        }
+
+        // Para executar:
+        enviarDadosParaWhatsApp();
     }
     if (message.action === "status_consulta") {
         chrome.storage.local.get('status_consulta', (data) => {
@@ -962,4 +985,6 @@ async function buscarAtendimentosAbertos() {
         throw error;
     }
 }
+
+
 
