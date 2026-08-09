@@ -1,4 +1,4 @@
-window.addEventListener("message", (event) => {
+window.addEventListener("message", async (event) => {
   if (event.source !== window) return;
   if (event.data.type === "dados") {
     chrome.runtime.sendMessage({ action: "dados", data: event.data.payload });
@@ -115,6 +115,17 @@ window.addEventListener("message", (event) => {
       localStorage.setItem('credenciaisCercamento', response['credenciaisCercamento']);
       console.log(response['credenciaisCercamento']);
     });
+  }
+
+  if (event.data.type === "enviarParaWhatsApp") {
+    chrome.runtime.sendMessage({ action: "enviarParaWhatsApp", imagem: event.data.imagens, dados: event.data.dados }, (response) => {
+      if (chrome.runtime.lastError) {
+        console.error("Erro ao enviar mensagem:", chrome.runtime.lastError.message);
+      } else {
+        console.log("Resposta recebida:", response);
+      }
+    });
+
   }
 
 });

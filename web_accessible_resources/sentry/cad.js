@@ -792,6 +792,7 @@ async function baixarQTHs() {
 async function copiarAtendimentoParaWhatsApp(id) {
     let dadosAtendimento = await buscarAtendimento(id);
     if (!dadosAtendimento) return;
+
     dadosAtendimento.attendance.userCreated = dadosAtendimento.userCreated;
     dadosAtendimento = dadosAtendimento.attendance;
     const data = new Date(dadosAtendimento.systemUpdate);
@@ -840,6 +841,23 @@ Definir ponto de encontro e aguardar liberação para deslocamento.` : '';
     } catch (erro) {
         console.error("Erro ao copiar:", erro);
         return;
+    }
+    if (dadosAtendimento.attachment?.length) {
+        const imagensIds = dadosAtendimento.attachment.map(imagem => imagem.id);
+        const imagens = await Promise.all(
+            imagensIds.map(async imagemId => {
+                const imagem = await buscarImagem(imagemId);;
+                if (!imagem) {
+                    return null;
+                }
+                return imagem;
+            })
+        );
+        window.postMessage({
+            type: "enviarParaWhatsApp",
+            dados: mensagem,
+            imagens: imagens,
+        }, "*");
     }
 }
 

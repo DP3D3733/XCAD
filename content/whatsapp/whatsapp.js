@@ -186,23 +186,72 @@ function base64ToFile(base64, filename, mimeType) {
     return new File([ab], filename, { type: mimeType });
 }
 
-async function colarImagemWhatsWeb(imageUrl) {
-    const response = await fetch(imageUrl);
-    const blob = await response.blob();
-    const file = new File([blob], "imagem.png", { type: blob.type || "image/png" });
+// Função auxiliar que espera até que a caixa de conversa esteja visível na DOM
+function aguardarCaixaTexto(timeoutMs = 60000) {
+    return new Promise((resolve) => {
+        const seletor = 'div[contenteditable="true"][data-tab="10"]';
+        const elementoExistente = document.querySelector(seletor);
 
-    const chatInput = document.querySelector('div[contenteditable="true"][data-tab="10"]');
+        // Se já houver um chat aberto, resolve imediatamente
+        if (elementoExistente) {
+            return resolve(elementoExistente);
+        }
 
-    if (!chatInput) {
-        console.error("Caixa de conversa não encontrada. Abra um chat primeiro.");
-        return false;
-    }
+        console.log("Nenhum chat aberto. Aguardando o usuário abrir uma conversa...");
+
+        let timerTimeout;
+
+        // Observer escuta alterações na árvore do DOM do WhatsApp
+        const observer = new MutationObserver(() => {
+            const el = document.querySelector(seletor);
+            if (el) {
+                observer.disconnect();
+                clearTimeout(timerTimeout);
+                console.log("Chat detectado! Prosseguindo com o envio...");
+                resolve(el);
+            }
+        });
+
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+
+        // Timeout de segurança para não deixar a Promise pendente indefinidamente
+        if (timeoutMs > 0) {
+            timerTimeout = setTimeout(() => {
+                observer.disconnect();
+                console.warn("Tempo limite esgotado aguardando abertura de conversa.");
+                resolve(null);
+            }, timeoutMs);
+        }
+    });
+}
+
+async function colarImagensWhatsWeb(imagens) {
+    // 1. Aguarda a caixa do chat estar visível
+    const chatInput = await aguardarCaixaTexto();
+    if (!chatInput) return false;
+
+    // 2. Normaliza para Array (se for string vira [string], se for array mantém)
+    const urls = [].concat(imagens);
+
+    // 3. Faz o download de todas as imagens do array
+    const arquivos = await Promise.all(
+        urls.map(async (url, idx) => {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            return new File([blob], `imagem_${idx}.png`, { type: blob.type || "image/png" });
+        })
+    );
 
     chatInput.focus();
 
+    // 4. Adiciona todos os arquivos ao mesmo DataTransfer
     const dataTransfer = new DataTransfer();
-    dataTransfer.items.add(file);
+    arquivos.forEach(file => dataTransfer.items.add(file));
 
+    // 5. Dispara o evento paste uma única vez
     const pasteEvent = new ClipboardEvent("paste", {
         bubbles: true,
         cancelable: true,
@@ -214,10 +263,8 @@ async function colarImagemWhatsWeb(imageUrl) {
 }
 
 async function confirmarEnvioImagem() {
-    // Aguarda o botão de envio dentro do modal de pré-visualização de imagem
     await new Promise(resolve => setTimeout(resolve, 600));
 
-    // Seletor do botão verde de enviar mídia no WhatsApp Web
     const botaoEnviarMidia = document.querySelector('span[data-icon="send"]') ||
         document.querySelector('div[aria-label="Enviar"]');
 
@@ -229,7 +276,7 @@ async function confirmarEnvioImagem() {
 }
 
 async function enviarTextoCaixaPrincipal(texto) {
-    const caixaTexto = document.querySelector('div[contenteditable="true"][data-tab="10"]');
+    const caixaTexto = await aguardarCaixaTexto();
 
     if (!caixaTexto) {
         console.error("Caixa de texto principal não encontrada.");
@@ -238,18 +285,15 @@ async function enviarTextoCaixaPrincipal(texto) {
 
     caixaTexto.focus();
 
-    // 1. Limpa entidades HTML (&nbsp;) e normaliza quebras de linha
     const textoLimpo = texto
         .replace(/&nbsp;/g, ' ')
         .trim();
 
-    // 2. Converte quebras de linha (\n) em HTML para o editor do WhatsApp reconhecer
     const htmlFormatado = textoLimpo
         .split('\n')
         .map(linha => linha ? `<div>${linha}</div>` : `<div><br></div>`)
         .join('');
 
-    // 3. Injeta no clipboard como HTML e dispara o evento de cola
     const dataTransfer = new DataTransfer();
     dataTransfer.setData('text/html', htmlFormatado);
     dataTransfer.setData('text/plain', textoLimpo);
@@ -261,13 +305,10 @@ async function enviarTextoCaixaPrincipal(texto) {
     });
 
     caixaTexto.dispatchEvent(pasteEvent);
-
-    // 4. Notifica o React do WhatsApp
     caixaTexto.dispatchEvent(new Event('input', { bubbles: true }));
 
     await new Promise(resolve => setTimeout(resolve, 500));
 
-    // 5. Clica no botão de enviar
     const botaoEnviar = document.querySelector('span[data-icon="send"]');
     if (botaoEnviar) {
         botaoEnviar.click();
@@ -275,21 +316,25 @@ async function enviarTextoCaixaPrincipal(texto) {
 }
 
 function iniciarEscutaMensagensBackground() {
-    // Adicionada a palavra-chave async aqui
     chrome.runtime.onMessage.addListener(async (message) => {
         if (message.action === "consultaDados") {
             try {
-                // 1. Cola a imagem no chat
-                const colou = await colarImagemWhatsWeb(message.imagem);
+                let colou = false;
+
+                if (message.imagem) {
+                    // Funciona tanto se message.imagem for "http..." quanto ["http...", "http..."]
+                    colou = await colarImagensWhatsWeb(message.imagem);
+                } else {
+                    const chatAberto = await aguardarCaixaTexto();
+                    colou = Boolean(chatAberto);
+                }
 
                 if (colou) {
-                    // 2. Clica no botão de enviar do modal de mídia
-                    await confirmarEnvioImagem();
+                    if (message.imagem) {
+                        await confirmarEnvioImagem();
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                    }
 
-                    // 3. Aguarda o modal fechar e a imagem ser enviada (ajuste o tempo se necessário)
-                    await new Promise(resolve => setTimeout(resolve, 1500));
-
-                    // 4. Envia o texto completo na caixa principal
                     if (message.dadosConsulta) {
                         await enviarTextoCaixaPrincipal(message.dadosConsulta);
                     }
@@ -300,5 +345,3 @@ function iniciarEscutaMensagensBackground() {
         }
     });
 }
-
-

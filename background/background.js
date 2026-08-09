@@ -120,6 +120,33 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
         // Para executar:
         enviarDadosParaWhatsApp();
     }
+    if (message.action === "enviarParaWhatsApp") {
+        async function enviarDadosParaWhatsApp() {
+            // 1. Busca as abas na janela atual
+            const tabs = await chrome.tabs.query({ currentWindow: true });
+            const targetTab = tabs.find(tab => tab.title && tab.title.includes('WhatsApp'));
+
+            if (!targetTab) {
+                console.warn("Aba do WhatsApp não encontrada.");
+                return;
+            }
+
+            // 2. Ativa a aba encontrada
+            await chrome.tabs.update(targetTab.id, { active: true });
+            const imagem = message.imagem;
+            const dadosConsulta = message.dados;
+
+            // 5. Envia a mensagem usando o ID da aba (targetTab.id)
+            await chrome.tabs.sendMessage(targetTab.id, {
+                action: "consultaDados",
+                imagem: imagem,
+                dadosConsulta: dadosConsulta
+            });
+        }
+
+        // Para executar:
+        enviarDadosParaWhatsApp();
+    }
     if (message.action === "status_consulta") {
         chrome.storage.local.get('status_consulta', (data) => {
             sendResponse(data['status_consulta']);

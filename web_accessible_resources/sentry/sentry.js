@@ -320,6 +320,31 @@ async function buscarAtendimento(id) {
     return data;
 }
 
+async function buscarImagem(id) {
+    const response = await fetch(
+        `https://sentry.procempa.com.br/despacho/attachment/get/${id}`,
+        {
+            method: "GET",
+            credentials: "include"
+        }
+    );
+
+    if (!response.ok) {
+        throw new Error(`Erro ao buscar imagem: ${response.status}`);
+    }
+
+    const blob = await response.blob();
+
+    return await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+
+        reader.readAsDataURL(blob);
+    });
+}
+
 async function buscarAtendimentos() {
     const response = await fetch(
         "https://sentry.procempa.com.br/despacho/attendance/list",
