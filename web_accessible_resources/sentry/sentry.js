@@ -775,4 +775,28 @@ async function resolverAlerta(idAlerta, operador, tokenBearer, secao, descricao)
     }
 }
 
+ajusteMascaraTelefone();
+
+function ajusteMascaraTelefone() {
+    $('[name="phone"]')
+        // Quando o usuário entra no campo, remove a máscara para facilitar a edição
+        .on('focus', function () {
+            $(this).unmask();
+        })
+        // Quando sai do campo (blur), limpa o +55 e relica a máscara
+        .on('blur', function () {
+            // 1. Remove o +55 inicial (se existir) e extrai apenas os números
+            let val = $(this).val().replace(/^\+55\s*/, '').replace(/\D/g, '');
+
+            // 2. Se for um celular de 11 dígitos ou fixo de 10 dígitos, atualiza o campo e aplica a máscara
+            if (val.length > 0) {
+                // Define o valor sem o +55 antes de mascarar
+                $(this).val(val);
+
+                // Aplica a máscara dinâmica (suporta 10 e 11 dígitos)
+                const maskPattern = val.length > 10 ? '(00) 00000-0000' : '(00) 0000-0000';
+                $(this).mask(maskPattern);
+            }
+        });
+}
 
