@@ -1310,7 +1310,8 @@ async function buscarNumeroBAsRecebidos(qtdDespachos) {
 function separarCads(despachos) {
     const divisoesCads = [[], [], [], []]; //Norte, Sul, Centro, Outras
     despachos.forEach(despacho => {
-        const subintendencia = despacho.despachoDados.dispatch.garrison?.sectors || [];
+        const subintendencia = despacho.despachoDados.dispatch.garrison?.sectors;
+        if (!subintendencia) return divisoesCads[3].push(despacho.despacho.id);
         if (
             subintendencia[0].includes('Norte') ||
             subintendencia[0].includes('Baltazar') ||
