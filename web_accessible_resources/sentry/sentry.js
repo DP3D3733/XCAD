@@ -462,43 +462,75 @@ baixarCredenciaisCercamento();
 
 // ================================================
 
-let tokenSalvo = null;
-let tokenExpiracao = 0;
 
 // Função responsável por obter ou renovar o token apenas se expirado
-async function obterTokenValido(usuario, senha) {
+async function obterTokenValido() {
     const agora = Math.floor(Date.now() / 1000);
 
-    if (tokenSalvo && (tokenExpiracao - agora) > 30) {
+    // Recupera o token salvo
+    const tokenSalvo = localStorage.getItem("tokenCercamento");
+    const tokenExpiracao = Number(
+        localStorage.getItem("tokenCercamentoExpiracao")
+    );
+
+    // Reutiliza o token se ainda tiver mais de 30 segundos
+    if (tokenSalvo && tokenExpiracao && (tokenExpiracao - agora) > 30) {
+        console.log("%c[Autenticação] Usando token salvo.", "color: #00cc66;");
         return tokenSalvo;
     }
 
-    const tokenUrl = "https://sso-pmpa.procempa.com.br/auth/realms/pmpa/protocol/openid-connect/token";
+    const tokenUrl =
+        "https://sso-pmpa.procempa.com.br/auth/realms/pmpa/protocol/openid-connect/token";
+
     const payload = new URLSearchParams({
-        "client_id": "cercamento",
-        "grant_type": "password",
-        "username": usuario,
-        "password": senha,
-        "scope": "openid"
+        client_id: "cercamento",
+        grant_type: "password",
+        username: USUARIO,
+        password: SENHA,
+        scope: "openid"
     });
 
-    console.log("%c[Autenticação] Solicitando novo token de acesso...", "color: #ff9900;");
+    console.log(
+        "%c[Autenticação] Solicitando novo token de acesso...",
+        "color: #ff9900;"
+    );
+
     const authResponse = await fetch(tokenUrl, {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
         body: payload.toString()
     });
 
     if (!authResponse.ok) {
         const erroDados = await authResponse.json().catch(() => ({}));
-        throw new Error(`Falha na autenticação: ${authResponse.status} - ${erroDados.error_description || authResponse.statusText}`);
+
+        throw new Error(
+            `Falha na autenticação: ${authResponse.status} - ${erroDados.error_description || authResponse.statusText
+            }`
+        );
     }
 
     const authDados = await authResponse.json();
-    tokenSalvo = authDados.access_token;
-    tokenExpiracao = agora + (authDados.expires_in || 300);
 
-    return tokenSalvo;
+    const novoToken = authDados.access_token;
+    const novaExpiracao = agora + (authDados.expires_in || 300);
+
+    // Salva no localStorage
+    localStorage.setItem("tokenCercamento", novoToken);
+    localStorage.setItem(
+        "tokenCercamentoExpiracao",
+        String(novaExpiracao)
+    );
+
+    console.log(
+        `%c[Autenticação] Novo token salvo. Expira em ${novaExpiracao - agora
+        } segundos.`,
+        "color: #00cc66;"
+    );
+
+    return novoToken;
 }
 // Executa a busca de vandalismo e exibe no console
 async function executarCicloDeBusca() {
