@@ -1267,8 +1267,44 @@ async function verificarDespachosSemCad() {
     );
 
     const despachosSemCad = resultados.filter(Boolean);
-    return despachosSemCad;
+    if (!despachosSemCad.length) return despachosSemCad;
+    const basRecebidos = await buscarNumeroBAsRecebidos(despachosSemCad.length);
+    const despachosSemCadComBA = despachosSemCad.filter(despacho => basRecebidos.includes(despacho.despacho.occurrenceNumber));
+    return despachosSemCadComBA;
 
+}
+
+
+async function buscarNumeroBAsRecebidos(qtdDespachos) {
+    const response = await fetch("https://sentry.procempa.com.br/web/bos/list", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "X-Requested-With": "XMLHttpRequest"
+        },
+        body: JSON.stringify({
+            filter: [{
+                field: "status",
+                type: "in",
+                value: [
+                    "APPROVED",
+                    "PENDING",
+                    "REJECTED"
+                ]
+            }],
+            page: 1,
+            size: qtdDespachos,
+            sort: [{
+                field: "id",
+                dir: "desc"
+            }]
+        })
+    });
+
+    const dados = await response.json();
+    return dados.data.data.map(ba => ba.id);
 }
 
 function separarCads(despachos) {
