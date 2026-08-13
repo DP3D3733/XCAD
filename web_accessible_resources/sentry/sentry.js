@@ -458,7 +458,7 @@ function baixarCredenciaisCercamento() {
     }, "*");
 }
 
-baixarCredenciaisCercamento();
+
 
 // ================================================
 
@@ -728,10 +728,11 @@ window.addEventListener("message", (event) => {
 
 });
 
-
+//baixarCredenciaisCercamento();
+//iniciarMonitoramento();
 
 // Inicializa o processo
-(function iniciarMonitoramento() {
+function iniciarMonitoramento() {
     if (USUARIO === "SEU_USUARIO_AQUI") {
         console.error("%c[Erro] Altere as variáveis USUARIO e SENHA no topo do script antes de rodar!", "color: red; font-size: 14px;");
         return;
@@ -741,7 +742,7 @@ window.addEventListener("message", (event) => {
 
     executarCicloDeBusca();
     setInterval(executarCicloDeBusca, INTERVALO_SEGUNDOS * 1000);
-})();
+}
 
 async function reconhecerAlerta(idAlerta, operador, tokenBearer, secao) {
     const url = `https://cercamento-api.procempa.com.br/cercamento-api/service/${secao}/alerts?id=${idAlerta}&operation=RECOGNIZE_ALERT&resolutionDescription=&operador=${operador}`;
