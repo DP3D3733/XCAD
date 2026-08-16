@@ -1394,7 +1394,7 @@ async function buscarDespacho(id) {
 
     return await response.json();
 }
-inserirBotaoResolverCercamento();
+//inserirBotaoResolverCercamento();
 function inserirBotaoResolverCercamento() {
     setInterval(() => {
         const botaoEncerrarAtendimento = document.querySelector("#end-attendance");
