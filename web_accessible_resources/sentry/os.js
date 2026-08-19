@@ -742,7 +742,7 @@ function renderizarTabela(dados) {
 
     document.querySelectorAll('#resultado tbody td').forEach(td => {
         if (td.querySelector('input[type=checkbox]')) return;
-        td.addEventListener('input', () => conferirDados());
+        td.addEventListener('input', () => conferirDados(td.closest('tr')));
     });
 
 }
@@ -889,56 +889,61 @@ function filtrarDemandas(campo) {
     })
 }
 
-function conferirDados() {
+function conferirDados(tr) {
+    if (tr) return conferirLinha(tr);
+
+    const linhas = document.querySelectorAll('#resultado tbody tr');
+    linhas.forEach(linha => {
+        conferirLinha(linha);
+    });
+}
+
+function conferirLinha(linha) {
     const demandasExcluidas = (localStorage.getItem('demandasExcluidas') || '').split('-()-');
     const qthsNomes = qths.data.data.map(qth => qth.name);
     const naturezas = ['PATRULHAMENTO PREVENTIVO', 'AÇÃO PRÓPRIA', 'AÇÃO INTEGRADA', 'AÇÃO CONJUNTA', 'FISCALIZAÇÃO E POLICIAMENTO - EVENTOS'];
     const guarnicoes = ['21', '31', '41', '51', '61', '71', '81', '91', '22', '32', '42', '52', '62', '72', '82', '92', 'C1', 'C2', 'C3', 'C4', 'C5'];
     const areas = ['CRUZEIRO', 'PARTENON', 'LESTE', 'RESTINGA', 'NORTE', 'EIXO BALTAZAR', 'PINHEIRO', 'EIXO SUL', 'CENTRO', 'CHARLIE', 'ROMU', 'DAZ'];
-
-    const linhas = document.querySelectorAll('#resultado tbody tr');
-    linhas.forEach(linha => {
-        linha.classList.remove('errada');
-        const celulas = linha.querySelectorAll('td');
-        for (let index = 0; index < celulas.length; index++) {
-            if ((index == 1 || index == 3 || index == 4 || index == 6) && celulas[index].innerText.trim() == '') {
-                celulas[index].closest('tr').classList.add('errada');
-                celulas[index].style.backgroundColor = "#df6060";
-                continue;
-            }
-            if (index == 3 && !naturezas.includes(celulas[3].innerText.trim())) {
-                celulas[3].closest('tr').classList.add('errada');
-                celulas[3].style.backgroundColor = "#df6060";
-                continue;
-            }
-            if (index == 4 && (!qthsNomes.find(qth => celulas[4].innerText.includes(qth)) && (!associacoes[celulas[4].innerText.trim()] || (!associacoes[celulas[4].innerText.trim()].place && !associacoes[celulas[4].innerText.trim()].street)))) {
-                celulas[4].closest('tr').classList.add('errada');
-                celulas[4].style.backgroundColor = "#df6060";
-                continue;
-            }
-            if (qthsNomes.find(qth => celulas[4].innerText.includes(qth))) {
-                celulas[5].querySelector('div.associacao').innerText = qthsNomes.find(qth => celulas[4].innerText.includes(qth));
-
-            } else if (associacoes[celulas[4].innerText.trim()]) {
-                const ass = associacoes[celulas[4].innerText.trim()];
-                celulas[5].querySelector('div.associacao').innerText = `${ass.place} - ${ass.street}, ${ass.number} - ${ass.neighborhood}`;
-            };
-            if (index == 6 && (!guarnicoes.find(guarnicao => celulas[6].innerText.includes(guarnicao)) && !areas.find(area => celulas[6].innerText.includes(area)))) {
-                celulas[6].closest('tr').classList.add('errada');
-                celulas[6].style.backgroundColor = "#df6060";
-                continue;
-            }
-            celulas[index].style.backgroundColor = "white";
+    linha.classList.remove('errada');
+    const celulas = linha.querySelectorAll('td');
+    for (let index = 0; index < celulas.length; index++) {
+        if ((index == 1 || index == 3 || index == 4 || index == 6) && celulas[index].innerText.trim() == '') {
+            celulas[index].closest('tr').classList.add('errada');
+            celulas[index].style.backgroundColor = "#df6060";
+            continue;
         }
-        const textoDemandaExcluida = [...linha.querySelectorAll("td")].slice(1).map(td => td.innerText).join('');
-        if (!demandasExcluidas.includes(textoDemandaExcluida)) return;
-        linha.querySelector('button').click();
-        document.querySelectorAll('#checkVerCertas, #checkVerErradas, #checkVerExcluidas').forEach(input =>
-            input.dispatchEvent(new Event("change", {
-                bubbles: true
-            }))
-        )
-    });
+        if (index == 3 && !naturezas.includes(celulas[3].innerText.trim())) {
+            celulas[3].closest('tr').classList.add('errada');
+            celulas[3].style.backgroundColor = "#df6060";
+            continue;
+        }
+        if (index == 4 && (!qthsNomes.find(qth => celulas[4].innerText.includes(qth)) && (!associacoes[celulas[4].innerText.trim()] || (!associacoes[celulas[4].innerText.trim()].place && !associacoes[celulas[4].innerText.trim()].street)))) {
+            celulas[4].closest('tr').classList.add('errada');
+            celulas[4].style.backgroundColor = "#df6060";
+            continue;
+        }
+        if (qthsNomes.find(qth => celulas[4].innerText.includes(qth))) {
+            celulas[5].querySelector('div.associacao').innerText = qthsNomes.find(qth => celulas[4].innerText.includes(qth));
+
+        } else if (associacoes[celulas[4].innerText.trim()]) {
+            const ass = associacoes[celulas[4].innerText.trim()];
+            celulas[5].querySelector('div.associacao').innerText = `${ass.place} - ${ass.street}, ${ass.number} - ${ass.neighborhood}`;
+        };
+        if (index == 6 && (!guarnicoes.find(guarnicao => celulas[6].innerText.includes(guarnicao)) && !areas.find(area => celulas[6].innerText.includes(area)))) {
+            celulas[6].closest('tr').classList.add('errada');
+            celulas[6].style.backgroundColor = "#df6060";
+            continue;
+        }
+        celulas[index].style.backgroundColor = "white";
+    }
+    const textoDemandaExcluida = [...linha.querySelectorAll("td")].slice(1).map(td => td.innerText).join('');
+    if (!demandasExcluidas.includes(textoDemandaExcluida)) return;
+    linha.querySelector('button').click();
+    document.querySelectorAll('#checkVerCertas, #checkVerErradas, #checkVerExcluidas').forEach(input =>
+        input.dispatchEvent(new Event("change", {
+            bubbles: true
+        }))
+    )
 }
 
 async function listarLocais() {
