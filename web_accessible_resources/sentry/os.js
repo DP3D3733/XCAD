@@ -938,6 +938,7 @@ function conferirLinha(linha) {
     }
     const textoDemandaExcluida = [...linha.querySelectorAll("td")].slice(1).map(td => td.innerText).join('');
     if (!demandasExcluidas.includes(textoDemandaExcluida)) return;
+    if (linha.classList.contains('excluida')) return;
     linha.querySelector('button').click();
     document.querySelectorAll('#checkVerCertas, #checkVerErradas, #checkVerExcluidas').forEach(input =>
         input.dispatchEvent(new Event("change", {
@@ -981,8 +982,8 @@ async function listarLocais() {
 
 
 
-async function associarLocal(local) {
-    sessionStorage.setItem('associarLocal', local.innerText.trim());
+async function associarLocal(td) {
+    sessionStorage.setItem('associarLocal', td.innerText.trim());
     document
         .getElementById('iframeMapa')
         .src = 'https://sentry.procempa.com.br/web/despacho/attendance/create';
