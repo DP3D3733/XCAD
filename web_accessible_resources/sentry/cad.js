@@ -89,6 +89,34 @@ function criarBotaoVisualizarOS() {
     }, 500);
 }
 
+criarBotaoCancelarDespacho();
+
+function criarBotaoCancelarDespacho() {
+    const intervalInserirBotao = setInterval(() => {
+        const botaoCancelarDespacho = document.querySelector('[id*="cancelar-despacho"]');
+        if (botaoCancelarDespacho) return;
+        const botaoHistorico = document.querySelector('[id*="garrison-history"]')
+        if (!botaoHistorico) return;
+        const idGuarnicao = botaoHistorico.getAttribute('id').split('-')[2];
+        const blocoGuarnicao = document.querySelector(`#garrisonPanel_${idGuarnicao}`);
+        const idDespacho = blocoGuarnicao.getAttribute('dispatchid');
+        if (!idDespacho) return;
+
+
+
+        const novoBotaoCancelarDespacho = botaoHistorico.cloneNode(true);
+        novoBotaoCancelarDespacho.setAttribute('id', novoBotaoCancelarDespacho.getAttribute('id').replace('garrison-history', 'cancelar-despacho'));
+        botaoHistorico.insertAdjacentElement('afterend', novoBotaoCancelarDespacho);
+        novoBotaoCancelarDespacho.innerText = 'Cancelar';
+        novoBotaoCancelarDespacho.addEventListener('click', async () => {
+
+            const baId = blocoGuarnicao.querySelector('i.fa-file') ? blocoGuarnicao.querySelector('i.fa-file').nextElementSibling.innerText : await gerarBA(idDespacho);
+            await cancelarBA(baId);
+            await encerrarDespacho(idDespacho);
+        });
+    }, 1000);
+}
+
 async function montarOS(numOS) {
     const modalBody = document.querySelector('#modalOS div.modal-body');
 
@@ -1421,4 +1449,86 @@ async function resolverEsteAtendimento() {
     const resolveu = await resolverAlerta(id, operador, token, secao, status);
     if (resolveu)
         document.querySelector("#end-attendance").click();
+}
+
+async function gerarBA(idDespacho) {
+    const formData = new FormData();
+    formData.append("dispatchId", idDespacho);
+
+    const resposta = await fetch(
+        "https://sentry.procempa.com.br/despacho/dispatch/generateNumberBo/",
+        {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Accept": "application/json, text/plain, */*",
+                "Cache-Control": "no-cache",
+                "Pragma": "no-cache"
+            },
+            body: formData
+        }
+    );
+
+    const dados = await resposta.json();
+
+    if (!dados) return false;
+
+    return dados.id;
+}
+
+async function cancelarBA(idBA) {
+    const resposta = await fetch(
+        "https://sentry.procempa.com.br/despacho/bogcm/invalidate",
+        {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: new URLSearchParams({
+                id: idBA,
+                observation: "Despacho cancelado."
+            })
+        }
+    );
+}
+
+async function encerrarDespacho(idDespacho) {
+    const dispatch = {
+        dispatchId: parseInt(idDespacho),
+        nature: "Teste de Sistema",
+        cancelSupport: false,
+        flagrant: false,
+        infracionalAct: false,
+        publicPatrimony: false,
+        notFound: false,
+        policeAuthority: false,
+        indicted: false,
+        notCriminal: false,
+        refuellingList: [],
+        maintenanceList: []
+    };
+
+    const formData = new FormData();
+
+    formData.append(
+        "dispatchJson",
+        JSON.stringify(dispatch)
+    );
+
+    const resposta = await fetch(
+        "/despacho/dispatch/setClosedDispatch/",
+        {
+            method: "POST",
+            credentials: "include",
+            body: formData
+        }
+    );
+
+    console.log("Status:", resposta.status);
+    console.log("OK:", resposta.ok);
+
+    const texto = await resposta.text();
+
+    console.log("Resposta:", JSON.stringify(texto));
 }
