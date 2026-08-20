@@ -31,7 +31,7 @@
             } else if (d[i].parentNode.innerHTML.includes('Data Nascimento:') && nascimento == '') {
                 nascimento = d[i].innerHTML;
             } else if (d[i].parentNode.innerHTML.includes('CPF') && cpf == '') {
-                cpf = d[i].innerHTML;
+                cpf = d[i].innerHTML.replace('/', '-');
             } else if (d[i].parentNode.innerHTML.includes('Preso Foragido') && foragido == '') {
                 foragido = '\nForagido Polícia Penal';
             }
