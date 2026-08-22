@@ -16,7 +16,7 @@ async function copiarParaCad(botaoCopiarParaCad) {
     const tipoLocal = document.querySelector("#factType").value == '' ? 'Via urbana' : document.querySelector("#factType").value;
     const narrativa = document.querySelector("#myModel\\.transcription") ? document.querySelector("#myModel\\.transcription").value : '';
     const endereco = Array.from(document.querySelectorAll('#factStreet, #factNumber, #factNeighborhood, #factCity')).map(input => input.value).join(' ');
-    const natureza = document.querySelector("#myModel\\.nature").value;
+    const natureza = document.querySelector("#myModel\\.nature").value == 'Abordagem a Pessoa em Fundada Suspeita' ? 'Abordagem a Pessoa em Atitude Suspeita' : document.querySelector("#myModel\\.nature").value;
     const guarnicaoId = document.querySelector("#myModel\\.garrison").value;
     const guarnicao = await buscarGuarnicao(guarnicaoId);
     const horaInicial = document.querySelector("#myModel\\.start").value;
@@ -63,6 +63,8 @@ async function buscarGuarnicao(guarnicaoId) {
     if (!guarnicaoTd) return false;
     return guarnicaoTd.innerText;
 }
+
+
 
 /*1001 PARQUE FARROUPILHA-()-Praça / Parque-()-PARQUES E PRAÇAS
 Efetuar atividade de policiamento preventivo com a finalidade de garantir a segurança dos munícipes e usuários do parque. Inspecionar locais e instalações com intuito de verificar se há indícios de depredação, furto de fios e cabos, invasão ou ocupação irregular dos próprios municipais.-()-AV OSVALDO ARANHA - FARROUPILHA-()-Patrulhamento Preventivo-()-C2 - Dia-()-20/08/2026 06:33-()-40-()-20/08/2026 08:48-()--()--++-

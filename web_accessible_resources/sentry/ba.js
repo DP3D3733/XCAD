@@ -343,8 +343,8 @@ async function verificarEnvolvidos() {
         Array.from(document.querySelectorAll(`tr.individual-component-${idEnvolvidoBA} td.bo-key`))
             .forEach(dado => {
                 const [chave, valor] = dado.innerText.split(':');
-                if (!relacaoDadosBABD[chave]?.trim()) return;
-                if (resultados[cpfElement.innerText][relacaoDadosBABD[chave]].trim() != valor.trim()) {
+                if (!relacaoDadosBABD[chave] || !relacaoDadosBABD[chave].trim()) return;
+                if (resultados[cpfElement.innerText][relacaoDadosBABD[chave]] && resultados[cpfElement.innerText][relacaoDadosBABD[chave]].trim() != valor.trim()) {
                     const botaoReinserirCPF = cpfElement.parentNode.querySelector('button');
                     if (!botaoReinserirCPF) cpfElement.parentNode.insertAdjacentHTML('beforeend', `
                         <button onclick="reinserir(this)"><i class="fas fa-redo"></i></button>
@@ -442,6 +442,7 @@ async function main() {
     await gerarBotaoInserirOutraNatureza();
     inserirHorariosDespacho();
     verificarEnvolvidos();
+    inserirBotaoCopiarParaCad();
 }
 
 function pesquisarNovosBAs() {
@@ -514,6 +515,8 @@ async function buscarBA(id) {
     );
 
     const bo = await response.json();
+
+    if (!bo) return false;
     return (bo);
 }
 
@@ -553,6 +556,63 @@ async function verificarBAsTurnoAtual() {
     }
 
     document.querySelector('h2.actual-title').innerText += ` - ${bas.length} no turno atual`
+}
+
+
+
+function inserirBotaoCopiarParaCad() {
+    const botaoCopiarParaCad = document.createElement('button');
+    botaoCopiarParaCad.setAttribute('class', 'btn btn-default btn-new float-end ms-1');
+    botaoCopiarParaCad.innerHTML = `<i class="fa fa-copy"></i><span>  Copiar Para Cad</span>`;
+    botaoCopiarParaCad.addEventListener('click', () => copiarParaCad(botaoCopiarParaCad));
+    const botaoImprimir = document.querySelector("#print-options")
+    botaoImprimir.insertAdjacentElement('beforebegin', botaoCopiarParaCad);
+}
+
+async function copiarParaCad(botaoCopiarParaCad) {
+    const nrBA = document.querySelector('h2.actual-title').innerText.match(/\d+\/\d+/)?.[0];
+    console.log(nrBA);
+    const dados = await buscarBA(nrBA.replace('/', '-'));
+    if (!dados) return;
+    const ba = JSON.parse(dados.data.data);
+    console.log(ba);
+    const dadosProntos = {};
+    dadosProntos.ba = `BA GCM ${nrBA}`;
+    dadosProntos.relato = ba.gcmReport;
+    const individuos = ba.individualList;
+
+    if (ba.individualList.length) {
+        dadosProntos.individuos = individuos.map(individuo => {
+            return {
+                nome: individuo.name || '',
+                mae: individuo.mother || '',
+                pai: individuo.father || '',
+                nascimento: individuo.dtBirth || '',
+                nacionalidade: individuo.nationality || '',
+                naturalidade: individuo.cityOfBirth || '',
+                cor: individuo.color ? individuo.color.substring(0, 3) : '',
+                cpf: individuo.cpf || '',
+                rg: individuo.rg || '',
+                sexo: individuo.sex ? individuo.sex.substring(0, 1) : ''
+
+            }
+        })
+    }
+    console.log(dadosProntos);
+    inserirNaAreaDeTransferencia(JSON.stringify(dadosProntos));
+    botaoCopiarParaCad.querySelector('i').setAttribute('class', 'fa fa-check');
+    setTimeout(() => {
+        botaoCopiarParaCad.querySelector('i').setAttribute('class', 'fa fa-copy');
+    }, 1000);
+}
+
+async function inserirNaAreaDeTransferencia(texto) {
+    try {
+        await navigator.clipboard.writeText(texto);
+    } catch (erro) {
+        console.error("Erro ao copiar:", erro);
+        return;
+    }
 }
 
 main();

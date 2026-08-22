@@ -116,7 +116,8 @@
         "https://cadweb.sinesp.gov.br/cad-ocorrencia-web/*"
       ],
       "js": [
-        "content/sinesp/ocorrencias.js"
+        "content/sinesp/ocorrencias.js",
+        "content/sinesp/edicao.js"
       ]
     },
     {
