@@ -50,6 +50,7 @@
         "web_accessible_resources/sentry/cad.js",
         "web_accessible_resources/sentry/atendimento.js",
         "web_accessible_resources/sentry/guarnicoes.js",
+        "web_accessible_resources/sentry/relatorioPrometa.js",
         "libs/jszip.js"
       ],
       "matches": [
@@ -234,7 +235,6 @@
     "tabs",
     "scripting",
     "webNavigation",
-    "notifications",
-    "https://*.firebaseio.com/"
+    "notifications"
   ]
 }
