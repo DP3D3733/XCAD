@@ -320,6 +320,20 @@ async function buscarAtendimento(id) {
     return data;
 }
 
+async function buscarBA(id) {
+    const response = await fetch(
+        `https://sentry.procempa.com.br/web/bos/getBo/${id}`,
+        {
+            credentials: "include"
+        }
+    );
+
+    const bo = await response.json();
+
+    if (!bo) return false;
+    return (bo);
+}
+
 async function buscarImagem(id) {
     const response = await fetch(
         `https://sentry.procempa.com.br/despacho/attachment/get/${id}`,

@@ -239,7 +239,6 @@ function substituirHorarioDespacho(botao) {
     };
     const linhaHorarios = Array.from(document.querySelectorAll('.bo-key')).find(td => td.innerText.includes('D/H do fato')).parentNode;
     const horarioBA = linhaHorarios.querySelectorAll('td')[ordemColunas[qualHorario]].querySelector('span').innerText;
-    console.log(horarioBA);
     localStorage.setItem('inserirHorariosDespacho', `${qualHorario},${horarioBA}`);
     document.querySelector('#modalDespacho').style.display = 'flex';
 
@@ -374,7 +373,6 @@ async function copiar(botao) {
     const idEnvolvidoBA = botao.closest('tr.individual-component-print').querySelector('strong').innerText.replace(/[^0-9]/g, '');
     const dadosSolicitados = ['CPF:', 'Nome completo:', 'Data de nasc.:', 'Sexo:', 'Mãe:', 'Pai:', 'Nacionalidade:', 'Naturalidade:', 'Cútis:', 'RG:'];
     const dadosEnvolvidoCelulas = Array.from(document.querySelectorAll(`tr[class=" individual-component-${idEnvolvidoBA}"] td.bo-key`));
-    /* .filter(celula => dadosSolicitados.includes(celula.innerHTML.split('<span')[0].trim())); */
     const texto = `
         Nome: ${dadosEnvolvidoCelulas.find(celula => celula.innerHTML.split('<span')[0].trim().includes('Nome').querySelector('span').innerText.trim())}
         Sexo: ${dadosEnvolvidoCelulas.find(celula => celula.innerHTML.split('<span')[0].trim().includes('Sexo').querySelector('span').innerText.trim())}
@@ -506,19 +504,7 @@ async function buscarNumeroBAs() {
     return dados.data.data.map(ba => ba.id.replace('/', '-'));
 }
 
-async function buscarBA(id) {
-    const response = await fetch(
-        `https://sentry.procempa.com.br/web/bos/getBo/${id}`,
-        {
-            credentials: "include"
-        }
-    );
 
-    const bo = await response.json();
-
-    if (!bo) return false;
-    return (bo);
-}
 
 async function verificarBAsTurnoAtual() {
     const agora = new Date();
@@ -571,11 +557,9 @@ function inserirBotaoCopiarParaCad() {
 
 async function copiarParaCad(botaoCopiarParaCad) {
     const nrBA = document.querySelector('h2.actual-title').innerText.match(/\d+\/\d+/)?.[0];
-    console.log(nrBA);
     const dados = await buscarBA(nrBA.replace('/', '-'));
     if (!dados) return;
     const ba = JSON.parse(dados.data.data);
-    console.log(ba);
     const dadosProntos = {};
     dadosProntos.ba = `BA GCM ${nrBA}`;
     dadosProntos.relato = ba.gcmReport;
@@ -583,6 +567,7 @@ async function copiarParaCad(botaoCopiarParaCad) {
 
     if (ba.individualList.length) {
         dadosProntos.individuos = individuos.map(individuo => {
+            if (individuo.color == 'NEGRO') individuo.color = 'PRETO'; //no Sinesp CAD não tem Negro
             return {
                 nome: individuo.name || '',
                 mae: individuo.mother || '',
@@ -598,7 +583,6 @@ async function copiarParaCad(botaoCopiarParaCad) {
             }
         })
     }
-    console.log(dadosProntos);
     inserirNaAreaDeTransferencia(JSON.stringify(dadosProntos));
     botaoCopiarParaCad.querySelector('i').setAttribute('class', 'fa fa-check');
     setTimeout(() => {
