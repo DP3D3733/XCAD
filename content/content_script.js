@@ -10,6 +10,10 @@ window.addEventListener("message", async (event) => {
     chrome.runtime.sendMessage({ action: "banco", data: event.data.payload });
   }
 
+  if (event.data.type === "retornarInfoseg") {
+    chrome.runtime.sendMessage({ action: "retornarInfoseg" });
+  }
+
   if (event.data.type === "verifica_pedido") {
     chrome.storage.local.get("pedido_consulta", (d) => {
       if (d['pedido_consulta'] && d['pedido_consulta'] != '') {

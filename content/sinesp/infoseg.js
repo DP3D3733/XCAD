@@ -1,192 +1,282 @@
-chrome.storage.local.get("ativa", (data) => {
-    if (data.ativa === false) return;
-    chrome.storage.local.get("InfoSeg", (d) => {
-        if (d['InfoSeg'] == 'desativado') return;
-        var a = 'a';
-        setInterval(function () {
-            chrome.storage.local.get("dados_consulta", (result) => {
-                if (result.dados_consulta !== undefined) {
-                    console.log("Valor recuperado:", result.dados_consulta);
-                    sessionStorage.setItem('dados_envolvido', result.dados_consulta);
-                    chrome.storage.local.remove("dados_consulta", () => { });
-                    buscar_mandado();
-                    // Aqui você pode usar o valor para atualizar a página, etc
-                }
-            });
+inserirBotaoConsultar();
 
-            if (!document.querySelector('#buscar_mandado')) {
-                const but_buscar_mandado = document.createElement('button');
-                but_buscar_mandado.setAttribute('id', 'buscar_mandado');
-                but_buscar_mandado.innerHTML = 'Buscar Mandado';
-                document.querySelector("#searchContainer").insertAdjacentElement('afterend', but_buscar_mandado);
-                but_buscar_mandado.addEventListener('click', function () { buscar_mandado(); });
+function inserirBotaoConsultar() {
+    setInterval(() => {
+
+        const modais = document.querySelectorAll(
+            'div[title="Detalhes da Pessoa Física"]:not(:has(.botao-consultar-ocorrencias))'
+        );
+
+        modais.forEach((modal) => {
+
+            const button = document.createElement('button');
+
+            button.className =
+                'btn btn-sm btn-primary botao-consultar-ocorrencias';
+
+            button.innerText = 'Consultar Ocorrências';
+
+            button.addEventListener('click', (event) => consultarOcorrencias(event.currentTarget));
+
+            modal.insertAdjacentElement('afterbegin', button);
+        });
+
+    }, 500);
+}
+
+function inserirBotaoCopiar(botaoConsultar) {
+    if (botaoConsultar.parentNode.querySelector('button.botao-copiar-ocorrencias')) return;
+    const button = document.createElement('button');
+
+    button.innerText = 'Copiar';
+
+    button.className =
+        'btn btn-sm btn-primary botao-copiar-ocorrencias';
+
+    button.addEventListener('click', (event) => copiarOcorrencias(event.currentTarget));
+
+    botaoConsultar.insertAdjacentElement('afterend', button);
+}
+
+function consultarOcorrencias(botao) {
+    const nome = document.querySelector("#modalD p").innerText;
+    const campos = Array.from(botao.parentNode.querySelectorAll('div.form-group'))
+        .map(campo => {
+            return {
+                nome: campo.querySelector('label').innerText,
+                valor: campo.querySelector('p').innerText
             }
-            if (document.querySelector('div[class="alert alert-info"]')?.innerText.includes('Para habilitar a consulta')) {
-                document.querySelector('div[class="alert alert-info"] a').click();
-            }
-        }, 100);
-        setInterval(() => {
-            if (document.querySelector('#copiar_resultados') && document.querySelector('div[dados]') && document.querySelector('div[dados]').innerText.includes('SEM NOVIDADES!')) {
-                const nome = document.querySelector('div[dados]').innerText.split('Nome: ')[1].split('\n')[0].trim();
-                const nome_mae = document.querySelector('div[dados]').innerText.split('mãe: ')[1].split('\n')[0].trim();
-                const data_nascimento = document.querySelector('div[dados]').innerText.split('Nascimento: ')[1].split('\n')[0].trim();
-                if (Array.from(document.querySelectorAll('a')).some(a => a.innerText == data_nascimento || a.innerText == nome_mae) || document.querySelector('input[data-servico="SRV_MANDADOS"]')?.closest('#p0-ADVANCED_SEARCH-0')?.querySelector('p.form-control-static').innerText.trim() == nome) {
-                    document.querySelector('div[dados]').innerText = document.querySelector('div[dados]').innerText.replace('SEM NOVIDADES!*\n', '*ATENÇÃO! APÓS CONFERÊNCIA COM A PEÇA, CONDUZIR! ENVIAR IMAGENS DA CONDUÇÃO.*\n\n*MANDADO:*\n' + document.querySelectorAll("#p0-ADVANCED_SEARCH-lista-conteudo div")[9].innerText + '\n');
-                    const row = Array.from(document.querySelectorAll('a')).find(a => a.innerText == data_nascimento || a.innerText == nome_mae).closest('div.row') || document.querySelector('input[data-servico="SRV_MANDADOS"]').closest('#p0-ADVANCED_SEARCH-0').querySelector('p.form-control-static').closest('div.row') || null;
-                    if (!row) return;
-                    const clone = row.cloneNode(true);
-                    clone.querySelectorAll('p')[0].innerText = nome;
-                    clone.querySelectorAll('p')[1].innerText = nome_mae;
-                    clone.querySelectorAll('p')[2].innerText = data_nascimento;
-                    clone.querySelectorAll('p')[3].innerText = '← CONFERIR OS DADOS';
-                    clone.querySelectorAll('p')[4].innerText = '';
-                    row.insertAdjacentElement('afterend', clone);
+        });
+    const cpf = campos.find(campo => campo.nome == 'CPF')?.valor;
+    const mae = campos.find(campo => campo.nome == 'Filiação 1')?.valor;
+    const Nascimento = campos.find(campo => campo.nome == 'D. N.')?.valor;
+    const naturalidade = campos.find(campo => campo.nome == 'Município - UF')?.valor;
+    const sexo = campos.find(campo => campo.nome == 'Sexo')?.valor;
 
-                }
-            }
-        }, 100);
-        function buscar_mandado() {
-            const abrirBuscaAvancada = setInterval(() => {
-                document.querySelector('#advanced-search').click();
-                document.querySelector('#slct-base-individuos').click();
-                document.querySelector('option[label="CNJ-BNMP"]').selected = true;
-                document.querySelector('#slct-base-individuos').dispatchEvent(new Event('change', { bubbles: true }));
-                clearInterval(abrirBuscaAvancada);
-            }, 100);
+    const dados = {
+        nome, cpf, mae, Nascimento, naturalidade, sexo
+    }
+    const modalId = botao.parentNode.getAttribute('id');
+    chrome.runtime.sendMessage({ action: "consultarIndividuo", dados: dados, modalId: modalId });
 
-            const buscarMandado = setInterval(() => {
-                if (!sessionStorage.getItem('dados_envolvido')) return;
-                const dados = sessionStorage.getItem('dados_envolvido');
-                const data_nascimento = dados.split('Nascimento: ')[1].split('\n')[0];
-                const nome = dados.split('Nome: ')[1].split('\n')[0];
-                const mae = dados.split('mãe: ')[1].split('\n')[0];
-                document.querySelector('#mandados-nome').value = nome;
-                document.querySelector('#mandados-nomeMae').value = mae;
-                document.querySelector('#btn-pesquisar-mandados').click();
-                setTimeout(() => {
-                    const apresentarResultado = setInterval(() => {
-                        if (!document.querySelector('#copiar_resultados')) {
-                            if ((document.querySelector('input[data-servico="SRV_MANDADOS"]') && document.querySelector('input[data-servico="SRV_MANDADOS"]').getAttribute('data-key').includes('buscaPorOrgaos')) || !Array.from(document.querySelectorAll('a')).filter(a => a.innerText == data_nascimento)[0]) {
-                                let copiar_resultados = document.createElement("button");
-                                copiar_resultados.setAttribute('id', 'copiar_resultados');
-                                copiar_resultados.setAttribute('style', 'height:150px;width:400px');
-                                copiar_resultados.innerHTML = 'Copiar Resultados';
-                                document.querySelector("#result").insertAdjacentElement('afterend', copiar_resultados);
-                                let resultado = document.createElement("div");
-                                copiar_resultados.insertAdjacentElement('afterend', resultado);
-                                let enviar_whats = document.createElement("button");
-                                enviar_whats.setAttribute('id', 'enviar_whats');
-                                enviar_whats.setAttribute('style', 'height:150px;width:400px');
-                                enviar_whats.innerHTML = 'Enviar P/ WhatsApp';
-                                copiar_resultados.insertAdjacentElement('afterend', enviar_whats);
-                                chrome.storage.local.get("imagem_consulta", (result) => {
-                                    if (result.imagem_consulta) {
-                                        const img = document.createElement("img");
-                                        img.src = result.imagem_consulta;
-                                        img.style.maxWidth = "300px";
-                                        copiar_resultados.insertAdjacentElement('afterend', img);
-                                    }
-                                });
-                                let dados_envolvido = sessionStorage.getItem('dados_envolvido');
-                                resultado.innerHTML = ('<div dados>*SEM NOVIDADES!*\n\n' + dados_envolvido + '</div>').replaceAll('\n', '<br>');
-                                chrome.storage.local.get("pedido_consulta", (result) => {
-                                    if (result.pedido_consulta) {
-                                        chrome.storage.local.remove('pedido_consulta', function () {
-                                            console.log('Removido!');
-                                        });
-                                        /*chrome.storage.local.set({ dados_consulta: '*SEM NOVIDADES!*\n\n' + dados_envolvido }, () => {
-                                            chrome.runtime.sendMessage({ action: "retorna_consulta", data: '' });
-                                            clearInterval(apresentarResultado);
-                                        });*/
-                                    }
-                                });
-                                document.querySelector('#copiar_resultados').addEventListener('click', function () {
-                                    navigator.clipboard.writeText(resultado.querySelector('div[dados]').innerText);
-                                    const range = document.createRange();
-                                    const selection = window.getSelection();
+}
 
-                                    // Apaga qualquer seleção anterior
-                                    selection.removeAllRanges();
+chrome.runtime.onMessage.addListener((message) => {
+    if (message.action === "respostaConsultarIndividuo") {
+        mostrarResultadoConsulta(message);
+    }
+    if (message.action === "refazerSolicitacao") {
+        document.getElementById(message.modalId).querySelector('button').click();
+    }
+});
 
-                                    // Cria uma faixa de seleção e seleciona o conteúdo
-                                    range.selectNodeContents(resultado);
+async function mostrarResultadoConsulta(message) {
+    const modal = document.getElementById(message.modalId);
+    if (!modal) return;
+    const dados = message.dados;
+    const divDados = document.createElement('div');
+    divDados.classList.add('dados_consulta');
+    modal.querySelector('button').insertAdjacentElement('afterend', divDados);
+    if (!message.sucesso) {
+        const dadosInfoseg = buscarDadosInfoseg(modal);
+        await verificarMandado(dadosInfoseg.cpf, divDados);
+        mostrarFoto('', divDados);
+        mostrarDadosBasicos(dadosInfoseg, divDados);
+        inserirBotaoCopiar(modal.querySelector('button'));
+        return
+    }
+    await verificarMandado(dados.basicos.cpf, divDados);
+    mostrarFoto(dados.foto, divDados);
+    mostrarDadosBasicos(dados.basicos, divDados);
+    if (dados.bas) mostrarBAs(dados.bas, divDados);
+    mostrarOcorrencias(dados.ocorrencias, divDados);
+    inserirBotaoCopiar(modal.querySelector('button'));
+}
 
-                                    // Adiciona a seleção ao window.getSelection()
-                                    selection.addRange(range);
-                                });
-                                document.querySelector('#enviar_whats').addEventListener('click', function () {
-                                    chrome.storage.local.remove('pedido_consulta', function () {
-                                        console.log('Removido!');
-                                    });
-                                    chrome.storage.local.set({ dados_consulta: this.nextElementSibling.querySelector('div[dados]').innerHTML.replaceAll('<br>', '\n') }, () => {
-                                        chrome.runtime.sendMessage({ action: "retorna_consulta", data: '' });
-                                    });
-                                });
-                            }
-                            if (document.querySelector('input[data-servico="SRV_MANDADOS"]') && !document.querySelector('input[data-servico="SRV_MANDADOS"]').getAttribute('data-key').includes('buscaPorOrgaos') && Array.from(document.querySelectorAll('a')).filter(a => a.innerText == data_nascimento)[0]) {
-                                let copiar_resultados = document.createElement("button");
-                                copiar_resultados.setAttribute('id', 'copiar_resultados');
-                                copiar_resultados.setAttribute('style', 'height:150px;width:400px');
-                                copiar_resultados.innerHTML = 'Copiar Resultados';
-                                document.querySelector("#result").insertAdjacentElement('afterend', copiar_resultados);
-                                let resultado = document.createElement("div");
-                                copiar_resultados.insertAdjacentElement('afterend', resultado);
-                                chrome.storage.local.get("imagem_consulta", (result) => {
-                                    if (result.imagem_consulta) {
-                                        const img = document.createElement("img");
-                                        img.src = result.imagem_consulta;
-                                        img.style.maxWidth = "300px";
-                                        copiar_resultados.insertAdjacentElement('afterend', img);
-                                    }
-                                });
-                                let enviar_whats = document.createElement("button");
-                                enviar_whats.setAttribute('id', 'enviar_whats');
-                                enviar_whats.setAttribute('style', 'height:150px;width:400px');
-                                enviar_whats.innerHTML = 'Enviar P/ WhatsApp';
-                                copiar_resultados.insertAdjacentElement('afterend', enviar_whats);
+function mostrarFoto(foto, divDados) {
+    if (foto == '' || !foto) return divDados.innerText += `*SEM IMAGENS NO SISTEMA*
+    `;
+    const imgElement = document.createElement('img');
+    imgElement.src = foto;
+    const divImg = document.createElement('div');
+    divImg.classList.add('sinesp-photo-container');
+    divImg.insertAdjacentElement('afterBegin', imgElement);
+    divDados.insertAdjacentElement('beforeBegin', divImg);
+}
 
-                                resultado.innerHTML = ('<div dados>*ATENÇÃO! CONDUZIR! ENVIAR IMAGENS DA CONDUÇÃO.*\n\n*MANDADO:*\n' + document.querySelectorAll("#p0-ADVANCED_SEARCH-lista-conteudo div")[9].innerText + '\n\n' + dados + '</div>').replaceAll('\n', '<br>').replaceAll('Foragido Polícia Penal<br>', '');
-                                chrome.storage.local.get("pedido_consulta", (result) => {
-                                    if (result.pedido_consulta) {
-                                        chrome.storage.local.remove('pedido_consulta', function () {
-                                            console.log('Removido!');
-                                        });
-                                        /*chrome.storage.local.set({ dados_consulta: '*ATENÇÃO! CONDUZIR! ENVIAR IMAGENS DA CONDUÇÃO.*\n\n*MANDADO:*\n' + document.querySelector('tbody td').innerText + '\n\n' + dados_envolvido }, () => {
-                                            chrome.runtime.sendMessage({ action: "retorna_consulta", data: '' });
-                                        });*/
-                                    }
-                                });
-                                document.querySelector('#copiar_resultados').addEventListener('click', function () {
-                                    navigator.clipboard.writeText(resultado.querySelector('div[dados]').innerText);
-                                    const range = document.createRange();
-                                    const selection = window.getSelection();
+function mostrarDadosBasicos(dados, divDados) {
+    if (!dados) return divDados.innerText += `
+    SEM DADOS BÁSICOS
+    `;
 
-                                    // Apaga qualquer seleção anterior
-                                    selection.removeAllRanges();
+    divDados.innerText +=
+        `
+            *DADOS BÁSICOS:*
+            Nome: ${dados.nome || ''}
+            Nome social: ${dados.nomeSocial || ''}
+            Sexo: ${dados.sexo || ''}
+            Cor da pele: ${dados.corPele || ''}
+            Naturalidade: ${dados.naturalidade || ''}    
+            Nascimento: ${dados.dataNascimento || ''}
+            Nome da mãe: ${dados.paiMae.includes('/') ? dados.paiMae.split('/')[1] : dados.paiMae}
+            Nome do pai: ${dados.paiMae.includes('/') ? dados.paiMae.split('/')[0] : '-'}
+            CPF: ${dados.cpf || ''}            
+            RG: ${dados.rg || ''}`;
+}
 
-                                    // Cria uma faixa de seleção e seleciona o conteúdo
-                                    range.selectNodeContents(resultado);
+function buscarDadosInfoseg(modal) {
+    const dadosExtraidos = {};
 
-                                    // Adiciona a seleção ao window.getSelection()
-                                    selection.addRange(range);
-                                });
-                                document.querySelector('#enviar_whats').addEventListener('click', function () {
-                                    chrome.storage.local.remove('pedido_consulta', function () {
-                                        console.log('Removido!');
-                                    });
-                                    chrome.storage.local.set({ dados_consulta: this.nextElementSibling.querySelector('div[dados]').innerHTML.replaceAll('<br>', '\n') }, () => {
-                                        chrome.runtime.sendMessage({ action: "retorna_consulta", data: '' });
-                                    });
-                                });
-                            }
-                        } else {
-                            clearInterval(apresentarResultado);
-                        }
+    modal.querySelectorAll('.form-group').forEach(group => {
+        const label = group.querySelector('label')?.innerText.trim();
+        const valor = group.querySelector('.form-control-static')?.innerText.trim();
 
-                    }, 100);
-                }, 500);
-                clearInterval(buscarMandado);
-            }, 100);
+        if (label) {
+            dadosExtraidos[label] = valor || null;
         }
     });
-});
+    return {
+        nome: document.querySelector('#modalD').innerText,
+        sexo: dadosExtraidos.Sexo,
+        naturalidade: dadosExtraidos['Município - UF'],
+        dataNascimento: dadosExtraidos['D. N.'],
+        paiMae: dadosExtraidos['Filiação 1'] == 'N/I' ? '' : dadosExtraidos['Filiação 1'],
+        cpf: dadosExtraidos.CPF
+    }
+}
+
+function mostrarOcorrencias(ocorrencias, divDados) {
+    if (!ocorrencias || !ocorrencias.length) return divDados.innerText += `
+
+    *SEM OCORRÊNCIAS REGISTRADAS*
+    `;
+    divDados.innerText += `
+
+    *OCORRÊNCIAS:*`;
+    const ocorrenciasDesfavor = {
+        'Indiciado por': null,
+        'Suspeito de': null,
+        'Acusado de': null,
+        'Autor de': null
+    }
+    ocorrenciasDesfavor['Indiciado por'] = ocorrencias.filter(ocorrencia => ocorrencia.qualificacao == 'Indiciado(a)');
+    ocorrenciasDesfavor['Suspeito de'] = ocorrencias.filter(ocorrencia => ocorrencia.qualificacao == 'Suspeito(a)');
+    ocorrenciasDesfavor['Acusado de'] = ocorrencias.filter(ocorrencia => ocorrencia.qualificacao == 'Acusado(a)');
+    ocorrenciasDesfavor['Autor de'] = ocorrencias.filter(ocorrencia => ocorrencia.qualificacao == 'Autor(a)');
+
+    const semOcorrencias = Object.values(ocorrenciasDesfavor).every(lista => lista.length === 0);
+
+    if (semOcorrencias) {
+        divDados.innerText += `\nSem ocorrências em desfavor\n`;
+        return;
+    }
+
+    for (const qualificacao in ocorrenciasDesfavor) {
+        if (!Object.hasOwn(ocorrenciasDesfavor, qualificacao)) continue;
+
+        const ocorrencias = ocorrenciasDesfavor[qualificacao];
+        if (!ocorrencias || !ocorrencias.length) continue;
+
+        divDados.innerText += `
+        ${qualificacao}:
+    `
+        ocorrencias.forEach(ocorrencia => {
+            divDados.innerText += ` ${ocorrencia.tipificacao} em ${ocorrencia.data}
+    `
+        })
+    }
+
+}
+
+async function buscarMandadosInfoseg(cpf) {
+    // 1. Limpa a pontuação do CPF deixando apenas os dígitos
+    const cpfLimpo = cpf.replace(/\D/g, "");
+
+    const url = "https://infoseg.sinesp.gov.br/infoseg2/api/mandados";
+
+    const payload = {
+        registroInicial: 1,
+        registroFinal: 10,
+        idTipoDocumentoIdentificacao: 357,
+        numeroDocumentoIdentificacao: cpfLimpo
+    };
+
+    const resposta = await fetch(url, {
+        method: "POST",
+        headers: {
+            "accept": "application/json, text/javascript, */*; q=0.01",
+            "accept-language": "pt-BR,pt;q=0.9",
+            "cache-control": "no-cache",
+            "content-type": "application/json",
+            "pragma": "no-cache",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "same-origin",
+            "x-requested-with": "XMLHttpRequest"
+        },
+        referrer: `https://infoseg.sinesp.gov.br/infoseg2/?q=${encodeURIComponent(cpf)}`,
+        body: JSON.stringify(payload),
+        mode: "cors",
+        credentials: "include"
+    });
+
+    if (!resposta.ok) {
+        throw new Error(`Erro na consulta Infoseg: HTTP ${resposta.status}`);
+    }
+
+    const dados = await resposta.json();
+    return dados;
+}
+
+async function verificarMandado(cpf, divDados) {
+    const mandado = await buscarMandadosInfoseg(cpf);
+    if (!mandado || mandado.totalRegistros == 0) return divDados.innerText += `
+    *MANDADO NÃO ENCONTRADO*
+    `;
+
+    divDados.innerText += `
+    *ATENÇÃO! CONDUZIR! ENVIAR IMAGENS DA CONDUÇÃO.*
+
+    *MANDADO:*
+        ${mandado.payload[0]?.numeroPeca}
+    `;
+}
+
+function mostrarBAs(bas, divDados) {
+    if (!bas || !bas.length) return;
+    divDados.innerText += `
+
+    *OCORRÊNCIAS GCM:*`;
+    const ocorrenciasDesfavor = {}
+    bas.forEach(ba => {
+        ocorrenciasDesfavor[ba.condicaoFormatada] ?
+            ocorrenciasDesfavor[ba.condicaoFormatada].push(`${ba.natureza.toUpperCase()} em ${ba.dataOcorrencia} (${ba.numeroBO})`) :
+            ocorrenciasDesfavor[ba.condicaoFormatada] = [`${ba.natureza.toUpperCase()} em ${ba.dataOcorrencia} (${ba.numeroBO})`]
+    });
+    for (const qualificacao in ocorrenciasDesfavor) {
+        if (!Object.hasOwn(ocorrenciasDesfavor, qualificacao)) continue;
+
+        const ocorrencias = ocorrenciasDesfavor[qualificacao];
+        if (!ocorrencias || !ocorrencias.length) continue;
+
+        divDados.innerText += `
+        ${qualificacao}:
+        `
+        ocorrencias.forEach(ocorrencia => {
+            divDados.innerText += `${ocorrencia}`
+        })
+    }
+}
+
+async function copiarOcorrencias(botao) {
+    const dadosDiv = botao.parentNode.querySelector('div.dados_consulta');
+    const dados = dadosDiv.innerText;
+    try {
+        await navigator.clipboard.writeText(dados);
+    } catch (erro) {
+        console.error("Erro ao copiar:", erro);
+        return;
+    }
+}
+
+

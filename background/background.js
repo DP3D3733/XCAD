@@ -1,3 +1,5 @@
+import './modules/consultas.js';
+
 chrome.webNavigation.onCompleted.addListener(async (details) => {
     if (details.frameId !== 0) {
         // É um iframe
@@ -178,7 +180,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
         return true; // necessário para resposta assíncrona
     }
     if (message.action === "verificarIndividuoSentry") {
-        const dados = await ajustarDadosIndividuo(message.data);
+        const dados = ajustarDadosIndividuo(message.data);
         const individuoSentry = await verificarExistenciaIndividuoBanco(dados);
         if (individuoSentry == 'deslogado') return;
         if (!individuoSentry) return criarIndividuo(dados, message.foto);
@@ -531,113 +533,7 @@ chrome.commands.onCommand.addListener(async (command) => {
 
 });
 
-async function ajustarDadosIndividuo(texto) {
-    try {
-        if (!texto.includes('CPF:')) return false;
-        const dados = Object.fromEntries(
-            (texto
-                .replaceAll('&nbsp;', '')
-                .split('BÁSICOS:*<br>')[1] || texto)
-                .split('<br><br>')[0]
-                .split('<br>')
-                .map(linha => {
-                    if (!linha.includes(':')) return ['', ''];
-                    const [key, value] = linha.split(':');
-                    return [
-                        key.trim(),
-                        value.trim().replace('   ', ' ') || ''
-                    ];
-                })
-        );
-        if (dados.CPF == '') return false;
-        dados.CPF = dados.CPF.replaceAll('/', '-');
-        dados.Naturalidade = (`${dados.Naturalidade.substring(0, dados.Naturalidade.length - 2)} - ${dados.Naturalidade.substr(-2)}`).toUpperCase();
-        dados['Cor da pele'] = (dados['Cor da pele'].substring(0, dados['Cor da pele'].length - 1) + 'O').toUpperCase();
-        if (dados['Cor da pele'] == 'PRETO') dados['Cor da pele'] = 'NEGRO';
-        if (dados['Cor da pele'] == 'MULATO') dados['Cor da pele'] = 'NEGRO';
-        dados.Sexo = dados.Sexo.toUpperCase();
-        dados.Nacionalidade = cidadeEhDoBrasil(dados.Naturalidade) ? 'BRASIL' : '';
 
-        return dados;
-    } catch (erro) {
-        console.error("Erro ao acessar área de transferência:", erro);
-        return false;
-    }
-}
-
-function cidadeEhDoBrasil(texto) {
-
-    const ufs = [
-        'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES',
-        'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR',
-        'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC',
-        'SP', 'SE', 'TO'
-    ];
-
-    const match = texto.match(/\s-\s([A-Z]{2})$/);
-
-    if (!match) return false;
-
-    return ufs.includes(match[1]);
-}
-
-async function verificarExistenciaIndividuoBanco(dados) {
-    if (!dados) return false;
-
-    const cpf = dados.CPF;
-    try {
-        const response = await fetch(
-            "https://sentry.procempa.com.br/web/individual/list",
-            {
-                method: "POST",
-                credentials: "include",
-                headers: {
-                    "content-type": "application/json"
-                },
-                body: JSON.stringify({
-                    filters: [
-                        {
-                            schema: "reference.individuals",
-                            id: 8,
-                            name: "cpf",
-                            json: "data",
-                            text: "CPF",
-                            checked: true,
-                            defaultChecked: true,
-                            inputCls: "cpf",
-                            value: cpf
-                        }
-                    ],
-                    imageMode: false,
-                    photoFace: false,
-                    phoneticSearch: false,
-                    perPage: "9",
-                    page: 1
-                })
-            }
-        );
-        console.log(response);
-        if (!response) {
-            console.log('deslogado')
-            return 'deslogado';
-        }
-
-        const resultado = await response.json();
-        const individuoExiste = resultado.data.list.total == 0 ? false : true;
-        if (individuoExiste) {
-            chrome.tabs.create({
-                url: `https://sentry.procempa.com.br/web/individual/${dados.CPF.replace(/\D/g, "")}/edit`,
-                active: false
-            });
-        }
-        return individuoExiste;
-    } catch (erro) {
-        console.error("Erro ao buscar indivíduo:", erro);
-        return 'deslogado';
-    }
-
-
-}
 
 function base64ToFile(base64, fileName) {
     const [meta, data] = base64.split(",");
@@ -653,74 +549,7 @@ function base64ToFile(base64, fileName) {
     return new File([array], fileName, { type: mime });
 }
 
-async function criarIndividuo(dados, img) {
 
-    const fd = new FormData();
-
-    fd.append("cpf", dados.CPF);
-    fd.append("name", dados.Nome);
-
-    fd.append("rg", dados.RG || "");
-    fd.append("emitterRg", "SSP");
-    fd.append("criminalRg", "");
-    fd.append("cnh", "");
-
-    fd.append("socialName", "");
-    fd.append("nickname", "");
-
-    fd.append("dtBirth", dados.Nascimento || "");
-    fd.append("sex", dados.Sexo || "");
-
-    fd.append("color", dados['Cor da pele'] || "");
-
-    fd.append("maritalStatus", "");
-    fd.append("nationality", dados.Nacionalidade || "");
-    fd.append("cityOfBirth", dados.Naturalidade || "");
-
-    fd.append("mother", dados['Nome da mãe'] || "");
-    fd.append("father", dados['Nome do pai'] || "");
-
-    fd.append("height", "");
-    fd.append("roleCrime", "");
-    fd.append("socialNetwork", "");
-    fd.append("occupation", "");
-    fd.append("information", "");
-
-    const foto = base64ToFile(img, "foto.jpg");
-
-    fd.append("face", foto, "foto.jpg");
-
-    fd.append("irw", "[]");
-    fd.append("addresses", "[]");
-    fd.append("articles", "[]");
-    fd.append("phones", "[]");
-
-    fd.append("removeImage", "false");
-
-    try {
-        const response = await fetch(
-            "https://sentry.procempa.com.br/web/individual",
-            {
-                method: "POST",
-                credentials: "include",
-                body: fd
-            }
-        );
-        const texto = await response.text();
-
-        console.log(response.status);
-        console.log(texto);
-
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${texto}`);
-        }
-        chrome.tabs.create({
-            url: `https://sentry.procempa.com.br/web/individual/${dados.CPF.replace(/\D/g, "")}/edit`
-        });
-    } catch (erro) {
-        console.error("Erro ao cadastrar indivíduo:", erro);
-    }
-}
 
 async function buscarEnvolvido(cpf) {
     try {
@@ -761,84 +590,7 @@ async function buscarEnvolvido(cpf) {
     }
 }
 
-async function buscarNumBAs(cpf) {
-    const response = await fetch(`https://sentry.procempa.com.br/web/individual/${cpf}/edit`, {
-        method: "GET",
-        mode: "cors",
-        credentials: "include",
-        headers: {
-            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-            "cache-control": "no-cache",
-            "pragma": "no-cache"
-        }
-    });
 
-    if (!response.ok) {
-        throw new Error(`Erro ${response.status}`);
-    }
-
-    const html = await response.text();
-
-    const bos = [];
-
-    const regex = /\/web\/bos\/([\d-]+)\/edit/g;
-
-    let match;
-
-    while ((match = regex.exec(html)) !== null) {
-        bos.push(match[1]);
-    }
-    console.log(bos);
-    return bos;
-}
-async function buscarBO(numeroBO, cpf) {
-    try {
-        const response = await fetch(
-            `https://sentry.procempa.com.br/web/bos/getBo/${numeroBO}`,
-            {
-                method: "GET",
-                mode: "cors",
-                credentials: "include",
-                headers: {
-                    "accept": "application/json, text/plain, */*",
-                    "accept-language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
-                    "cache-control": "no-cache",
-                    "pragma": "no-cache"
-                },
-                referrer: `https://sentry.procempa.com.br/web/bos/${numeroBO}/edit`
-            }
-        );
-
-        if (!response.ok) {
-            throw new Error(`Erro ${response.status}`);
-        }
-        const dados = await response.json();
-        const natureza = JSON.parse(dados.data.reason)[0].name;
-        const dataOcorrencia = JSON.parse(dados.data.data).occurrenceData.dtFact;
-        const dicCondicoes = {
-            'VICTIM': 'Vítima',
-            'AUTHOR': 'Autor',
-            'APPROACHED': 'Abordado',
-            'JUVENILE_OFFENDER': 'Menor infrator',
-            'ARRESTED': 'Preso',
-            'ASCERTAINED': 'Averiguado',
-            'REQUESTER': 'Solicitante'
-        };
-        const condicao = JSON.parse(dados.data.data).individualList.find(individuo => individuo.cpf == cpf).conditions[0];
-        const condicaoFormatada = dicCondicoes[condicao] || condicao;
-        const resultadoObj = {
-            numeroBO,
-            natureza,
-            dataOcorrencia,
-            condicaoFormatada
-        };
-        console.log(resultadoObj);
-        return resultadoObj;
-    } catch (erro) {
-        console.error("Erro ao buscar BO:", erro);
-        return null;
-    }
-}
 
 async function buscarEndereco(endereco) {
     try {
