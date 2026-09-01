@@ -148,7 +148,7 @@ function buscarDadosInfoseg(modal) {
 function mostrarOcorrencias(ocorrencias, divDados) {
     if (!ocorrencias || !ocorrencias.length) return divDados.innerText += `
 
-    *SEM OCORRÊNCIAS REGISTRADAS*
+    *SEM OCORRÊNCIAS ENCONTRADAS*
     `;
     divDados.innerText += `
 
@@ -157,17 +157,19 @@ function mostrarOcorrencias(ocorrencias, divDados) {
         'Indiciado por': null,
         'Suspeito de': null,
         'Acusado de': null,
-        'Autor de': null
+        'Autor de': null,
+        'Foragido(a)': null
     }
     ocorrenciasDesfavor['Indiciado por'] = ocorrencias.filter(ocorrencia => ocorrencia.qualificacao == 'Indiciado(a)');
     ocorrenciasDesfavor['Suspeito de'] = ocorrencias.filter(ocorrencia => ocorrencia.qualificacao == 'Suspeito(a)');
     ocorrenciasDesfavor['Acusado de'] = ocorrencias.filter(ocorrencia => ocorrencia.qualificacao == 'Acusado(a)');
     ocorrenciasDesfavor['Autor de'] = ocorrencias.filter(ocorrencia => ocorrencia.qualificacao == 'Autor(a)');
+    ocorrenciasDesfavor['Foragido(a)'] = ocorrencias.filter(ocorrencia => ocorrencia.qualificacao == 'Foragido(a)');
 
     const semOcorrencias = Object.values(ocorrenciasDesfavor).every(lista => lista.length === 0);
 
     if (semOcorrencias) {
-        divDados.innerText += `\nSem ocorrências em desfavor\n`;
+        divDados.innerText += `\nSem ocorrências em desfavor encontradas\n`;
         return;
     }
 

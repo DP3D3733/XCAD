@@ -14,6 +14,7 @@ async function buscarConsulta(dados) { //primeiro consulta pelo CPF, caso não a
         const mae = dados.mae.replaceAll(' ', '+');
         const nascimento = dados.Nascimento.replaceAll('/', '%2F');
         individuoHtml = await buscarListaIndividuosPorNome(nome, mae, nascimento);
+
     }
 
     if (!individuoHtml) {
@@ -23,8 +24,9 @@ async function buscarConsulta(dados) { //primeiro consulta pelo CPF, caso não a
     }
 
     const individuoObj = normalizarDadosIndividuo(individuoHtml);
+    console.log(individuoObj);
 
-    const dadosBasicosHtml = await buscarDadosBasicos(individuoObj.rg, individuoObj.cpf, individuoObj.ig, dados.nome);
+    const dadosBasicosHtml = await buscarDadosBasicos(individuoObj.ig);
 
     const dadosBasicosObj = normalizarDadosBasicos(dadosBasicosHtml);
     dadosBasicosObj.cpf = dados.cpf;
@@ -34,7 +36,7 @@ async function buscarConsulta(dados) { //primeiro consulta pelo CPF, caso não a
 
     const imagem = await buscarImagem(individuoObj.rg);
 
-    const bas = await buscarDadosSentry(dadosBasicosObj);
+    const bas = await buscarDadosSentry(dadosBasicosObj, imagem);
 
 
     const consultaPronta = {
@@ -43,6 +45,7 @@ async function buscarConsulta(dados) { //primeiro consulta pelo CPF, caso não a
         foto: imagem,
         bas: bas
     }
+    console.log(consultaPronta);
 
     return consultaPronta;
 }
@@ -252,20 +255,44 @@ function normalizarDadosBasicos(html) {
     };
 }
 
-async function buscarDadosBasicos(rg, cpf, ig, nome) {
-    const resp = await fetch(
-        `https://www.consultasintegradas.rs.gov.br/csi/csi/INTERFACE/jsp/Individuo_Consulta_DadosBasicos_NEW.jsp?N1_tp_cons_rgig=1&N10_rg=${rg}&N_cpf=&N_rgCpf=${cpf}&N8_ig=${ig}&A1_cond=N&A1_ocor=S&A1_pp=S&A66=${nome.replaceAll(' ', '%20')}&N4_nropag=1`,
-        {
-            method: "GET",
-            credentials: "include"
-        }
-    );
+async function buscarDadosBasicos(ig) {
+    const url = "https://www.consultasintegradas.rs.gov.br/csi/csi/INTERFACE/jsp/Individuo_Consulta_DadosBasicos_NEW.jsp";
 
-    if (!resp.ok) {
-        throw new Error(`HTTP ${resp.status}`);
+    // 1. Monta o corpo da requisição no formato form-urlencoded
+    const bodyParams = new URLSearchParams({
+        "N8_ig": ig,
+        "N10_rg": "",
+        "N_rgCpf": "",
+        "N1_tp_cons_rgig": "1",
+        "A1_cond": "N",
+        "A1_ocor": "S",
+        "A1_pp": "S",
+        "N4_nropag": "1"
+    });
+
+    const resposta = await fetch(url, {
+        method: "POST",
+        headers: {
+            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "accept-language": "pt-BR,pt;q=0.9",
+            "cache-control": "no-cache",
+            "content-type": "application/x-www-form-urlencoded",
+            "pragma": "no-cache",
+            "sec-fetch-dest": "frame",
+            "sec-fetch-mode": "navigate",
+            "sec-fetch-site": "same-origin"
+        },
+        referrer: `https://www.consultasintegradas.rs.gov.br/csi/csi/INTERFACE/jsp/Individuo_Consulta_Ocorrencia_NEW.jsp?N8_ig=${encodeURIComponent(ig)}`,
+        body: bodyParams.toString(),
+        mode: "cors",
+        credentials: "include"
+    });
+
+    if (!resposta.ok) {
+        throw new Error(`Erro na consulta CSI: HTTP ${resposta.status}`);
     }
 
-    const buffer = await resp.arrayBuffer();
+    const buffer = await resposta.arrayBuffer();
 
     const decoder = new TextDecoder("windows-1252");
 
@@ -601,7 +628,8 @@ async function criarIndividuo(dados, img) {
             throw new Error(`HTTP ${response.status}: ${texto}`);
         }
         chrome.tabs.create({
-            url: `https://sentry.procempa.com.br/web/individual/${cpf.replace(/\D/g, "")}/edit`
+            url: `https://sentry.procempa.com.br/web/individual/${cpf.replace(/\D/g, "")}/edit`,
+            active: false
         });
     } catch (erro) {
         console.error("Erro ao cadastrar indivíduo:", erro);
