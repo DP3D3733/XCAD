@@ -922,13 +922,13 @@ function conferirLinha(linha) {
             celulas[4].style.backgroundColor = "#df6060";
             continue;
         }
-        if (qthsNomes.find(qth => celulas[4].innerText.includes(qth))) {
-            celulas[5].querySelector('div.associacao').innerText = qthsNomes.find(qth => celulas[4].innerText.includes(qth));
-
-        } else if (associacoes[celulas[4].innerText.trim()]) {
+        if (associacoes[celulas[4].innerText.trim()]) {
             const ass = associacoes[celulas[4].innerText.trim()];
             celulas[5].querySelector('div.associacao').innerText = `${ass.place} - ${ass.street}, ${ass.number} - ${ass.neighborhood}`;
-        };
+        } else if (qthsNomes.find(qth => celulas[4].innerText.includes(qth))) {
+            celulas[5].querySelector('div.associacao').innerText = qthsNomes.find(qth => celulas[4].innerText.includes(qth));
+
+        }
         if (index == 6 && (!guarnicoes.find(guarnicao => celulas[6].innerText.includes(guarnicao)) && !areas.find(area => celulas[6].innerText.includes(area)))) {
             celulas[6].closest('tr').classList.add('errada');
             celulas[6].style.backgroundColor = "#df6060";
