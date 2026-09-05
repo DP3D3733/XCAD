@@ -17,7 +17,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0 # Baixa o histórico completo para garantir a detecção correta dos diffs
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -29,17 +29,18 @@ jobs:
 
       - name: Get modified JS files
         id: changed-files
-        run: |
-          FILES=$(git diff-tree --no-commit-id --name-only -r ${{ github.sha }} | grep '\.js$' | tr '\n' ' ' || true)
-          echo "files=$FILES" >> $GITHUB_OUTPUT
+        uses: tj-actions/changed-files@v44
+        with:
+          files: |
+            **/*.js
 
       - name: Run Headlink Parser Script
-        if: ${{ steps.changed-files.outputs.files != '' }}
+        if: steps.changed-files.outputs.any_changed == 'true'
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
         run: |
-          node libs/update-readme-links.js ${{ steps.changed-files.outputs.files }}
+          node libs/update-readme-links.js ${{ steps.changed-files.outputs.all_changed_files }}
 
       - name: Commit and Push Changes
         run: |
@@ -51,5 +52,5 @@ jobs:
             git commit -m "docs: atualiza headlinks das funções no README.md [skip ci]"
             git push
           else
-            echo "Nenhuma alteração detectada no README.md."
+            echo "Nenhuma alteração de link necessária no README.md."
           fi
