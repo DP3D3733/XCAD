@@ -111,88 +111,117 @@ XCAD/
 <details>
 <summary>Atualizar Efetivo no Firestore</summary>
 
-1. Usuário faz login no Sentry
+### Fluxo de Execução
 
-2. A função [`sentry.js:atualizarEfetivo()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/sentry.js#L5-L42) em sentry.js baixa o efetivo atualizado e envia ao  Firestore via Background
+1. **Autenticação:** O usuário faz login no Sentry.
+2. **Sincronização de Dados:** A função [`sentry.js:atualizarEfetivo()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/sentry.js#L5-L42) faz o download do efetivo atualizado.
+3. **Persistência:** A mensagem é enviada ao script de background (`background.js`), que realiza a gravação do efetivo no Firestore.
 
-```mermaid
-graph LR
-    subgraph Secao1[web_accessible_resources/sentry.js]
-        A("atualizarEfetivo()")
-    end
-
-    subgraph Secao2[background/background.js]
-        B(message.action == 'atualizar_efetivo')
-    end
-
-    subgraph Secao3[Banco de Dados]
-        C(Gravação do Efetivo)
-    end
-
-    A --> B --> C
-```
-</details>
-
-<details>
-<summary>Buscar OS</summary>
-
-1. Usuário acessa a tela da Central de Atendimento e Despacho do Sentry
-2. A função [`criarBotaoVisualizarOS()`](https://github.com/DP3D3733/XCAD/blob/994086df99f11dd847dad3c2787dd4c598b56157/web_accessible_resources/sentry/cad.js#L8-L90):
-
-| Etapa | Ação | Função / Detalhes |
+| Etapa | Ação | Função / Arquivo Chamado |
 | :---: | :--- | :--- |
-| **a** | Interface | Cria o botão que exibe o modal da Ordem de Serviço |
-| **b** | Interface | Cria o modal propriamente dito |
-| **c** | Estruturação | Chama [`criarTabelaOS()`](https://github.com/DP3D3733/XCAD/blob/994086df99f11dd847dad3c2787dd4c598b56157/web_accessible_resources/sentry/cad.js#L222-L382) para criar a tabela que receberá as demandas |
-| **d** | Dados | Popula o seletor de números de OS com [`buscarNumerosOSCadastradas()`](https://github.com/DP3D3733/XCAD/blob/994086df99f11dd847dad3c2787dd4c598b56157/web_accessible_resources/sentry/cad.js#L386-L422) |
-
-    
-3. O usuário clica no botão criado pela função [`criarBotaoVisualizarOS()`](https://github.com/DP3D3733/XCAD/blob/994086df99f11dd847dad3c2787dd4c598b56157/web_accessible_resources/sentry/cad.js#L8-L90) e seleciona uma OS no seletor
-4. A função [`montarOS(numOS)`](https://github.com/DP3D3733/XCAD/blob/994086df99f11dd847dad3c2787dd4c598b56157/web_accessible_resources/sentry/cad.js#L120-L220) recebe o número da OS que o usuário selecionou e:
-
-| Etapa | Ação | Função Chamada |
-| :--- | :--- | :--- |
-| **a** | Busca atividades programadas | [`buscarOS(numOS)`](https://github.com/DP3D3733/XCAD/blob/994086df99f11dd847dad3c2787dd4c598b56157/web_accessible_resources/sentry/sentry.js#L207-L231) |
-| **b** | Detalha cada atividade | [`buscarAtividadeProgramada(id)`](https://github.com/DP3D3733/XCAD/blob/994086df99f11dd847dad3c2787dd4c598b56157/web_accessible_resources/sentry/sentry.js#L113-L127) |
-| **c** | Busca guarnições ativas | [`buscarGuarnicoes(...)`](https://github.com/DP3D3733/XCAD/blob/994086df99f11dd847dad3c2787dd4c598b56157/web_accessible_resources/sentry/cad.js#L424-L455) |
-| **d** | Verifica cumprimento | [`buscarAtendimentoAtividadeProgramada(...)`](https://github.com/DP3D3733/XCAD/blob/994086df99f11dd847dad3c2787dd4c598b56157/web_accessible_resources/sentry/cad.js#L457-L471) |
-| **e** | Renderização | Insere as demandas na tabela de OS |
+| **1** | Captura do Efetivo | [`sentry.js:atualizarEfetivo()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/sentry.js#L5-L42) |
+| **2** | Processamento | `background/background.js` (`message.action == 'atualizar_efetivo'`) |
+| **3** | Gravação | Banco de Dados (Firestore) |
 
 ```mermaid
-graph LR
-    subgraph Secao1[web_accessible_resources/cad.js]
-        A("criarBotaoVisualizarOS()")
-        B("criarTabelaOS()")
-        C("buscarNumerosOSCadastradas()")
-    end
-
-    A --> B --> C
-```
-```mermaid
-graph LR
-    subgraph Secao1[web_accessible_resources/cad.js]
-        A("montarOS(numOS)")
-        B("buscarOS(numOS)")
-        C("buscarAtividadeProgramada(id)")
-        D("buscarGuarnicoes(dataInicial, DataFinal)")
-    end
-
-    A --> B --> C --> D
+graph TD
+    A[Login do Usuário] --> B["sentry.js:atualizarEfetivo()"]
+    B --> C["Envio para background.js"]
+    C --> D[Gravação no Firestore]
 ```
 </details>
 
 <details>
-<summary>Copiar Atendimento P/ Área de transferência</summary>
+<summary>Buscar OS (Ordem de Serviço)</summary>
 
-1. Usuário acessa a tela da Central de Atendimento e Despacho do Sentry
-2. A função [`inserirBotaoCopiarAtendimento()`](https://github.com/DP3D3733/XCAD/blob/994086df99f11dd847dad3c2787dd4c598b56157/web_accessible_resources/sentry/cad.js#L473-L487) insere um botão com símbolo de "Copiar" sempre no menu de contexto de um atendimento
-3. Ao clicar no botão, a função [`copiarAtendimentoParaWhatsApp(id)`](https://github.com/DP3D3733/XCAD/blob/994086df99f11dd847dad3c2787dd4c598b56157/web_accessible_resources/sentry/cad.js#L820-L890) é disparada:
+### Fluxo de Execução
 
-| Etapa | Ação | Função Chamada |
-| :--- | :--- | :--- |
-| **a** | Busca o atendimento | [`buscarAtendimento(id)`](https://github.com/DP3D3733/XCAD/blob/994086df99f11dd847dad3c2787dd4c598b56157/web_accessible_resources/sentry/sentry.js#L308-L321) |
-| **b** | Formata o retorno |  |
-| **c** | Escreve na área de transferência |  |
+1. **Inicialização:** O usuário acessa a Central de Atendimento e Despacho (CAD) do Sentry.
+2. **Construção da Interface:** A função [`cad.js:criarBotaoVisualizarOS()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L8-L90) gera o botão e o modal da OS, chamando [`cad.js:criarTabelaOS()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L222-L382) para estruturar a tabela e [`cad.js:buscarNumerosOSCadastradas()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L386-L422) para popular o seletor.
+3. **Seleção:** O usuário clica no botão e escolhe uma OS no seletor.
+4. **Montagem dos Dados:** A função [`cad.js:montarOS()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L120-L220) executa as consultas necessárias:
+   * Busca as atividades da OS via [`sentry.js:buscarOS()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/sentry.js#L207-L231).
+   * Detalha cada atividade via [`sentry.js:buscarAtividadeProgramada()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/sentry.js#L113-L127).
+   * Mapeia as guarnições via [`cad.js:buscarGuarnicoes()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L424-L455).
+   * Checa o cumprimento via [`cad.js:buscarAtendimentoAtividadeProgramada()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L457-L471) e popula a tabela.
+
+| Etapa | Ação | Função / Arquivo Chamado |
+| :---: | :--- | :--- |
+| **1** | Criar Botão/Modal | [`cad.js:criarBotaoVisualizarOS()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L8-L90) |
+| **2** | Estruturar Tabela | [`cad.js:criarTabelaOS()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L222-L382) |
+| **3** | Popular Seletor | [`cad.js:buscarNumerosOSCadastradas()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L386-L422) |
+| **4** | Processar OS | [`cad.js:montarOS()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L120-L220) |
+| **5** | Consultar Atividades | [`sentry.js:buscarOS()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/sentry.js#L207-L231) |
+| **6** | Detalhar Atividades | [`sentry.js:buscarAtividadeProgramada()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/sentry.js#L113-L127) |
+| **7** | Guarnições Ativas | [`cad.js:buscarGuarnicoes()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L424-L455) |
+| **8** | Verificar Cumprimento | [`cad.js:buscarAtendimentoAtividadeProgramada()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L457-L471) |
+
+```mermaid
+graph TD
+    A[Acesso ao CAD] --> B["cad.js:criarBotaoVisualizarOS()"]
+    B --> C["cad.js:criarTabelaOS()"]
+    B --> D["cad.js:buscarNumerosOSCadastradas()"]
+    D -->|Seleção da OS| E["cad.js:montarOS()"]
+    E --> F["sentry.js:buscarOS()"]
+    F --> G["sentry.js:buscarAtividadeProgramada()"]
+    G --> H["cad.js:buscarGuarnicoes()"]
+    H --> I["cad.js:buscarAtendimentoAtividadeProgramada()"]
+```
 </details>
 
+<details>
+<summary>Copiar Atendimento P/ Área de Transferência</summary>
 
+### Fluxo de Execução
+
+1. **Inicialização:** O usuário acessa a Central de Atendimento e Despacho (CAD) do Sentry.
+2. **Injeção do Botão:** A função [`cad.js:inserirBotaoCopiarAtendimento()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L473-L487) insere uma ação de cópia no menu de contexto dos atendimentos.
+3. **Ação de Cópia:** Ao clicar no botão, a função [`cad.js:copiarAtendimentoParaWhatsApp()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L820-L890) consulta os dados via [`sentry.js:buscarAtendimento()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/sentry.js#L308-L321), formata o texto e escreve no clipboard do usuário.
+
+| Etapa | Ação | Função / Arquivo Chamado |
+| :---: | :--- | :--- |
+| **1** | Injeção no Menu | [`cad.js:inserirBotaoCopiarAtendimento()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L473-L487) |
+| **2** | Disparo da Cópia | [`cad.js:copiarAtendimentoParaWhatsApp()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L820-L890) |
+| **3** | Consulta do Atendimento | [`sentry.js:buscarAtendimento()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/sentry.js#L308-L321) |
+
+```mermaid
+graph TD
+    A[Acesso ao CAD] --> B["cad.js:inserirBotaoCopiarAtendimento()"]
+    B -->|Clique no botão| C["cad.js:copiarAtendimentoParaWhatsApp()"]
+    C --> D["sentry.js:buscarAtendimento()"]
+    D --> E[Formatação & Área de Transferência]
+```
+</details>
+
+<details>
+<summary>Notificação e Consulta de BAs Pendentes</summary>
+
+### Fluxo de Execução
+
+1. **Inicialização:** O usuário acessa a Central de Atendimento e Despacho (CAD) do Sentry.
+2. **Criação da Interface:** A função [`cad.js:inserirButtonNovosBAs()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L892-L924) adiciona um botão no canto superior direito da tela com um ícone de arquivo e um contador.
+3. **Polling (Ciclo de Checagem):** É iniciado um intervalo contínuo de 10 segundos chamando a função [`cad.js:verificarNovosBAs()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L926-L956).
+4. **Atualização do Contador:** 
+   * A função faz requisição ao endpoint de BAs filtrando por "Pendentes".
+   * Se houver BAs pendentes, exibe o botão e atualiza a quantidade no badge.
+   * Se não houver BAs pendentes, oculta o botão.
+5. **Ação do Usuário:** Ao clicar no botão, é aberta a URL `sentry.procempa.com.br/web/bos?pendentes=true`.
+6. **Filtragem Automática:** A query `pendentes=true` na URL engatilha a execução da função [`ba.js:pesquisarNovosBAs()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/ba.js#L446-L455), que seleciona o filtro "Pendentes" e executa a busca na página.
+
+| Etapa | Ação | Função / Arquivo Chamado |
+| :---: | :--- | :--- |
+| **1** | Interface | [`cad.js:inserirButtonNovosBAs()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L892-L924) |
+| **2** | Polling | [`cad.js:verificarNovosBAs()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L926-L956) |
+| **3** | Busca | [`ba.js:pesquisarNovosBAs()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/ba.js#L446-L455) |
+
+```mermaid
+graph TD
+    A[Acesso ao CAD] --> B["cad.js:inserirButtonNovosBAs()"]
+    B --> C["Intervalo (10s)"]
+    C --> D["cad.js:verificarNovosBAs()"]
+    D -->|Possui Pendentes| E[Exibe botão com contador]
+    D -->|Sem Pendentes| F[Oculta botão]
+    E -->|Clique do Usuário| G[Abre URL com ?pendentes=true]
+    G --> H["ba.js:pesquisarNovosBAs()"]
+```
+</details>
