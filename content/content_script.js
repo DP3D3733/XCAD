@@ -98,16 +98,6 @@ window.addEventListener("message", async (event) => {
     chrome.runtime.sendMessage({ action: "verificarIndividuoSentry", data: event.data.texto, foto: event.data.foto }, (response) => {
       if (chrome.runtime.lastError) {
         console.error("Erro ao enviar mensagem:", chrome.runtime.lastError.message);
-      } else {
-        if (!response.length) return;
-        if (document.getElementById('txt_resultados')) {
-          const textarea = document.getElementById('txt_resultados');
-          textarea.innerHTML += '*OCORRÊNCIAS GCM*<br>';
-          response.forEach(item => {
-            textarea.innerHTML += `${item.numeroBO} - ${item.dataOcorrencia} - ${item.natureza} - ${item.condicaoFormatada}<br>`;
-          });
-        }
-        console.log("Resposta recebida:", response);
       }
     });
   }
@@ -145,6 +135,27 @@ chrome.runtime.onMessage.addListener((message) => {
       fotoAgoraId: message.fotoAgoraId,
       fotoOriginalId: message.fotoOriginalId
     }, "*");
+  }
+  if (message.action == "respostaIndividuoSentry") {
+    if (!message.dados.length) return;
+    if (!document.getElementById('txt_resultados')) return;
+    const textarea = document.getElementById('txt_resultados');
+    let ocorrenciasGCM = '*OCORRÊNCIAS GCM*<br>';
+    const condicoes = {};
+    message.dados.forEach(item => {
+      if (condicoes[item.condicaoFormatada]) return condicoes[item.condicaoFormatada].push(`${item.natureza.toUpperCase()} em ${item.dataOcorrencia} (${item.numeroBO})<br>`);
+
+      condicoes[item.condicaoFormatada] = [`${item.natureza.toUpperCase()} em ${item.dataOcorrencia} (${item.numeroBO})<br>`];
+    });
+
+    Object.entries(condicoes).forEach(([condicao, dados]) => {
+      ocorrenciasGCM += `${condicao}:<br>`;
+      dados.forEach(dado => {
+        ocorrenciasGCM += `&nbsp;&nbsp;${dado}`;
+      })
+    });
+
+    textarea.innerHTML = `${textarea.innerHTML.split('*OCORRÊNCIAS:*<br>')[0]}${ocorrenciasGCM}<br>*OCORRÊNCIAS:*<br>${textarea.innerHTML.split('*OCORRÊNCIAS:*<br>')[1]}`
   }
 });
 

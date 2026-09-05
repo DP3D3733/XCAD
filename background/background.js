@@ -179,18 +179,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
         });
         return true; // necessário para resposta assíncrona
     }
-    if (message.action === "verificarIndividuoSentry") {
-        const dados = ajustarDadosIndividuo(message.data);
-        const individuoSentry = await verificarExistenciaIndividuoBanco(dados);
-        if (individuoSentry == 'deslogado') return;
-        if (!individuoSentry) return criarIndividuo(dados, message.foto);
-        const bas = await buscarNumBAs(dados.CPF.replace(/\D/g, ""));
-        const r = await Promise.all(
-            bas.map(async numero => {
-                return await buscarBO(numero, dados.CPF.replace(/\D/g, ""));
-            }));
-        return r;
-    }
+    
 
 });
 

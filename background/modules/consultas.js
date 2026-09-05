@@ -52,16 +52,17 @@ async function buscarConsulta(dados) { //primeiro consulta pelo CPF, caso não a
 
 async function buscarDadosSentry(dadosBasicosObj, imagem) {
     const dadosSentry = ajustarDadosIndividuo(dadosBasicosObj);
+    console.log(dadosSentry);
     const individuoSentry = await verificarExistenciaIndividuoBanco(dadosSentry);
     if (individuoSentry == 'deslogado') return;
     if (!individuoSentry) {
         criarIndividuo(dadosSentry, imagem);
         return
     }
-    const bas = await buscarNumBAs(dadosBasicosObj.cpf.replace(/\D/g, ""));
+    const bas = await buscarNumBAs(dadosSentry.CPF.replace(/\D/g, ""));
     const respBas = await Promise.all(
         bas.map(async numero => {
-            return await buscarBO(numero, dadosBasicosObj.cpf.replace(/\D/g, ""));
+            return await buscarBO(numero, dadosSentry.CPF.replace(/\D/g, ""));
         }));
     return respBas;
 }
@@ -772,5 +773,19 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         );
         chrome.tabs.update(TABID, { active: true });
 
+    }
+
+    if (message.action === "verificarIndividuoSentry") {
+        buscarDadosSentry(message.data, message.foto)
+            .then((dados) => {
+                chrome.tabs.sendMessage(
+                    sender.tab.id, // <-- Correção aqui
+                    {
+                        action: "respostaIndividuoSentry",
+                        sucesso: true,
+                        dados: dados
+                    }
+                );
+            });
     }
 });

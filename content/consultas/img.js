@@ -46,10 +46,6 @@ if (sessionStorage.getItem('img_n_repete')) {
     botao_buscar_mandado.setAttribute('id', 'botao_buscar_mandado');
     botao_buscar_mandado.innerHTML = 'Buscar Mandado BNMP';
     textarea.insertAdjacentElement('beforebegin', botao_buscar_mandado);
-    let botao_buscar_mandado_Infoseg = document.createElement("button");
-    botao_buscar_mandado_Infoseg.setAttribute('id', 'botao_buscar_mandado_Infoseg');
-    botao_buscar_mandado_Infoseg.innerHTML = 'Buscar Mandado Infoseg';
-    textarea.insertAdjacentElement('beforebegin', botao_buscar_mandado_Infoseg);
     const interval_img = setInterval(() => {
         if (document.querySelector('img')) {
             clearInterval(interval_img);
@@ -57,13 +53,7 @@ if (sessionStorage.getItem('img_n_repete')) {
             document.querySelector('#botao_buscar_mandado').addEventListener('click', async function (item) {
                 const img = await imageToBase64(document.querySelector('img'));
                 enviarDados(img, textarea.innerHTML.replaceAll('<br>', '\n').replaceAll('\n\n\n', '\n\n'), 'Portal BNMP');
-
             });
-            document.querySelector('#botao_buscar_mandado_Infoseg').addEventListener('click', async function (item) {
-                const img = await imageToBase64(document.querySelector('img'));
-                enviarDados(img, textarea.innerHTML.replaceAll('<br>', '\n').replaceAll('\n\n\n', '\n\n'), 'Sinesp Infoseg');
-            });
-
         }
     }, 100);
 

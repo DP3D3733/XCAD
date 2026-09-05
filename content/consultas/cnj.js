@@ -147,13 +147,13 @@ chrome.storage.local.get("ativa", (data) => {
                 });
                 let dados_envolvido = sessionStorage.getItem('dados_envolvido');
                 sessionStorage.clear();
-                resultado.innerHTML = ('<div dados>*SEM NOVIDADES!*\n\n' + dados_envolvido + '</div>').replaceAll('\n', '<br>');
+                resultado.innerHTML = ('<div dados>*MANDADO NÃO ENCONTRADO*' + dados_envolvido + '</div>').replaceAll('\n', '<br>');
                 chrome.storage.local.get("pedido_consulta", (result) => {
                     if (result.pedido_consulta) {
                         chrome.storage.local.remove('pedido_consulta', function () {
                             console.log('Removido!');
                         });
-                        chrome.storage.local.set({ dados_consulta: '*SEM NOVIDADES!*\n\n' + dados_envolvido }, () => {
+                        chrome.storage.local.set({ dados_consulta: '*MANDADO NÃO ENCONTRADO*\n' + dados_envolvido }, () => {
                             chrome.runtime.sendMessage({ action: "retorna_consulta", data: '' });
                         });
                     }
