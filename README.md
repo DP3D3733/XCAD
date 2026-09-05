@@ -113,7 +113,7 @@ XCAD/
 
 1. Usuário faz login no Sentry
 
-2. A função [`sentry.js:atualizarEfetivo()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/sentry.js#L6-L43) em sentry.js baixa o efetivo atualizado e envia ao  Firestore via Background
+2. A função [`sentry.js:atualizarEfetivo()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/sentry.js#L5-L42) em sentry.js baixa o efetivo atualizado e envia ao  Firestore via Background
 
 ```mermaid
 graph LR
