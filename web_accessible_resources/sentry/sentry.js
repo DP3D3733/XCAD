@@ -2,7 +2,7 @@ const url = window.location.href;
 if (url == 'https://sentry.procempa.com.br/web/') localStorage.removeItem('atendimentosJaNotificados');
 
 atualizarEfetivo();
-
+//teste
 async function atualizarEfetivo(modo) {
     if (sessionStorage.getItem('efetivoAtualizado') && !modo) return;
     const response = await fetch("https://sentry.procempa.com.br/web/effectives/list", {
