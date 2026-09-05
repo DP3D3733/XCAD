@@ -24,18 +24,17 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install Babel Parser Dependencies
+      - name: Install Babel Dependencies
         run: npm install @babel/parser @babel/traverse
 
       - name: Get modified JS files
         id: changed-files
         run: |
-          # Obtém a lista de arquivos .js alterados no commit
-          FILES=$(git diff-tree --no-commit-id --name-only -r ${{ github.sha }} | grep '\.js$' | tr '\n' ' ')
+          FILES=$(git diff-tree --no-commit-id --name-only -r ${{ github.sha }} | grep '\.js$' | tr '\n' ' ' || true)
           echo "files=$FILES" >> $GITHUB_OUTPUT
 
       - name: Run Headlink Parser Script
-        if: steps.changed-files.outputs.files != ''
+        if: ${{ steps.changed-files.outputs.files != '' }}
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
