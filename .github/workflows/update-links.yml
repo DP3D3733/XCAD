@@ -50,6 +50,7 @@ jobs:
           git add README.md
           if ! git diff --staged --quiet; then
             git commit -m "docs: atualiza headlinks das funções no README.md [skip ci]"
+            git pull origin ${{ github.ref_name }} --rebase
             git push
           else
             echo "Nenhuma alteração de link necessária no README.md."
