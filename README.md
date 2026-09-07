@@ -225,3 +225,35 @@ graph TD
     G --> H["ba.js:pesquisarNovosBAs()"]
 ```
 </details>
+
+<details>
+<summary>Pesquisa Rápida de QTHs</summary>
+
+### Fluxo de Execução
+
+1. **Inicialização:** O usuário acessa a Central de Atendimento e Despacho (CAD) do Sentry.
+2. **Criação da Interface:** A função [`cad.js:inserirBotaoQTHs()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L489-L504) adiciona um botão no canto superior direito da tela com um ícone de alfinete de mapa.
+3. **Modal de Visualização:** O clique no botão dispara a função [`cad.js:verQTHS()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L506-L517) que:
+   * Busca a lista de QTHs com [`cad.js:baixarQTHs()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L791-L817)
+   * Cria o modal com [`cad.js:inserirModalQTHs(qths)`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L519-L555) caso não exista.
+   * Cria a tabela dentro do modal com [`cad.js:criarTabelaQth(qths)`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L619-L789).
+4. **Ação do Usuário:** Ao clicar no botão, abre o modal pra visualização.
+5. **Download em .CSV:** [`cad.js:inserirModalQTHs(qths)`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L519-L555) também cria um botão dentro do modal que ao ser clicado dispara a função [`cad.js: baixarCSV(...)`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L557-L617) que baixa a lista de QTHs em .CSV.
+
+| Etapa | Ação | Função / Arquivo Chamado |
+| :---: | :--- | :--- |
+| **1** | Interface | [`cad.js:inserirBotaoQTHs()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L489-L504) |
+| **2** | Busca | [`cad.js:baixarQTHs()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L791-L817) |
+| **3** | Download | [`cad.js: baixarCSV(...)`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L557-L617) |
+
+```mermaid
+graph TD
+    A[Acesso ao CAD] --> B["cad.js:inserirBotaoQTHs()"]
+    B -->|Clique do Usuário| C["cad.js:verQTHS()"]
+    C -->|Já Existe o modal| H[Apenas Exibe]
+    C -->|Não existe o modal| D["ba.js:inserirModalQTHs(qths)"]
+    D --> E["ba.js:criarTabelaQth(qths)"] --> F["ba.js:baixarQTHs()"]
+    F -->|Clique do Usuário| G["ba.js:baixarCSV()"]
+    H -->|Clique do Usuário| G
+```
+</details>
