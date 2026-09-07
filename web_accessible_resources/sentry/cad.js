@@ -4,6 +4,10 @@ inserirButtonNovosBAs();
 verificarNovosBAs();
 inserirBotaoQTHs();
 inserirButtonDespachosSemCad();
+inserirFiltroEquipes();
+criarBotaoCancelarDespacho();
+ajustarNomeGuarniçãoTabelaGuarnicoesDisponiveis();
+inserirAtalhoBoletins();
 
 function criarBotaoVisualizarOS() {
     setInterval(() => {
@@ -88,8 +92,6 @@ function criarBotaoVisualizarOS() {
         });
     }, 500);
 }
-
-criarBotaoCancelarDespacho();
 
 function criarBotaoCancelarDespacho() {
     const intervalInserirBotao = setInterval(() => {
@@ -381,8 +383,6 @@ function criarTabelaOS() {
     });
 }
 
-
-
 async function buscarNumerosOSCadastradas() {
     const response = await fetch(
         "https://sentry.procempa.com.br/despacho/schedule-garrison/list",
@@ -514,7 +514,6 @@ async function verQTHS() {
         criarTabelaQth(qths);
     }
     document.querySelector('#modalQTH').style.display = 'block';
-
 }
 
 function inserirModalQTHs(qths) {
@@ -954,7 +953,7 @@ async function verificarNovosBAs() {
     document.querySelector('#contadorNovosBAs').innerText = qtdNovosBAs;
     document.querySelector('#btnNovosBAs').style.display = 'flex';
 }
-inserirFiltroEquipes();
+
 function inserirFiltroEquipes() {
     const filtroOrigem = document.querySelector('#garrisons-subtitles div.div-garrison-filter-counter:nth-child(2)');
     if (!filtroOrigem) return;
@@ -1133,7 +1132,7 @@ async function buscarAtendimentosAbertos() {
         throw error;
     }
 }
-ajustarNomeGuarniçãoTabelaGuarnicoesDisponiveis();
+
 
 function ajustarNomeGuarniçãoTabelaGuarnicoesDisponiveis() {
     const intervalAguardarListagem = setInterval(() => {
@@ -1178,7 +1177,7 @@ function ajustarNomeGuarniçãoTabelaGuarnicoesDisponiveis() {
 
     }, 100);
 }
-inserirAtalhoBoletins();
+
 function inserirAtalhoBoletins() {
     const botaoMenuAtendimentos = document.querySelector("#menu-attendance");
     if (!botaoMenuAtendimentos) return;
@@ -1366,8 +1365,6 @@ function separarCads(despachos) {
     })
     return divisoesCads;
 }
-
-
 
 async function listarDespachos(dtStart, dtEnd) {
     const response = await fetch("https://sentry.procempa.com.br/despacho/dispatch/list", {
