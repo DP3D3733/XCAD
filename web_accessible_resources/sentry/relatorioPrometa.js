@@ -15,7 +15,8 @@ function inserirColunaDataHoraAtendimento(atendimentos) {
     })
 }
 
-function inserirColunaLocal(atendimentos) {
+function inserirColunaLocal(despachos) {
+    console.log(despachos);
     const content = document.querySelector('#content');
     const head = content.querySelector('table thead');
     const thNatureza = Array.from(head.querySelectorAll('th')).find(th => th.innerText == 'Natureza');
@@ -25,15 +26,15 @@ function inserirColunaLocal(atendimentos) {
     thNatureza.insertAdjacentElement('afterend', thLocal);
     const linhasTbody = content.querySelector('tbody').querySelectorAll('tr');
     linhasTbody.forEach(linha => {
-        const protocolo = linha.querySelector('td').innerText;
-        const atendimento = atendimentos.find(atendimento => atendimento.protocolo == protocolo);
-        if (!atendimento) return linha.querySelectorAll('td')[index].insertAdjacentHTML('afterend', `<td></td>`);
-        const local = atendimento.pontoReferencia;
+        const protocolo = linha.querySelectorAll('td')[1].innerText;
+        const despacho = despachos.find(despacho => despacho.dadosIniciais.talao == protocolo);
+        if (!despacho) return linha.querySelectorAll('td')[index].insertAdjacentHTML('afterend', `<td></td>`);
+        const local = despacho.enderecoFato.local;
         linha.querySelectorAll('td')[index].insertAdjacentHTML('afterend', `<td>${local}</td>`);
     })
 }
 
-function inserirColunaTipoLocal(atendimentos) {
+function inserirColunaTipoLocal(despachos) {
     const content = document.querySelector('#content');
     const head = content.querySelector('table thead');
     const thLocal = Array.from(head.querySelectorAll('th')).find(th => th.innerText == 'Local');
@@ -43,15 +44,15 @@ function inserirColunaTipoLocal(atendimentos) {
     thLocal.insertAdjacentElement('afterend', thTipoLocal);
     const linhasTbody = content.querySelector('tbody').querySelectorAll('tr');
     linhasTbody.forEach(linha => {
-        const protocolo = linha.querySelector('td').innerText;
-        const atendimento = atendimentos.find(atendimento => atendimento.protocolo == protocolo);
-        if (!atendimento) return linha.querySelectorAll('td')[index].insertAdjacentHTML('afterend', `<td></td>`);
-        const tipoLocal = atendimento.tipoLocal;
+        const protocolo = linha.querySelectorAll('td')[1].innerText;
+        const despacho = despachos.find(despacho => despacho.dadosIniciais.talao == protocolo);
+        if (!despacho) return linha.querySelectorAll('td')[index].insertAdjacentHTML('afterend', `<td></td>`);
+        const tipoLocal = despacho.enderecoFato.tipo;
         linha.querySelectorAll('td')[index].insertAdjacentHTML('afterend', `<td>${tipoLocal}</td>`);
     })
 }
 
-function inserirColunaEndereco(atendimentos) {
+function inserirColunaEndereco(despachos) {
     const content = document.querySelector('#content');
     const head = content.querySelector('table thead');
     const thTipoLocal = Array.from(head.querySelectorAll('th')).find(th => th.innerText == 'Tipo Local Descricao');
@@ -64,12 +65,13 @@ function inserirColunaEndereco(atendimentos) {
     thEndereco.insertAdjacentElement('afterend', thBairro);
     const linhasTbody = content.querySelector('tbody').querySelectorAll('tr');
     linhasTbody.forEach(linha => {
-        const protocolo = linha.querySelector('td').innerText;
-        const atendimento = atendimentos.find(atendimento => atendimento.protocolo == protocolo);
-        if (!atendimento) return linha.querySelectorAll('td')[index].insertAdjacentHTML('afterend', `<td></td><td></td>`);
-        const endereco = atendimento.endereco;
-        const bairro = atendimento.bairro;
-        linha.querySelectorAll('td')[index].insertAdjacentHTML('afterend', `<td>${endereco}</td><td>${bairro}</td>`);
+        const protocolo = linha.querySelectorAll('td')[1].innerText;
+        const despacho = despachos.find(despacho => despacho.dadosIniciais.talao == protocolo);
+        if (!despacho) return linha.querySelectorAll('td')[index].insertAdjacentHTML('afterend', `<td></td><td></td>`);
+        const logradouro = despacho.enderecoFato.logradouro;
+        const numero = despacho.enderecoFato.numero ? ` ${despacho.enderecoFato.numero}, ` : '';
+        const bairro = despacho.enderecoFato.bairro;
+        linha.querySelectorAll('td')[index].insertAdjacentHTML('afterend', `<td>${logradouro}${numero}</td><td>${bairro}</td>`);
     })
 }
 
@@ -182,6 +184,18 @@ async function ajustarTabelaPrometa() {
         })
         .filter(Boolean);
 
+    const idsDespachos = linhasTbody
+        .map(linha => {
+            if (linha.querySelectorAll('td').length < 2) return null;
+            const url = linha.querySelectorAll('td')[1].querySelector('a')?.getAttribute('href');
+            if (!url) return null;
+            const match = url.match(/\/(\d+)\//);
+            if (!match) return null;
+            const idDespacho = match[1];
+            return idDespacho;
+        })
+        .filter(Boolean);
+
     const idsBAs = linhasTbody
         .map(linha => {
             if (!linha.querySelectorAll('td')[2]) return null;
@@ -192,13 +206,15 @@ async function ajustarTabelaPrometa() {
         })
         .filter(Boolean);
     const atendimentos = await buscarAtendimentos(idsProtocolo);
+    const despachos = await buscarDespachos(idsDespachos);
+
     const temposDados = await buscarTempos(document.querySelector("#dtStart").value, document.querySelector("#dtEnd").value);
     const relatos = await buscarRelatos(idsBAs);
+    inserirColunaLocal(despachos);
+    inserirColunaTipoLocal(despachos);
+    inserirColunaEndereco(despachos);
     ajustarColunaDataDespacho();
     inserirColunaDataHoraAtendimento(atendimentos);
-    inserirColunaLocal(atendimentos);
-    inserirColunaTipoLocal(atendimentos);
-    inserirColunaEndereco(atendimentos);
     inserirColunasTempos(temposDados);
     inserirColunaNarrativa(atendimentos);
     inserirColunaRelatos(relatos);
@@ -261,6 +277,7 @@ async function buscarTempos(dtStart, dtEnd) {
 }
 
 async function buscarAtendimentos(ids) {
+    if (!ids) return null;
     const dados = await Promise.all(
         ids.map(async id => {
             return await buscarAtendimento(id);
@@ -290,6 +307,16 @@ async function buscarAtendimentos(ids) {
         }
 
     });
+}
+
+async function buscarDespachos(ids) {
+    if (!ids) return null;
+    const dados = await Promise.all(
+        ids.map(async id => {
+            return await buscarDespacho(id);
+        })
+    )
+    return dados;
 }
 
 async function buscarRelatos(ids) {
@@ -362,6 +389,175 @@ function exportarCSV() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+}
+
+async function buscarDespacho(dispatchId) {
+    const resposta = await fetch(
+        `https://sentry.procempa.com.br/web/reports/dispatch_info?id=${dispatchId}`,
+        {
+            method: "GET",
+            credentials: "include"
+        }
+    );
+
+    if (!resposta.ok) {
+        throw new Error(
+            `Erro ${resposta.status}: ${resposta.statusText}`
+        );
+    }
+
+    const html = await resposta.text();
+
+    return parsearDespacho(html);
+}
+
+function parsearDespacho(html) {
+    const doc = new DOMParser().parseFromString(html, "text/html");
+
+    function texto(elemento) {
+        return elemento?.textContent
+            ?.replace(/\s+/g, " ")
+            .trim() || "";
+    }
+
+    function chave(nome) {
+        return nome
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^a-zA-Z0-9\s]/g, "")
+            .trim()
+            .split(/\s+/)
+            .map((parte, index) =>
+                index === 0
+                    ? parte.toLowerCase()
+                    : parte.charAt(0).toUpperCase() +
+                    parte.slice(1).toLowerCase()
+            )
+            .join("");
+    }
+
+    function extrairCampos(tabela) {
+        const objeto = {};
+        const linhas = [...tabela.querySelectorAll("tr")];
+
+        for (let i = 0; i < linhas.length; i++) {
+
+            const ths = [...linhas[i].children]
+                .filter(el => el.tagName === "TH");
+
+            if (!ths.length) continue;
+
+            const proximaLinha = linhas[i + 1];
+
+            if (!proximaLinha) continue;
+
+            const tds = [...proximaLinha.children]
+                .filter(el => el.tagName === "TD");
+
+            if (ths.length !== tds.length) continue;
+
+            ths.forEach((th, index) => {
+                const nome = chave(texto(th));
+                const valor = texto(tds[index]);
+
+                objeto[nome] = valor;
+            });
+
+            i++;
+        }
+
+        return objeto;
+    }
+
+    function extrairDeslocamentos(tabela) {
+        const linhas = [...tabela.querySelectorAll("tr")];
+
+        const indiceCabecalho = linhas.findIndex(linha =>
+            linha.querySelector("th")
+        );
+
+        if (indiceCabecalho === -1) {
+            return [];
+        }
+
+        const cabecalho = [...linhas[indiceCabecalho].children]
+            .filter(el => el.tagName === "TH")
+            .map(th => chave(texto(th)));
+
+        const deslocamentos = [];
+
+        for (let i = indiceCabecalho + 1; i < linhas.length; i++) {
+
+            const tds = [...linhas[i].children]
+                .filter(el => el.tagName === "TD");
+
+            if (tds.length !== cabecalho.length) continue;
+
+            const objeto = {};
+
+            cabecalho.forEach((campo, index) => {
+                objeto[campo] = texto(tds[index]);
+            });
+
+            deslocamentos.push(objeto);
+        }
+
+        return deslocamentos;
+    }
+
+    function extrairAnexos(tabela) {
+        return [...tabela.querySelectorAll(".attach-box")].map(box => {
+
+            const link = box.querySelector("a");
+
+            const href = link?.getAttribute("href") || "";
+
+            const match = href.match(/\/(\d+)$/);
+
+            return {
+                arquivo: texto(box.querySelector("label")),
+                id: match ? match[1] : null
+            };
+        });
+    }
+
+    const tabelas = [
+        ...doc.querySelectorAll(
+            "#print-result table.table.table-bordered"
+        )
+    ];
+
+    const objeto = {};
+
+    for (const tabela of tabelas) {
+
+        const titulo = texto(
+            tabela.querySelector(".title-table")
+        );
+
+        if (titulo === "DADOS INICIAIS") {
+
+            objeto.dadosIniciais = extrairCampos(tabela);
+
+        } else if (titulo === "ENDEREÇO DO FATO") {
+
+            objeto.enderecoFato = extrairCampos(tabela);
+
+        } else if (titulo === "ENCERRAMENTO") {
+
+            objeto.encerramento = extrairCampos(tabela);
+
+        } else if (titulo === "DESLOCAMENTOS") {
+
+            objeto.deslocamentos = extrairDeslocamentos(tabela);
+
+        } else if (titulo === "ANEXOS") {
+
+            objeto.anexos = extrairAnexos(tabela);
+        }
+    }
+
+    return objeto;
 }
 
 
