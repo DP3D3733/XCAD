@@ -293,3 +293,31 @@ graph TD
     G --> H["ba.js:pesquisarNovosBAs()"]
 ```
 </details>
+
+<details>
+<summary>Filtrar Equipes Por Região</summary>
+
+### Fluxo de Execução
+
+1. **Inicialização:** O usuário acessa a Central de Atendimento e Despacho (CAD) do Sentry.
+2. **Criação da Interface:** A função [`cad.js:inserirFiltroEquipes()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L957-L985) adiciona botões ao cabeçalho da página que funcionam como filtros clicáveis, cada botão possui um número relativo à área (2 => Área 200, 3 => Área 300).
+3. **Ativação:** Ao clicar num dos botões, a função [`cad.js:ativarDesativarFiltro(botao)`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L987-L1006) que:
+   * Caso o filtro em questão não estava selecionado, ele insere no filtro padrão da página o texto correspondente ao filtro escolhido e pesquisa; ou
+   * Retira o texto no filtro padrão da página e desativa aseleção do filtro.
+
+| Etapa | Ação | Função / Arquivo Chamado |
+| :---: | :--- | :--- |
+| **1** | Interface | [`cad.js:ativarDesativarFiltro(botao)`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L987-L1006) |
+| **2** | Ativação | Ativa o filtro ou desativa |
+
+```mermaid
+graph TD
+    A[Acesso ao CAD] --> B["cad.js:inserirFiltroEquipes()"]
+    B --> C[Usuário clica em um filtro]
+    C --> D["cad.js:ativarDesativarFiltro(botao)"]
+    D -->|Não estava selecionado| E[Insere o texto relativo no filtro padrão]
+    E --> F[Filtra]
+    D -->|Estava selecionado| G[Limpa o filtro padrão]
+    G --> H[Desativa a seleção do filtro]
+```
+</details>
