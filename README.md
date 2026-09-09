@@ -257,3 +257,39 @@ graph TD
     H -->|Clique do Usuário| G
 ```
 </details>
+
+<details>
+<summary>Notificação e Consulta de Despachos Sem Sinesp CAD</summary>
+
+### Fluxo de Execução
+
+1. **Inicialização:** O usuário acessa a Central de Atendimento e Despacho (CAD) do Sentry.
+2. **Criação da Interface:** A função [`cad.js:inserirButtonDespachosSemCad()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L1193-L1254) adiciona quatro botões "(um pra cada Região)" no canto superior direito da tela com um ícone de arquivo e um contador.
+3. **Polling (Ciclo de Checagem):** É iniciado um intervalo contínuo de 10 segundos chamando a função [`cad.js:verificarDespachosSemCad()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L1256-L1302) que:
+   * Cria um intevalo de horários compreendendo as últimas 12 horas;
+   * Recebe da função [`cad.js:listarDespachos(...)`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L1369-L1402) todos os despachos no intervalo que devem/deveriam ter sido transcritos para o Sinesp CAD;
+   * Busca com [`cad.js:buscarDespacho(id)`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L1404-L1421) os detalhes de cada despacho;
+   * Filtra os despachos excluindo aqueles com o número do Sinesp CAD ou com o comentário "QTA";
+   * Busca o Id dos Boletins de Atendimento (BA) relativos aos despachos sem CAD com [`cad.js:buscarNumeroBAsRecebidos(qtdDespachos)`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L1404-L1421); e
+   * Retorna os Ids dos despachos com BAs recebidos sem o número do Sinesp CAD.
+4. **Separação por Região:** Havendo algum despacho, [`cad.js:separarCads(despachos)`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L1337-L1367) separa por região
+5. **Ação do Usuário:** Ao clicar no botão, é aberta a URL `sentry.procempa.com.br/web/bos?pendentes=true`.
+6. **Filtragem Automática:** A query `pendentes=true` na URL engatilha a execução da função [`ba.js:pesquisarNovosBAs()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/ba.js#L446-L455), que seleciona o filtro "Pendentes" e executa a busca na página.
+
+| Etapa | Ação | Função / Arquivo Chamado |
+| :---: | :--- | :--- |
+| **1** | Interface | [`cad.js:inserirButtonNovosBAs()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L891-L923) |
+| **2** | Polling | [`cad.js:verificarNovosBAs()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/cad.js#L925-L955) |
+| **3** | Busca | [`ba.js:pesquisarNovosBAs()`](https://github.com/DP3D3733/XCAD/blob/main/web_accessible_resources/sentry/ba.js#L446-L455) |
+
+```mermaid
+graph TD
+    A[Acesso ao CAD] --> B["cad.js:inserirButtonNovosBAs()"]
+    B --> C["Intervalo (10s)"]
+    C --> D["cad.js:verificarNovosBAs()"]
+    D -->|Possui Pendentes| E[Exibe botão com contador]
+    D -->|Sem Pendentes| F[Oculta botão]
+    E -->|Clique do Usuário| G[Abre URL com ?pendentes=true]
+    G --> H["ba.js:pesquisarNovosBAs()"]
+```
+</details>
