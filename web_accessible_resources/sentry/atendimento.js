@@ -111,7 +111,6 @@ async function tratarModelos() {
     inserirBotaoSalvarModelo(modelos, dados_bd_modelos);
     if (!modelos || !Object.keys(modelos).length) return;
     inserirSelectModelos(modelos);
-
 }
 
 async function inserirSelectModelos(modelos) {
