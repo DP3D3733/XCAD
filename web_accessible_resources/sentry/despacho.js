@@ -1,4 +1,5 @@
 inserirBotaoCopiarParaCad();
+iniciarEscutaInserirHorariosDespacho();
 
 function inserirBotaoCopiarParaCad() {
     const botaoCopiarParaCad = document.createElement('button');
@@ -64,41 +65,32 @@ async function buscarGuarnicao(guarnicaoId) {
     return guarnicaoTd.innerText;
 }
 
+function iniciarEscutaInserirHorariosDespacho() {
+    let inserindoHorario = false;
+    setInterval(() => {
+        if (inserindoHorario) return;
+        const horarioDados = localStorage.getItem('inserirHorariosDespacho'); //inicio, 13/07/2026 08:20
+        if (!horarioDados) return;
+        inserindoHorario = true;
 
+        const [qualHorario, horario] = horarioDados.split(',');
+        const qualCampo = {
+            início: '[name="myModel.start"],[name="myModel.goingDate"]',
+            chegada: '[name="myModel.arrivalDate"]',
+            término: '[name="myModel.end"]'
+        }
 
-/*1001 PARQUE FARROUPILHA-()-Praça / Parque-()-PARQUES E PRAÇAS
-Efetuar atividade de policiamento preventivo com a finalidade de garantir a segurança dos munícipes e usuários do parque. Inspecionar locais e instalações com intuito de verificar se há indícios de depredação, furto de fios e cabos, invasão ou ocupação irregular dos próprios municipais.-()-AV OSVALDO ARANHA - FARROUPILHA-()-Patrulhamento Preventivo-()-C2 - Dia-()-20/08/2026 06:33-()-40-()-20/08/2026 08:48-()--()--++-
+        document.querySelectorAll(qualCampo[qualHorario]).forEach(input => {
+            input.value = horario;
+            input.dispatchEvent(
+                new Event('change', {
+                    bubbles: true
+                }));
+        });
+        document.querySelector('#btnSubmitAndNewHome').click();
+        localStorage.removeItem('inserirHorariosDespacho');
+        inserindoHorario = false;
+    }, 100);
+}
 
-808 VIVEIRO MUNICIPAL-()-Repartição pública-()-Invasão no Viveiro Municipal.-()-Rua Victorino Luiz De Fraga, 1378-()-Invasão de Propriedade-()-81 - Dia-()-22/08/2026 08:26-()-72-()--()--()-Comando-geral-++-
-*/
-
-
-
-
-
-let inserindoHorario = false;
-setInterval(() => {
-    if (inserindoHorario) return;
-    const horarioDados = localStorage.getItem('inserirHorariosDespacho'); //inicio, 13/07/2026 08:20
-    if (!horarioDados) return;
-    inserindoHorario = true;
-
-    const [qualHorario, horario] = horarioDados.split(',');
-    const qualCampo = {
-        início: '[name="myModel.start"],[name="myModel.goingDate"]',
-        chegada: '[name="myModel.arrivalDate"]',
-        término: '[name="myModel.end"]'
-    }
-
-    document.querySelectorAll(qualCampo[qualHorario]).forEach(input => {
-        input.value = horario;
-        input.dispatchEvent(
-            new Event('change', {
-                bubbles: true
-            }));
-    });
-    document.querySelector('#btnSubmitAndNewHome').click();
-    localStorage.removeItem('inserirHorariosDespacho');
-    inserindoHorario = false;
-}, 100);
 

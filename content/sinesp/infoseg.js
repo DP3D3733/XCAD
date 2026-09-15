@@ -265,8 +265,9 @@ function mostrarBAs(bas, divDados) {
         ${qualificacao}:
         `
         ocorrencias.forEach(ocorrencia => {
-            divDados.innerText += `${ocorrencia}`
-        })
+            divDados.innerText += `${ocorrencia}
+            `
+        });
     }
 }
 

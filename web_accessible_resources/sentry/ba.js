@@ -1,3 +1,11 @@
+main();
+async function main() {
+    await gerarBotaoInserirOutraNatureza();
+    inserirHorariosDespacho();
+    verificarEnvolvidos();
+    inserirBotaoCopiarParaCad();
+}
+
 async function gerarBotaoInserirOutraNatureza() {
     const style = document.createElement("style");
 
@@ -436,12 +444,7 @@ function consultar(cpf) {
     window.postMessage({ type: "consultar", data: cpf }, "*");
 }
 
-async function main() {
-    await gerarBotaoInserirOutraNatureza();
-    inserirHorariosDespacho();
-    verificarEnvolvidos();
-    inserirBotaoCopiarParaCad();
-}
+
 
 function pesquisarNovosBAs() {
     const select = document.querySelector('#status');
@@ -599,4 +602,4 @@ async function inserirNaAreaDeTransferencia(texto) {
     }
 }
 
-main();
+
