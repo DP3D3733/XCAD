@@ -697,10 +697,11 @@ async function buscarBO(numeroBO, cpf) {
             'JUVENILE_OFFENDER': 'Menor infrator',
             'ARRESTED': 'Preso',
             'ASCERTAINED': 'Averiguado',
-            'REQUESTER': 'Solicitante'
+            'REQUESTER': 'Solicitante',
+            'STREET_SITUATION': 'Morador de Rua'
         };
         const condicao = JSON.parse(dados.data.data).individualList.find(individuo => individuo.cpf == cpf).conditions[0];
-        const condicaoFormatada = dicCondicoes[condicao] || condicao;
+        const condicaoFormatada = dicCondicoes[condicao] || 'Outro';
         const resultadoObj = {
             numeroBO,
             natureza,

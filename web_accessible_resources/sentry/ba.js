@@ -1,9 +1,24 @@
 main();
 async function main() {
-    await gerarBotaoInserirOutraNatureza();
-    inserirHorariosDespacho();
-    verificarEnvolvidos();
-    inserirBotaoCopiarParaCad();
+    if (url.includes('/edit')) {
+        await gerarBotaoInserirOutraNatureza();
+        inserirHorariosDespacho();
+        verificarEnvolvidos();
+        inserirBotaoCopiarParaCad();
+    }
+
+
+    if (url.includes('/bos?pendentes=true')) {
+        setTimeout(() => {
+            pesquisarNovosBAs();
+        }, 1000);
+    }
+
+    if (!url.includes('/edit')) {
+        setTimeout(() => {
+            verificarBAsTurnoAtual();
+        }, 1000);
+    }
 }
 
 async function gerarBotaoInserirOutraNatureza() {
@@ -237,7 +252,6 @@ async function inserirHorariosDespacho() {
     return true;
 }
 
-
 function substituirHorarioDespacho(botao) {
     const qualHorario = botao.parentNode.getAttribute('horario');
     const ordemColunas = {
@@ -400,7 +414,6 @@ async function copiar(botao) {
     }
 }
 
-
 async function buscarEnvolvido(cpf) {
     try {
         const response = await fetch(
@@ -444,8 +457,6 @@ function consultar(cpf) {
     window.postMessage({ type: "consultar", data: cpf }, "*");
 }
 
-
-
 function pesquisarNovosBAs() {
     const select = document.querySelector('#status');
 
@@ -456,21 +467,6 @@ function pesquisarNovosBAs() {
     select.dispatchEvent(new Event('change', { bubbles: true }));
     document.querySelector("#btn-search").click();
 }
-
-
-
-if (url.includes('/bos?pendentes=true')) {
-    setTimeout(() => {
-        pesquisarNovosBAs();
-    }, 1000);
-}
-
-if (!url.includes('/edit')) {
-    setTimeout(() => {
-        verificarBAsTurnoAtual();
-    }, 1000);
-}
-
 
 async function buscarNumeroBAs() {
     const response = await fetch("https://sentry.procempa.com.br/web/bos/list", {
@@ -506,8 +502,6 @@ async function buscarNumeroBAs() {
     const dados = await response.json();
     return dados.data.data.map(ba => ba.id.replace('/', '-'));
 }
-
-
 
 async function verificarBAsTurnoAtual() {
     const agora = new Date();
@@ -547,14 +541,12 @@ async function verificarBAsTurnoAtual() {
     document.querySelector('h2.actual-title').innerText += ` - ${bas.length} no turno atual`
 }
 
-
-
 function inserirBotaoCopiarParaCad() {
     const botaoCopiarParaCad = document.createElement('button');
     botaoCopiarParaCad.setAttribute('class', 'btn btn-default btn-new float-end ms-1');
     botaoCopiarParaCad.innerHTML = `<i class="fa fa-copy"></i><span>  Copiar Para Cad</span>`;
     botaoCopiarParaCad.addEventListener('click', () => copiarParaCad(botaoCopiarParaCad));
-    const botaoImprimir = document.querySelector("#print-options")
+    const botaoImprimir = document.querySelector("#print-options");
     botaoImprimir.insertAdjacentElement('beforebegin', botaoCopiarParaCad);
 }
 
