@@ -19,12 +19,11 @@ async function buscarConsulta(dados) { //primeiro consulta pelo CPF, caso não a
 
     if (!individuoHtml) {
         console.log('Nome não cadastrado');
-        const bas = await buscarDadosSentry(dados);
-        return bas;
+        const dadosSentry = await buscarDadosSentry(dados);
+        return dadosSentry;
     }
 
     const individuoObj = normalizarDadosIndividuo(individuoHtml);
-    console.log(individuoObj);
 
     const dadosBasicosHtml = await buscarDadosBasicos(individuoObj.ig);
 
@@ -36,35 +35,35 @@ async function buscarConsulta(dados) { //primeiro consulta pelo CPF, caso não a
 
     const imagem = await buscarImagem(individuoObj.rg);
 
-    const bas = await buscarDadosSentry(dadosBasicosObj, imagem);
+    const dadosSentry = await buscarDadosSentry(dadosBasicosObj, imagem);
 
 
     const consultaPronta = {
         basicos: dadosBasicosObj,
         ocorrencias: ocorrenciasObj,
-        foto: imagem,
-        bas: bas
+        foto: dadosSentry.foto || imagem,
+        bas: dadosSentry.bas
     }
-    console.log(consultaPronta);
 
     return consultaPronta;
 }
 
 async function buscarDadosSentry(dadosBasicosObj, imagem) {
     const dadosSentry = ajustarDadosIndividuo(dadosBasicosObj);
-    console.log(dadosSentry);
     const individuoSentry = await verificarExistenciaIndividuoBanco(dadosSentry);
-    if (individuoSentry == 'deslogado') return;
+    if (individuoSentry == 'deslogado') return { bas: null, foto: null };
     if (!individuoSentry) {
         criarIndividuo(dadosSentry, imagem);
-        return
+        return { bas: null, foto: null }
     }
+    const fotoId = await buscarIdFotoSentry(dadosSentry.CPF.replace(/\D/g, ""));
+    const fotoBlob = fotoId ? await buscarFotoSentry(fotoId) : null;
     const bas = await buscarNumBAs(dadosSentry.CPF.replace(/\D/g, ""));
     const respBas = await Promise.all(
         bas.map(async numero => {
             return await buscarBO(numero, dadosSentry.CPF.replace(/\D/g, ""));
         }));
-    return respBas;
+    return { bas: respBas, foto: fotoBlob };
 }
 
 async function verificarLoginConsultasIntegradas() {
@@ -636,6 +635,59 @@ async function criarIndividuo(dados, img) {
         console.error("Erro ao cadastrar indivíduo:", erro);
     }
 }
+
+async function buscarIdFotoSentry(cpf) {
+    const response = await fetch(`https://sentry.procempa.com.br/web/individual/${cpf}`, {
+        method: "GET",
+        mode: "cors",
+        credentials: "include",
+        headers: {
+            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+            "cache-control": "no-cache",
+            "pragma": "no-cache"
+        }
+    });
+
+    if (!response.ok) {
+        throw new Error(`Erro ${response.status}`);
+    }
+
+    const dados = await response.json();
+    if (!dados) return false;
+    const anexo = JSON.parse(dados.data).attachs;
+    if (!anexo || !anexo.length) return false;
+    console.log(anexo);
+    const id = anexo[0].attachId;
+    return id;
+}
+
+async function buscarFotoSentry(id) {
+    const response = await fetch(`https://sentry.procempa.com.br/keeper/ged/attach/${id}`, {
+        method: "GET",
+        mode: "cors",
+        credentials: "include",
+        headers: {
+            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+            "cache-control": "no-cache",
+            "pragma": "no-cache"
+        }
+    });
+
+    if (!response.ok) {
+        throw new Error(`Erro ${response.status}`);
+    }
+
+    // 3. Validação do tipo do conteúdo retornado
+    const contentType = response.headers.get("content-type");
+    if (contentType && contentType.includes("text/html")) {
+        return null;
+    }
+
+    const blob = await response.blob();
+    console.log(blob);
+    return await blobParaBase64(blob);
+}
+
 
 async function buscarNumBAs(cpf) {
     const response = await fetch(`https://sentry.procempa.com.br/web/individual/${cpf}/edit`, {

@@ -125,6 +125,7 @@ window.addEventListener("message", async (event) => {
 });
 
 chrome.runtime.onMessage.addListener((message) => {
+  if (!window.location.href.includes('Imagem')) return;
   if (message.action === "focarEfetivo") {
     window.postMessage({ type: "focarEfetivo" }, "*");
   }
@@ -137,12 +138,14 @@ chrome.runtime.onMessage.addListener((message) => {
     }, "*");
   }
   if (message.action == "respostaIndividuoSentry") {
+    const textarea = document.getElementById('txt_resultados');
+    if (message.dados.foto) mostrarFoto(message.dados.foto, textarea);
     if (!message.dados.length) return;
     if (!document.getElementById('txt_resultados')) return;
-    const textarea = document.getElementById('txt_resultados');
+
     let ocorrenciasGCM = '*OCORRÊNCIAS GCM*<br>';
     const condicoes = {};
-    message.dados.forEach(item => {
+    message.dados.bas.forEach(item => {
       if (condicoes[item.condicaoFormatada]) return condicoes[item.condicaoFormatada].push(`${item.natureza.toUpperCase()} em ${item.dataOcorrencia} (${item.numeroBO})<br>`);
 
       condicoes[item.condicaoFormatada] = [`${item.natureza.toUpperCase()} em ${item.dataOcorrencia} (${item.numeroBO})<br>`];
@@ -156,8 +159,27 @@ chrome.runtime.onMessage.addListener((message) => {
     });
 
     textarea.innerHTML = `${textarea.innerHTML.split('*OCORRÊNCIAS:*<br>')[0]}${ocorrenciasGCM}<br>*OCORRÊNCIAS:*<br>${textarea.innerHTML.split('*OCORRÊNCIAS:*<br>')[1]}`
+
+
   }
 });
+
+function mostrarFoto(foto, divDados) {
+  if (foto == '' || !foto) return
+  const imgElement = document.createElement('img');
+  imgElement.src = foto;
+  const divImg = document.createElement('div');
+  divImg.classList.add('sinesp-photo-container');
+  imgElement.setAttribute('width', 295);
+  imgElement.setAttribute('height', 391);
+  const imgJaExistente = document.querySelector('img[width="295"]');
+  if (imgJaExistente) {
+    imgJaExistente.insertAdjacentElement('afterEnd', imgElement);
+    return
+  }
+  divImg.insertAdjacentElement('afterBegin', imgElement);
+  divDados.insertAdjacentElement('beforeBegin', divImg);
+}
 
 const url = window.location.href;
 if (url.includes('sentry')) {

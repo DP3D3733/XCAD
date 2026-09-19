@@ -112,16 +112,16 @@ function mostrarDadosBasicos(dados, divDados) {
     divDados.innerText +=
         `
             *DADOS BÁSICOS:*
-            Nome: ${dados.nome || ''}
-            Nome social: ${dados.nomeSocial || ''}
-            Sexo: ${dados.sexo || ''}
-            Cor da pele: ${dados.corPele || ''}
-            Naturalidade: ${dados.naturalidade || ''}    
-            Nascimento: ${dados.dataNascimento || ''}
-            Nome da mãe: ${dados.paiMae.includes('/') ? dados.paiMae.split('/')[1] : dados.paiMae}
-            Nome do pai: ${dados.paiMae.includes('/') ? dados.paiMae.split('/')[0] : '-'}
-            CPF: ${dados.cpf || ''}            
-            RG: ${dados.rg || ''}`;
+                Nome: ${dados.nome || ''}
+                Nome social: ${dados.nomeSocial || ''}
+                Sexo: ${dados.sexo || ''}
+                Cor da pele: ${dados.corPele || ''}
+                Naturalidade: ${dados.naturalidade || ''}    
+                Nascimento: ${dados.dataNascimento || ''}
+                Nome da mãe: ${dados.paiMae.includes('/') ? dados.paiMae.split('/')[1] : dados.paiMae}
+                Nome do pai: ${dados.paiMae.includes('/') ? dados.paiMae.split('/')[0] : '-'}
+                CPF: ${dados.cpf || ''}            
+                RG: ${dados.rg || ''}`;
 }
 
 function buscarDadosInfoseg(modal) {
