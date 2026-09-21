@@ -179,7 +179,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
         });
         return true; // necessário para resposta assíncrona
     }
-    
+
 
 });
 
@@ -504,7 +504,6 @@ chrome.commands.onCommand.addListener(async (command) => {
     );
 
     function enviarMensagem(tabId) {
-
         chrome.tabs.sendMessage(
             tabId,
             {

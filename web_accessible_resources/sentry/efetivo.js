@@ -1,15 +1,8 @@
-let tabela2;
-const escolaridadeDic = {
-    elementaryScholl: 'Fundamental',
-    highScholl: 'Médio',
-    university: 'Superior',
-    postGraduate: 'Pós-graduação',
-    master: 'Mestrado',
-    doctorate: 'Doutorado'
-}
-const campos = 'Efetivo ativo;CPF;Nome;Nome de guerra;E-mail;Sexo;Fator sanguíneo;Nascimento;Mãe;Pai;Escolaridade;Estado civil;Naturalidade;Patente;Setor;Número funcional;Admissão;Tipo de Endereço;Logradouro;Número;Complemento;Bairro;Município;CEP;RG -Número;RG -Emissor (RG);RG -Expedição (RG);CNH -Número;CNH -Data de emissão;CNH -Data de vencimento;Categoria CNH;CTPS -Número;Porte de arma -Data de expedição;Porte de arma -Data de vencimento;Porte de arma -Número da cautela;Porte de arma -Número do porte;Exame de tiro -Data de expedição;Exame de tiro -Data de vencimento;Exame psicológico -Data de expedição;Exame psicológico -Data de vencimento;CRAF -Data de expedição;CRAF -Data de vencimento;Boina, bibico, capacete;Blusa, jaqueta, camiseta, gandola;Colete balístico (número e tamanho);Braçal;Cotoveleira;Luva meio dedo;Calça, bermuda;Cinturão;Joelheira;Meia;Conjunto de chuva;Calçados (Bota, sapato)';
+main();
 
-const colunas = {
+const CAMPOS = 'Efetivo ativo;CPF;Nome;Nome de guerra;E-mail;Sexo;Fator sanguíneo;Nascimento;Mãe;Pai;Escolaridade;Estado civil;Naturalidade;Patente;Setor;Número funcional;Admissão;Tipo de Endereço;Logradouro;Número;Complemento;Bairro;Município;CEP;RG -Número;RG -Emissor (RG);RG -Expedição (RG);CNH -Número;CNH -Data de emissão;CNH -Data de vencimento;Categoria CNH;CTPS -Número;Porte de arma -Data de expedição;Porte de arma -Data de vencimento;Porte de arma -Número da cautela;Porte de arma -Número do porte;Exame de tiro -Data de expedição;Exame de tiro -Data de vencimento;Exame psicológico -Data de expedição;Exame psicológico -Data de vencimento;CRAF -Data de expedição;CRAF -Data de vencimento;Boina, bibico, capacete;Blusa, jaqueta, camiseta, gandola;Colete balístico (número e tamanho);Braçal;Cotoveleira;Luva meio dedo;Calça, bermuda;Cinturão;Joelheira;Meia;Conjunto de chuva;Calçados (Bota, sapato)';
+
+const COLUNAS = {
     "Efetivo ativo": "is_effective-++-boolean-++-tickCross",
     "CPF": "cpf-++-string-++-input",
     "Nome": "name-++-string-++-input",
@@ -65,75 +58,84 @@ const colunas = {
     "Conjunto de chuva": "rain_set-++-string-++-input",
     "Calçados (Bota, sapato)": "shoes-++-string-++-input"
 };
+function main() {
+    focarEfetivo();
+    insereBotaoAtualizarEfetivo();
+    insereBotaoBaixarCSV();
 
-const insereBotaoInterval = setInterval(() => {
-    const botaoAtual = document.getElementById('btn-export');
-    if (url == 'https://sentry.procempa.com.br/web/effectives' && botaoAtual && table && document.querySelector('#table .tabulator-page-counter').innerText.includes('Mostrando 1-100')) {
-        botaoAtual.removeAttribute('onclick');
-        const botaoAtualizarEfetivo = botaoAtual.cloneNode(true);
-        botaoAtualizarEfetivo.innerText = 'Sincronizar com CAD';
-        botaoAtualizarEfetivo.addEventListener('click', () => {
-            atualizarEfetivo('forçar');
-        });
-        botaoAtual.insertAdjacentElement('afterend', botaoAtualizarEfetivo);
-        const novoBotao = botaoAtual.cloneNode(true);
-        novoBotao.addEventListener('click', function () {
-            const csv = criarCSV(table.getData());
-            baixarCSVExcel(csv);
-        });
-        botaoAtual.parentNode.replaceChild(novoBotao, botaoAtual);
-        table.setPageSize(1000);
+    aguardaInicializacaoTabela();
+}
 
-
-        clearInterval(insereBotaoInterval);
-    }
-}, 100);
-
-window.addEventListener("message", event => {
-
-    /* if (event.data?.type === "verificarConsulta") {
-        const dadosIndividuo = event.data.data;
-        //const possuiCadastro = await consultarIndividuoPorCPF(dadosIndividuo.cpf);
-        if (!possuiCadastro) {
-            sessionStorage.setItem('dadosIndividuo', dadosIndividuo.dados);
-            sessionStorage.setItem('dadosIndividuoFoto', dadosIndividuo.foto);
-            window.open(
-                "https://sentry.procempa.com.br/web/individual/create",
-                "_blank",
-            );
+function insereBotaoAtualizarEfetivo() {
+    const insereBotaoInterval = setInterval(() => {
+        const botaoAtual = document.getElementById('btn-export');
+        if (url == 'https://sentry.procempa.com.br/web/effectives' && botaoAtual && table && document.querySelector('#table .tabulator-page-counter').innerText.includes('Mostrando 1-100')) {
+            botaoAtual.removeAttribute('onclick');
+            const botaoAtualizarEfetivo = botaoAtual.cloneNode(true);
+            botaoAtualizarEfetivo.innerText = 'Sincronizar com CAD';
+            botaoAtualizarEfetivo.addEventListener('click', () => {
+                atualizarEfetivo('forçar');
+            });
+            botaoAtual.insertAdjacentElement('afterend', botaoAtualizarEfetivo);
+            clearInterval(insereBotaoInterval);
         }
-    } */
+    }, 100);
+}
 
-    if (event.data?.type === "focarEfetivo") {
-        const intervalEsperaRenderizarFiltro = setInterval(() => {
-            const tabela = Tabulator.findTable("#tabela2")[0];
-            const coluna = tabela.getColumn("namewar");
+function insereBotaoBaixarCSV() {
+    const insereBotaoInterval = setInterval(() => {
+        const botaoAtual = document.getElementById('btn-export');
+        if (url == 'https://sentry.procempa.com.br/web/effectives' && botaoAtual && table && document.querySelector('#table .tabulator-page-counter').innerText.includes('Mostrando 1-100')) {
+            const novoBotao = botaoAtual.cloneNode(true);
+            novoBotao.addEventListener('click', function () {
+                const csv = criarCSV(table.getData(), CAMPOS);
+                baixarCSVExcel(csv);
+            });
+            botaoAtual.parentNode.replaceChild(novoBotao, botaoAtual);
+            table.setPageSize(1000);
+            clearInterval(insereBotaoInterval);
+        }
+    }, 100);
+}
 
-            if (coluna) {
-                const elemento = coluna.getElement();
-                const filtro = elemento.querySelector(".tabulator-header-filter input");
+function focarEfetivo() {
+    window.addEventListener("message", event => {
+        if (event.data?.type === "focarEfetivo") {
+            const intervalEsperaRenderizarFiltro = setInterval(() => {
+                const tabela = Tabulator.findTable("#tabela2")[0];
+                const coluna = tabela.getColumn("namewar");
+
+                if (coluna) {
+                    const elemento = coluna.getElement();
+                    const filtro = elemento.querySelector(".tabulator-header-filter input");
 
 
-                if (filtro) {
-                    clearInterval(intervalEsperaRenderizarFiltro);
-                    filtro.focus();
+                    if (filtro) {
+                        clearInterval(intervalEsperaRenderizarFiltro);
+                        filtro.focus();
+                    }
                 }
-            }
-        }, 100);
+            }, 100);
 
-    }
+        }
 
-});
+    });
+}
+
+function aguardaInicializacaoTabela() {
+    const intervalCriaTabela = setInterval(() => {
+        if (typeof table !== "undefined" && table.getData().length > 400) {
+            if (url == 'https://sentry.procempa.com.br/web/effectives') criarTabela(COLUNAS);
+
+            clearInterval(intervalCriaTabela);
+        }
+    }, 100);
+}
+
 
 window.addEventListener("resize", ajustarHeader);
 
-const intervalCriaTabela = setInterval(() => {
-    if (typeof table !== "undefined" && table.getData().length > 400) {
-        if (url == 'https://sentry.procempa.com.br/web/effectives') criarTabela();
 
-        clearInterval(intervalCriaTabela);
-    }
-}, 100);
 
 function baixarCSVExcel(csv, nomeArquivo = 'dados.csv') {
     const BOM = '\uFEFF'; // importante pro Excel
@@ -151,9 +153,16 @@ function baixarCSVExcel(csv, nomeArquivo = 'dados.csv') {
     URL.revokeObjectURL(url);
 }
 
+function criarCSV(dadosBrutos, campos) {
+    const escolaridadeDic = {
+        elementaryScholl: 'Fundamental',
+        highScholl: 'Médio',
+        university: 'Superior',
+        postGraduate: 'Pós-graduação',
+        master: 'Mestrado',
+        doctorate: 'Doutorado'
+    }
 
-
-function criarCSV(dadosBrutos) {
     let csv = campos + '\n';
     dadosBrutos.forEach(pessoa => {
         const dadosBasicos = JSON.parse(pessoa.effective);
@@ -171,9 +180,7 @@ function ajustarData(dataBruta) {
     return `${dataArray[2]}/${dataArray[1]}/${dataArray[0]}`
 }
 
-
-
-function criarSeletorDeCampos() {
+function criarSeletorDeCampos(tabela, campos) {
     const wrapper = document.createElement("div");
     wrapper.className = "select-wrapper";
 
@@ -199,7 +206,7 @@ function criarSeletorDeCampos() {
         id++;
     });
 
-    const colunasVisiveis = tabela2.getColumns()
+    const colunasVisiveis = tabela.getColumns()
         .filter(col => col.isVisible())
         .map(col => col.getDefinition().title);
 
@@ -223,11 +230,11 @@ function criarSeletorDeCampos() {
     select.addEventListener('change', () => {
         const nomesDasColunas = Array.from(select.selectedOptions)
             .map(opt => opt.textContent);
-        filtrarColunas(nomesDasColunas);
+        filtrarColunas(tabela, nomesDasColunas, COLUNAS);
     });
 }
 
-function filtrarColunas(nomesDasColunas) {
+function filtrarColunas(tabela, nomesDasColunas, colunas) {
     const colunasVisiveis = tabela2.getColumns()
         .filter(col => col.isVisible())
         .map(col => col.getDefinition().title);
@@ -237,7 +244,7 @@ function filtrarColunas(nomesDasColunas) {
 
             return
         };
-        const col = tabela2.getColumns().find(c =>
+        const col = tabela.getColumns().find(c =>
             c.getDefinition().title === coluna
         );
         if (col) col.delete();
@@ -272,7 +279,7 @@ function filtrarColunas(nomesDasColunas) {
         } else {
             sorter = tipo; // "string", "number", "date", etc
         }
-        tabela2.addColumn({
+        tabela.addColumn({
             title: coluna,
             field: colunas[coluna].split('-++-')[0],
             headerFilter: filtro,
@@ -292,7 +299,7 @@ function filtrarColunas(nomesDasColunas) {
     localStorage.setItem('colunasEfetivo', nomesDasColunas.join('-++-'));
 }
 
-function criarTabela() {
+function criarTabela(colunas) {
     const corpo = document.querySelectorAll('.card-body')[1];
     document.querySelector('#table').style.display = 'none';
 
@@ -367,7 +374,7 @@ function criarTabela() {
             }
         }
     });
-    tabela2 = new Tabulator('#tabela2', {
+    const tabela2 = new Tabulator('#tabela2', {
         data: dados,
         layout: "fitColumns",
         height: "600px",
@@ -395,7 +402,7 @@ function criarTabela() {
     tabela2.on("tableBuilt", function () {
         this.setPageSize(1000);
         atualizarFooter(tabela2);
-        criarSeletorDeCampos();
+        criarSeletorDeCampos(tabela2, CAMPOS);
         document.querySelectorAll("#tabela2 .tabulator-col").forEach(col => {
             col.style.height = "75px";
         });

@@ -125,9 +125,12 @@ window.addEventListener("message", async (event) => {
 });
 
 chrome.runtime.onMessage.addListener((message) => {
-  if (!window.location.href.includes('Imagem')) return;
+
   if (message.action === "focarEfetivo") {
-    window.postMessage({ type: "focarEfetivo" }, "*");
+    setTimeout(() => {
+      window.postMessage({ type: "focarEfetivo" }, "*");
+    }, 1000);
+
   }
   if (message.action === "registrarAtendimentoCercamento") {
     window.postMessage({
