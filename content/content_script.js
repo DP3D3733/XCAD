@@ -143,7 +143,7 @@ chrome.runtime.onMessage.addListener((message) => {
   if (message.action == "respostaIndividuoSentry") {
     const textarea = document.getElementById('txt_resultados');
     if (message.dados.foto) mostrarFoto(message.dados.foto, textarea);
-    if (!message.dados.length) return;
+    if (!message.dados) return;
     if (!document.getElementById('txt_resultados')) return;
 
     let ocorrenciasGCM = '*OCORRÊNCIAS GCM*<br>';
@@ -180,6 +180,7 @@ function mostrarFoto(foto, divDados) {
     imgJaExistente.insertAdjacentElement('afterEnd', imgElement);
     return
   }
+  if (!divDados) return;
   divImg.insertAdjacentElement('afterBegin', imgElement);
   divDados.insertAdjacentElement('beforeBegin', divImg);
 }
