@@ -5,6 +5,7 @@ async function main() {
         inserirHorariosDespacho();
         verificarEnvolvidos();
         inserirBotaoCopiarParaCad();
+        verificarTermosDesconhecidos();
     }
 
 
@@ -592,6 +593,197 @@ async function inserirNaAreaDeTransferencia(texto) {
         console.error("Erro ao copiar:", erro);
         return;
     }
+}
+
+async function verificarTermosDesconhecidos() {
+    inserirBotaoTermosDesconhecidos();
+    const [termos, dados] = await buscarTermosProibidos();
+    inserirModalTermosDesconhecidos(termos);
+    ajustarTermosDesconhecidos();
+}
+
+function inserirBotaoTermosDesconhecidos() {
+    const botaoTermosDesconhecidos = document.createElement('button');
+    botaoTermosDesconhecidos.setAttribute('class', 'btn btn-default btn-new float-end ms-1');
+    botaoTermosDesconhecidos.innerHTML = `<i class="fa fa-ban"></i>`;
+    botaoTermosDesconhecidos.addEventListener('click', () => abrirModalTermosDesconhecidos());
+    const tituloSecaoRelatorio = Array.from(document.querySelectorAll("h2.bo-title")).find(titulo => titulo.innerText == 'RELATÓRIO DO AGENTE');
+    tituloSecaoRelatorio.insertAdjacentElement('beforebegin', botaoTermosDesconhecidos);
+}
+
+function inserirModalTermosDesconhecidos(termos) {
+    const modal = document.createElement('div');
+    modal.setAttribute('class', "modal inmodal");
+    modal.setAttribute('id', "modalTermos");
+    modal.setAttribute('style', "display:none");
+    modal.innerHTML = `
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Termos Desconhecidos</h3>
+                </div>
+                <div class="modal-body">
+                    <table style="width: 100%; border-collapse: collapse; font-family: sans-serif; font-size: 14px; text-align: left;">
+                        <thead>
+                            <tr style="background-color: #f4f4f4; border-bottom: 2px solid #ddd;">
+                                <th style="padding: 10px; border: 1px solid #ddd;"></th>
+                                <th style="padding: 10px; border: 1px solid #ddd;">Termo Desconhecido</th>
+                                <th style="padding: 10px; border: 1px solid #ddd;">Sugestão</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <input id="novoTermoDesconhecido" type="text" placeholder="Termo desconhecido..." />
+                    <input id="novaSugestao" type="text" placeholder="Sugestão..." />
+                    <button onclick="adicionarTermo()" class="btn btn-default">Salvar</button>
+                    <button onclick="fecharModalTermosDesconhecidos()" class="btn btn-default" data-mdb-dismiss="modal" aria-label="Close">Ok</button>
+                </div>
+            </div>
+        </div>`
+    document.querySelector('body').insertAdjacentElement('beforeEnd', modal);
+    for (const [termoDesconhecido, termoConhecido] of Object.entries(termos)) {
+        document.querySelector('#modalTermos tbody').innerHTML +=
+            `<tr>
+                <td style="text-align: center; padding: 10px; border: 1px solid #ddd;"><button onclick="excluirTermo(this)">🗑️</button></td>
+                <td style="padding: 10px; border: 1px solid #ddd;">${termoDesconhecido}</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">${termoConhecido}</td>
+            </tr>`;
+    }
+
+}
+
+function abrirModalTermosDesconhecidos() {
+    document.querySelector('#modalTermos').style.display = 'block';
+}
+
+function fecharModalTermosDesconhecidos() {
+    document.querySelector('#modalTermos').style.display = 'none';
+}
+
+async function ajustarTermosDesconhecidos() {
+    const [termos, dados] = await buscarTermosProibidos();
+    if (!termos || !dados) return;
+    const tituloSecaoRelatorio = Array.from(document.querySelectorAll("h2.bo-title")).find(titulo => titulo.innerText == 'RELATÓRIO DO AGENTE');
+    let relato = tituloSecaoRelatorio.closest('tr').nextElementSibling.querySelector('td').innerHTML.replaceAll('<span style="background:red">', '').replaceAll('</span>', '');
+    tituloSecaoRelatorio.closest('tr').nextElementSibling.querySelector('td').innerHTML = relato;
+
+    if (!relato || relato == '') return;
+    const textoCorrecao = [];
+    for (const [termoDesconhecido, termoConhecido] of Object.entries(termos)) {
+        if (!relato.toUpperCase().includes(termoDesconhecido.toUpperCase())) continue;
+
+        const termoEscapado = termoDesconhecido.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(termoEscapado, 'gi');
+        console.log(termoDesconhecido);
+        relato = relato.replace(regex, `<span style="background:red">${termoDesconhecido}</span>`);
+        textoCorrecao.push(`"${termoDesconhecido}" => "${termoConhecido}"`);
+    }
+    tituloSecaoRelatorio.closest('tr').nextElementSibling.querySelector('td').innerHTML = relato;
+    if (!textoCorrecao.length) return;
+
+    const inputCorrecao = document.querySelector('#rejectObs');
+    const regex = /O relatório do agente não pode conter termos que não sejam de conhecimento do público externo[^\n]*\n?/g;
+
+    // Substitui essa parte por uma string vazia (removendo-a)
+    inputCorrecao.value = inputCorrecao.value.replace(regex, '');
+    inputCorrecao.value += `O relatório do agente não pode conter termos que não sejam de conhecimento do público externo. Alterar: ${textoCorrecao.join(', ')}.\n`;
+
+}
+
+async function buscarTermosProibidos() {
+
+    const response = await fetch(
+        `https://sentry.procempa.com.br/despacho/activity/10`,
+        {
+            credentials: "include"
+        }
+    );
+
+    const dados = await response.json();
+    if (!dados) return [,];
+    const termos = dados?.activity?.activityObservation || '{}';
+    return [JSON.parse(termos), dados];
+}
+
+async function adicionarTermo() {
+    const novoTermoInput = document.querySelector('#novoTermoDesconhecido');
+    const novaSugestaoInput = document.querySelector('#novaSugestao');
+    if (
+        !novoTermoInput ||
+        !novaSugestaoInput ||
+        novoTermoInput.value == '' ||
+        novaSugestaoInput.value == ''
+    ) return;
+
+    const [termos, dados] = await buscarTermosProibidos();
+
+    termos[novoTermoInput.value] = novaSugestaoInput.value;
+
+    const foiSalvo = await salvarTermos(termos, dados);
+
+    if (!foiSalvo) return console.log("Erro");
+
+    document.querySelector('#modalTermos tbody').innerHTML +=
+        `<tr>
+            <td style="text-align: center; padding: 10px; border: 1px solid #ddd;"><button onclick="excluirTermo(this)">🗑️</button></td>
+            <td style="padding: 10px; border: 1px solid #ddd;">${novoTermoInput.value}</td>
+            <td style="padding: 10px; border: 1px solid #ddd;">${novaSugestaoInput.value}</td>
+        </tr>`;
+
+    novoTermoInput.value = '';
+    novaSugestaoInput.value = '';
+    ajustarTermosDesconhecidos();
+}
+
+async function excluirTermo(botao) {
+
+    const [termos, dados] = await buscarTermosProibidos();
+    const termoDesconhecido = botao.closest('tr').querySelectorAll('td')[1].innerText;
+    delete termos[termoDesconhecido];
+
+    const foiSalvo = await salvarTermos(termos, dados);
+    if (!foiSalvo) return console.log("Erro");
+    botao.closest('tr').remove();
+    ajustarTermosDesconhecidos();
+
+}
+
+
+async function salvarTermos(termos, dados) {
+    const activityObservation = JSON.stringify(termos);
+
+    const atividade = dados.activity;
+
+    const payload = {
+        onDuty: atividade.onDuty.split('-').reverse().join('/'),
+        activityObservation: activityObservation,
+        bossInspector: String(atividade.bossInspector),
+        garrison: atividade.garrison,
+        bos: atividade.bos,
+        systemUpdate: atividade.systemUpdate
+    };
+
+    const response = await fetch(
+        'https://sentry.procempa.com.br/despacho/activity/10',
+        {
+            method: 'PUT',
+            credentials: 'include',
+            headers: {
+                'Accept': 'application/json, text/plain, */*',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        }
+    );
+
+    if (!response) return false;
+
+    const texto = await response.text();
+
+    return texto;
 }
 
 
