@@ -80,7 +80,8 @@ async function mostrarResultadoConsulta(message) {
     if (!message.sucesso) {
         const dadosInfoseg = buscarDadosInfoseg(modal);
         await verificarMandado(dadosInfoseg.cpf, divDados);
-        mostrarFoto('', divDados);
+        if (message.bas) mostrarBAs(message.bas, divDados);
+        mostrarFoto(message.foto || '', divDados);
         mostrarDadosBasicos(dadosInfoseg, divDados);
         inserirBotaoCopiar(modal.querySelector('button'));
         return

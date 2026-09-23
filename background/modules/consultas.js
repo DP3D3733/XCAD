@@ -784,6 +784,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                                 action: "respostaConsultarIndividuo",
                                 sucesso: false,
                                 bas: dados.bas,
+                                foto: dados.foto,
                                 modalId: message.modalId
                             }
                         );
