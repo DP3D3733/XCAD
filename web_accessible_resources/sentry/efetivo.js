@@ -408,12 +408,68 @@ function criarTabela(colunas) {
         });
     });
     tabela2.on("renderComplete", function () {
+        async function baixarTodasEmSequencia() {
+            const pessoas = tabela2.getData();
+
+            for (const pessoa of pessoas) {
+                console.log(`Baixando: ${pessoa.namewar} (ID: ${pessoa.id})`);
+
+                await baixarImagemComNome(
+                    `https://sentry.procempa.com.br/web/user/getImage/${pessoa.id}`,
+                    `${pessoa.namewar}.png`
+                );
+
+                // Pequena pausa opcional de 500ms entre os downloads para o navegador não se perder
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+
+            console.log("✅ Todos os downloads foram concluídos!");
+        }
+
+        // Executar a função
+        //baixarTodasEmSequencia();
         atualizarFooter(tabela2);
     });
     setTimeout(() => {
         atualizarFooter(tabela2);
     }, 1000);
 
+}
+
+async function baixarImagemComNome(url, nomeArquivo) {
+    try {
+        const response = await fetch(url, {
+            "headers": {
+                "accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+                "accept-language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+                "cache-control": "no-cache",
+                "pragma": "no-cache"
+            },
+            "referrer": "https://sentry.procempa.com.br/web/effectives/23/edit",
+            "body": null,
+            "method": "GET",
+            "mode": "cors",
+            "credentials": "include"
+        });
+
+        if (!response.ok) throw new Error('Erro ao baixar a imagem: ' + response.statusText);
+
+        const blob = await response.blob();
+        const blobUrl = window.URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = nomeArquivo;
+
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        window.URL.revokeObjectURL(blobUrl);
+        console.log(`Download de "${nomeArquivo}" concluído com sucesso!`);
+    } catch (error) {
+        console.error('Erro no download:', error);
+    }
 }
 
 function atualizarFooter(tabela) {

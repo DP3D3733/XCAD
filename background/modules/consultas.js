@@ -24,8 +24,9 @@ async function buscarConsulta(dados) { //primeiro consulta pelo CPF, caso não a
     }
 
     const individuoObj = normalizarDadosIndividuo(individuoHtml);
+    console.log(individuoObj);
 
-    const dadosBasicosHtml = await buscarDadosBasicos(individuoObj.ig);
+    const dadosBasicosHtml = await buscarDadosBasicos(individuoObj);
 
     const dadosBasicosObj = normalizarDadosBasicos(dadosBasicosHtml);
     dadosBasicosObj.cpf = dados.cpf;
@@ -255,48 +256,59 @@ function normalizarDadosBasicos(html) {
     };
 }
 
-async function buscarDadosBasicos(ig) {
-    const url = "https://www.consultasintegradas.rs.gov.br/csi/csi/INTERFACE/jsp/Individuo_Consulta_DadosBasicos_NEW.jsp";
+async function buscarDadosBasicos(dados) {
+    console.log(dados);
+    const baseUrl = "https://www.consultasintegradas.rs.gov.br/csi/csi/INTERFACE/jsp/Individuo_Consulta_DadosBasicos_NEW.jsp";
 
-    // 1. Monta o corpo da requisição no formato form-urlencoded
-    const bodyParams = new URLSearchParams({
-        "N8_ig": ig,
-        "N10_rg": "",
-        "N_rgCpf": "",
-        "N1_tp_cons_rgig": "1",
-        "A1_cond": "N",
-        "A1_ocor": "S",
-        "A1_pp": "S",
-        "N4_nropag": "1"
+    // Monta a Query String com os parâmetros informados (com valores padrão vazios ou específicos)
+    const queryParams = new URLSearchParams({
+        "N1_tp_cons_rgig": dados.tpConsRgig || "1",
+        "N10_rg": dados.rg || "",
+        "N_cpf": dados.cpf || "",
+        "N_rgCpf": dados.rgCpf || "",
+        "N8_ig": dados.ig || "",
+        "A1_cond": dados.cond || "N",
+        "A1_ocor": dados.ocor || "S",
+        "A1_pp": dados.pp || "S",
+        "A1_ba": dados.ba || "N",
+        "A66": dados.nome || "",
+        "N4_nropag": dados.nropag || "1"
     });
 
-    const resposta = await fetch(url, {
-        method: "POST",
-        headers: {
-            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "accept-language": "pt-BR,pt;q=0.9",
-            "cache-control": "no-cache",
-            "content-type": "application/x-www-form-urlencoded",
-            "pragma": "no-cache",
-            "sec-fetch-dest": "frame",
-            "sec-fetch-mode": "navigate",
-            "sec-fetch-site": "same-origin"
-        },
-        referrer: `https://www.consultasintegradas.rs.gov.br/csi/csi/INTERFACE/jsp/Individuo_Consulta_Ocorrencia_NEW.jsp?N8_ig=${encodeURIComponent(ig)}`,
-        body: bodyParams.toString(),
-        mode: "cors",
-        credentials: "include"
-    });
+    const urlFinal = `${baseUrl}?${queryParams.toString()}`;
 
-    if (!resposta.ok) {
-        throw new Error(`Erro na consulta CSI: HTTP ${resposta.status}`);
+    try {
+        const resposta = await fetch(urlFinal, {
+            method: "GET",
+            headers: {
+                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+                "accept-language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+                "cache-control": "no-cache",
+                "pragma": "no-cache",
+                "upgrade-insecure-requests": "1",
+                "sec-fetch-dest": "frame",
+                "sec-fetch-mode": "navigate",
+                "sec-fetch-site": "same-origin"
+            },
+            referrer: dados.referrer || "https://www.consultasintegradas.rs.gov.br/csi/csi/INTERFACE/jsp/Individuo_Lista_Nomes_NEW.jsp?TR=on&acao=cpf",
+            mode: "cors",
+            credentials: "include" // Essencial para enviar o cookie de sessão (JSESSIONID)
+        });
+
+        if (!resposta.ok) {
+            throw new Error(`Erro na consulta CSI: HTTP ${resposta.status} - ${resposta.statusText}`);
+        }
+
+        const buffer = await resposta.arrayBuffer();
+
+        // Decodificação para lidar com a acentuação padrão de sistemas legados
+        const decoder = new TextDecoder("windows-1252");
+        return decoder.decode(buffer);
+
+    } catch (erro) {
+        console.error("Falha ao executar a busca de dados básicos (GET):", erro);
+        throw erro;
     }
-
-    const buffer = await resposta.arrayBuffer();
-
-    const decoder = new TextDecoder("windows-1252");
-
-    return decoder.decode(buffer);
 }
 
 async function buscarOcorrencias(ig) {
