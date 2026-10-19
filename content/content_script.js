@@ -122,6 +122,16 @@ window.addEventListener("message", async (event) => {
 
   }
 
+  if (event.data.type === "atualizar_qths") {
+    console.log(event.data.data);
+    chrome.runtime.sendMessage({ action: "atualizar_qths", dados: event.data.data }, (response) => {
+      if (chrome.runtime.lastError) {
+        console.error("Erro ao enviar mensagem:", chrome.runtime.lastError.message);
+      }
+    });
+
+  }
+
 });
 
 chrome.runtime.onMessage.addListener((message) => {
@@ -163,6 +173,13 @@ chrome.runtime.onMessage.addListener((message) => {
 
     textarea.innerHTML = `${textarea.innerHTML.split('*OCORRÊNCIAS:*<br>')[0]}${ocorrenciasGCM}<br>*OCORRÊNCIAS:*<br>${textarea.innerHTML.split('*OCORRÊNCIAS:*<br>')[1]}`
 
+
+  }
+
+  if (message.action === "qthsAtualizados") {
+    setTimeout(() => {
+      window.postMessage({ type: "qthsAtualizados" }, "*");
+    }, 1000);
 
   }
 });

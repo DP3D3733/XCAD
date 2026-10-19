@@ -238,6 +238,25 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 sendResponse({ dados: message.data, status: "erro", error: e.message });
             }
         }
+        if (message.action == 'atualizar_qths') {
+            try {
+                await setDoc(doc(db, "dados_fixos", "qth"), {
+                    "qth": message.dados
+                });
+
+                if (sender.tab && sender.tab.id) {
+                    chrome.tabs.sendMessage(
+                        sender.tab.id,
+                        {
+                            action: "qthsAtualizados"
+                        }
+                    );
+                }
+            } catch (e) {
+                console.error("Erro Firebase:", e);
+                sendResponse({ dados: message.data, status: "erro", error: e.message });
+            }
+        }
         if (message.action == 'atualizar_banco_local_efetivo') {
             try {
                 const data_registro = new Date();

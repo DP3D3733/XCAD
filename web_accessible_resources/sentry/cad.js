@@ -119,106 +119,223 @@ function criarBotaoCancelarDespacho() {
     }, 1000);
 }
 
+
+let montagemOSAtiva = false;
+
 async function montarOS(numOS) {
-    const modalBody = document.querySelector('#modalOS div.modal-body');
+    // Impede duas montagens simultâneas.
+    if (montagemOSAtiva) return;
 
-    const demandas = await buscarOS(numOS);
+    montagemOSAtiva = true;
 
+    try {
+        const demandas = await buscarOS(numOS);
 
-    const resultados = await Promise.all(
-        demandas.map(async demanda => ({
-            demanda,
-            atividadeProgramada: await buscarAtividadeProgramada(demanda.id)
-        }))
-    );
+        // Busca no máximo 5 atividades programadas simultaneamente.
+        const resultadosBrutos = await mapLimit(
+            demandas,
+            5,
+            async demanda => {
+                try {
+                    const atividadeProgramada =
+                        await buscarAtividadeProgramada(demanda.id);
 
-    const pesquisaAtendimento = await Promise.all(
-        resultados.map(async ({ demanda, atividadeProgramada }) => {
-            const dataInicialCrua = atividadeProgramada.schedule.dateUsageMin || new Date().toISOString().split("T")[0];
-            if (dataInicialCrua) {
-                const dataInicialArray = dataInicialCrua.split('-');
-                dataInicialPronta =
-                    `${dataInicialArray[2]}/${dataInicialArray[1]}/${dataInicialArray[0]} 00:00`;
+                    return { demanda, atividadeProgramada };
+                } catch (erro) {
+                    console.error(
+                        `Erro ao buscar atividade da demanda ${demanda.id}:`,
+                        erro
+                    );
+
+                    return null;
+                }
             }
+        );
 
+        const resultados = resultadosBrutos.filter(
+            resultado =>
+                resultado?.atividadeProgramada?.schedule
+        );
 
-            const dataFinalCrua = atividadeProgramada.schedule.dateUsageMax || new Date().toISOString().split("T")[0];
-            if (dataFinalCrua) {
-                const dataFinalArray = dataFinalCrua.split('-');
-                dataFinalPronta =
-                    `${dataFinalArray[2]}/${dataFinalArray[1]}/${dataFinalArray[0]} 23:59`;
+        // Busca no máximo 3 demandas simultaneamente nesta etapa.
+        const pesquisaAtendimento = await mapLimit(
+            resultados,
+            3,
+            async ({ atividadeProgramada }) => {
+                const schedule = atividadeProgramada.schedule;
+
+                const hoje = new Date()
+                    .toISOString()
+                    .split("T")[0];
+
+                const dataInicialCrua =
+                    schedule.dateUsageMin || hoje;
+
+                const dataFinalCrua =
+                    schedule.dateUsageMax || hoje;
+
+                const [anoI, mesI, diaI] =
+                    dataInicialCrua.split("-");
+
+                const [anoF, mesF, diaF] =
+                    dataFinalCrua.split("-");
+
+                const dataInicialPronta =
+                    `${diaI}/${mesI}/${anoI} 00:00`;
+
+                const dataFinalPronta =
+                    `${diaF}/${mesF}/${anoF} 23:59`;
+
+                const guarnicoes = await buscarGuarnicoes(
+                    dataInicialPronta,
+                    dataFinalPronta
+                );
+
+                // No máximo 5 consultas de atendimento por demanda.
+                const guarnicoesComAtendimento = await mapLimit(
+                    guarnicoes,
+                    5,
+                    async guarnicao => {
+                        try {
+                            const atividadesProgramadas =
+                                await buscarAtendimentoAtividadeProgramada(
+                                    guarnicao.garrison_id,
+                                    schedule.id
+                                );
+
+                            return {
+                                ...guarnicao,
+                                atividadesProgramadas
+                            };
+                        } catch (erro) {
+                            console.warn(
+                                "Erro ao consultar atendimento:",
+                                guarnicao.garrison_id,
+                                schedule.id,
+                                erro
+                            );
+
+                            return {
+                                ...guarnicao,
+                                atividadesProgramadas: []
+                            };
+                        }
+                    }
+                );
+
+                const atendimentos =
+                    guarnicoesComAtendimento.filter(
+                        guarnicao =>
+                            guarnicao.atividadesProgramadas.length > 0
+                    );
+
+                if (atendimentos[0]?.atividadesProgramadas) {
+                    const setores = schedule.groups?.sectors || [];
+
+                    atendimentos[0].atividadesProgramadas[0].area =
+                        (setores[0] || "")
+                            .replaceAll("Subintendência", "")
+                            .replaceAll("Regional", "")
+                            .replaceAll(" da", "")
+                            .trim();
+                }
+
+                return atendimentos;
             }
+        );
 
-            const guarnicoes = await buscarGuarnicoes(
-                dataInicialPronta,
-                dataFinalPronta
-            );
+        const pesquisaPronta = [];
 
-            const guarnicoesComAtendimento = await Promise.all(
-                guarnicoes.map(async (guarnicao) => ({
-
-                    ...guarnicao,
-
-                    atividadesProgramadas:
-                        await buscarAtendimentoAtividadeProgramada(
-                            guarnicao.garrison_id,
-                            atividadeProgramada.schedule.id
-                        )
-                }))
-            );
-
-            const atendimentos = guarnicoesComAtendimento.filter(
-                guarnicao => guarnicao.atividadesProgramadas.length > 0
-            );
-            if (atendimentos[0]?.atividadesProgramadas) {
-                atendimentos[0].atividadesProgramadas[0].area = atividadeProgramada.schedule.groups.sectors[0].replaceAll('Subintendência', '').replaceAll('Regional', '').replaceAll(' da', '').trim();
-            }
-            return atendimentos;
-        })
-    );
-
-    const pesquisaPronta = [];
-    pesquisaAtendimento.forEach(guarnicao => {
-        guarnicao.forEach(item => {
-            item.atividadesProgramadas.forEach(atividade => {
-                atividade.activities.forEach(act => {
-                    const pesquisa = {};
-                    pesquisa.nome = atividade.name.substring(18).split('-')[0];
-                    pesquisa.area = atividade.area;
-                    pesquisa.atividadeId = atividade.id;
-                    pesquisa.id = act.dispatchList[0]?.dispatchId || '-';
-                    pesquisa.local = act.placeDescr;
-                    pesquisa.natureza = act.reason;
-                    pesquisa.guarnicao = item.garrison_team;
-                    pesquisa.inicio = act.startText || '';
-                    pesquisa.duracao = act.duration || '';
-                    pesquisa.status = act.status;
-                    pesquisaPronta.push(pesquisa);
-                })
-            })
-        })
-    });
-    const idsDemandasAssumidas = pesquisaPronta.map(pesquisa => pesquisa.atividadeId);
-    resultados.forEach(result => {
-        if (!idsDemandasAssumidas.includes(result.atividadeProgramada.schedule.id)) {
-            const demanda = result.atividadeProgramada;
-            demanda.schedule.activities.forEach(atv => {
-                const pesquisa = {};
-                pesquisa.nome = demanda.schedule.name.substring(18).split('-')[0];
-                pesquisa.area = demanda.schedule.groups.sectors[0].replaceAll('Subintendência', '').replaceAll('Regional', '').replaceAll(' da', '').trim();
-                pesquisa.id = '-';
-                pesquisa.local = atv.address.place || atv.address.street;
-                pesquisa.natureza = atv.reason;
-                pesquisa.guarnicao = '?';
-                pesquisa.inicio = atv.hours.startHour || '';
-                pesquisa.duracao = atv.duration || '';
-                pesquisa.status = '💤 Não assumida';
-                pesquisaPronta.push(pesquisa);
+        pesquisaAtendimento.forEach(guarnicoes => {
+            guarnicoes.forEach(item => {
+                item.atividadesProgramadas.forEach(atividade => {
+                    (atividade.activities || []).forEach(act => {
+                        pesquisaPronta.push({
+                            nome: atividade.name
+                                .substring(18)
+                                .split("-")[0],
+                            area: atividade.area,
+                            atividadeId: atividade.id,
+                            id: act.dispatchList?.[0]?.dispatchId || "-",
+                            local: act.placeDescr,
+                            natureza: act.reason,
+                            guarnicao: item.garrison_team,
+                            inicio: act.startText || "",
+                            duracao: act.duration || "",
+                            status: act.status
+                        });
+                    });
+                });
             });
+        });
+
+        const idsDemandasAssumidas = new Set(
+            pesquisaPronta.map(pesquisa => pesquisa.atividadeId)
+        );
+
+        resultados.forEach(({ atividadeProgramada }) => {
+            const demanda = atividadeProgramada;
+            const schedule = demanda.schedule;
+
+            if (idsDemandasAssumidas.has(schedule.id)) return;
+
+            const setores = schedule.groups?.sectors || [];
+
+            (schedule.activities || []).forEach(atv => {
+                pesquisaPronta.push({
+                    nome: schedule.name.substring(18).split("-")[0],
+                    area: (setores[0] || "")
+                        .replaceAll("Subintendência", "")
+                        .replaceAll("Regional", "")
+                        .replaceAll(" da", "")
+                        .trim(),
+                    atividadeId: schedule.id,
+                    id: "-",
+                    local: atv.address?.place || atv.address?.street || "",
+                    natureza: atv.reason,
+                    guarnicao: "?",
+                    inicio: atv.hours?.startHour || "",
+                    duracao: atv.duration || "",
+                    status: "💤 Não assumida"
+                });
+            });
+        });
+
+        const tabela = Tabulator.findTable("#tabela-os")[0];
+
+        if (tabela) {
+            tabela.setData(pesquisaPronta);
         }
-    })
-    const tabela = Tabulator.findTable("#tabela-os")[0];
-    tabela.setData(pesquisaPronta);
+
+    } catch (erro) {
+        console.error("Erro ao montar a OS:", erro);
+
+    } finally {
+        montagemOSAtiva = false;
+    }
+}
+
+async function mapLimit(itens, limite, callback) {
+    const resultados = new Array(itens.length);
+    let proximo = 0;
+
+    async function trabalhador() {
+        while (true) {
+            const indice = proximo++;
+
+            if (indice >= itens.length) return;
+
+            resultados[indice] = await callback(itens[indice], indice);
+        }
+    }
+
+    const quantidade = Math.min(limite, itens.length);
+
+    await Promise.all(
+        Array.from({ length: quantidade }, () => trabalhador())
+    );
+
+    return resultados;
 }
 
 function criarTabelaOS() {
@@ -535,6 +652,7 @@ function inserirModalQTHs(qths) {
                 <div class="modal-footer">
                     <button class="btn btn-default" data-mdb-dismiss="modal" aria-label="Close">Ok</button>
                     <button id="baixarQTHsButton" class="btn btn-default" aria-label="Baixar">Baixar</button>
+                    <button id="subirQTHsButton" class="btn btn-default" aria-label="Atualizar CAD">Atualizar CAD</button>
                 </div>
             </div>
         </div>`
@@ -550,6 +668,9 @@ function inserirModalQTHs(qths) {
     });
     modal.querySelector('#baixarQTHsButton').addEventListener('click', () => {
         baixarCSV(qths);
+    });
+    modal.querySelector('#subirQTHsButton').addEventListener('click', () => {
+        atualizarQTHsCAD(qths, modal.querySelector('#subirQTHsButton'));
     });
 
 }
@@ -614,6 +735,42 @@ function baixarCSV(jsonData, filename = "dados.csv") {
     document.body.removeChild(link);
 
     URL.revokeObjectURL(url);
+}
+
+function atualizarQTHsCAD(qths, button) {
+    const a = {
+        "id": 936,
+        "city": "PORTO ALEGRE",
+        "state": "RS",
+        "neighborhood": "LAGEADO",
+        "number": null,
+        "street": "R. F",
+        "name": "5017 APP OSCAR FERREIRA",
+        "type": "TERRENO BALDIO",
+        "zipcode": "91780-069",
+        "complement": null,
+        "latitude": "-30.191837",
+        "longitude": "-51.152185",
+        "attach_id": null,
+        "cnpj": null,
+        "phone": null,
+        "contact": null,
+        "status": true,
+        "citystate": "PORTO ALEGRE - RS"
+    }
+    const qthsString = qths.map(qth => `${qth.id}-()-${qth.name}-()-${qth.type || ''}-()--()-${qth.street || ''} ${qth.number || ''} - ${qth.neighborhood || ''} - ${qth.citystate || ''}-()-Patrulhamento Preventivo`).join('-++-');
+    window.postMessage({ type: "atualizar_qths", data: qthsString }, "*");
+    window.addEventListener("message", event => {
+
+        if (event.data?.type === "qthsAtualizados") {
+            const textoBotaoOriginal = button.innerText;
+            button.innerText = 'Atualizado';
+            setTimeout(() => {
+                button.innerText = textoBotaoOriginal;
+            }, 3000);
+        }
+
+    });
 }
 
 function criarTabelaQth(qths) {
