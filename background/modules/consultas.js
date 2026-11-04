@@ -778,7 +778,7 @@ async function buscarBO(numeroBO, cpf) {
         return null;
     }
 }
-
+console.log('teste');
 
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
