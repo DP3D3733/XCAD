@@ -9,6 +9,7 @@
             var indiciado = '';
             var suspeito = '';
             var acusado = '';
+            var adolescente = '';
             ocorrencias.forEach(function (item) {
                 if (item.innerHTML.includes('Autor') && item.querySelectorAll('td').length > 3 && autor.indexOf(item.querySelectorAll('td')[4].innerHTML.split('<br>')[1] + ' em ' + item.querySelectorAll('td')[4].innerHTML.split('<br>')[0] + '\n') == -1 && !autor.includes(item.querySelectorAll('td')[4].innerHTML.split('<br>')[1] + ' em ' + item.querySelectorAll('td')[4].innerHTML.split('<br>')[0].split(' ')[0] + '\n')) {
                     autor += item.querySelectorAll('td')[4].innerHTML.split('<br>')[1] + ' em ' + item.querySelectorAll('td')[4].innerHTML.split('<br>')[0].split(' ')[0].split('/')[1] + '/' + item.querySelectorAll('td')[4].innerHTML.split('<br>')[0].split(' ')[0].split('/')[2] + '\n';
@@ -18,6 +19,8 @@
                     suspeito += item.querySelectorAll('td')[4].innerHTML.split('<br>')[1] + ' em ' + item.querySelectorAll('td')[4].innerHTML.split('<br>')[0].split(' ')[0].split('/')[1] + '/' + item.querySelectorAll('td')[4].innerHTML.split('<br>')[0].split(' ')[0].split('/')[2] + '\n';
                 } else if (item.innerHTML.includes('Acusado') && item.querySelectorAll('td').length > 3 && acusado.indexOf(item.querySelectorAll('td')[4].innerHTML.split('<br>')[1] + ' em ' + item.querySelectorAll('td')[4].innerHTML.split('<br>')[0] + '\n') == -1 && !acusado.includes(item.querySelectorAll('td')[4].innerHTML.split('<br>')[1] + ' em ' + item.querySelectorAll('td')[4].innerHTML.split('<br>')[0].split(' ')[0] + '\n')) {
                     acusado += item.querySelectorAll('td')[4].innerHTML.split('<br>')[1] + ' em ' + item.querySelectorAll('td')[4].innerHTML.split('<br>')[0].split(' ')[0].split('/')[1] + '/' + item.querySelectorAll('td')[4].innerHTML.split('<br>')[0].split(' ')[0].split('/')[2] + '\n';
+                } else if (item.innerHTML.includes('Adolescente infrator') && item.querySelectorAll('td').length > 3 && adolescente.indexOf(item.querySelectorAll('td')[4].innerHTML.split('<br>')[1] + ' em ' + item.querySelectorAll('td')[4].innerHTML.split('<br>')[0] + '\n') == -1 && !adolescente.includes(item.querySelectorAll('td')[4].innerHTML.split('<br>')[1] + ' em ' + item.querySelectorAll('td')[4].innerHTML.split('<br>')[0].split(' ')[0] + '\n')) {
+                    adolescente += item.querySelectorAll('td')[4].innerHTML.split('<br>')[1] + ' em ' + item.querySelectorAll('td')[4].innerHTML.split('<br>')[0].split(' ')[0].split('/')[1] + '/' + item.querySelectorAll('td')[4].innerHTML.split('<br>')[0].split(' ')[0].split('/')[2] + '\n';
                 }
             });
             var a = '';
@@ -32,6 +35,9 @@
             }
             if (acusado != '') {
                 a += 'Acusado de:\n' + acusado + '\n';
+            }
+            if (adolescente != '') {
+                a += 'Adolescente infrator(a):\n' + adolescente + '\n';
             }
             if (a == '') {
                 a = 'Não há.';
@@ -50,8 +56,8 @@
         botao_buscar_mandado.setAttribute('id', 'botao_buscar_mandado');
         botao_buscar_mandado.innerHTML = 'Buscar Mandado';
         textarea.insertAdjacentElement('beforebegin', botao_buscar_mandado);
-        window.postMessage({ type: "dados", payload: ('*SEM IMAGENS NO SISTEMA*\n\n*'+tb)}, "*");
-        window.postMessage({ type: "img", payload: 'SEM IMAGENS'}, "*");
+        window.postMessage({ type: "dados", payload: ('*SEM IMAGENS NO SISTEMA*\n\n*' + tb) }, "*");
+        window.postMessage({ type: "img", payload: 'SEM IMAGENS' }, "*");
         document.querySelector('#botao_buscar_mandado').addEventListener('click', function (item) {
             navigator.clipboard.writeText(tb);
             window.open("https://portalbnmp.pdpj.jus.br/", "_blank");

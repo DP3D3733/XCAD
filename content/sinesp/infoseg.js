@@ -166,6 +166,7 @@ function mostrarOcorrencias(ocorrencias, divDados) {
     ocorrenciasDesfavor['Acusado de'] = ocorrencias.filter(ocorrencia => ocorrencia.qualificacao == 'Acusado(a)');
     ocorrenciasDesfavor['Autor de'] = ocorrencias.filter(ocorrencia => ocorrencia.qualificacao == 'Autor(a)');
     ocorrenciasDesfavor['Foragido(a)'] = ocorrencias.filter(ocorrencia => ocorrencia.qualificacao == 'Foragido(a)');
+    ocorrenciasDesfavor['Adolescente infrator'] = ocorrencias.filter(ocorrencia => ocorrencia.qualificacao == 'Adolescente infrator');
 
     const semOcorrencias = Object.values(ocorrenciasDesfavor).every(lista => lista.length === 0);
 
