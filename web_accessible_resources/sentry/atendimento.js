@@ -1,6 +1,7 @@
 deixarSoOMapaVisivel();
 tratarModelos();
 ajusteMascaraTelefone();
+inserirBotaoColarEndereco();
 function deixarSoOMapaVisivel() {
     if (!url.includes('/despacho/attendance') || !sessionStorage.getItem('associarLocal')) return;
     const blocoMapa = document
@@ -276,3 +277,52 @@ function selecionarModelo(modelo) {
         $wrapper.addClass('active');
     });
 }
+
+function inserirBotaoColarEndereco() {
+    const botaoColarEndereco = document.createElement('span');
+    botaoColarEndereco.setAttribute('class', 'btn btn-default float-end');
+    botaoColarEndereco.innerHTML = `<i class="fa fa-paste"></i><span>  Colar Endereço</span>`;
+    botaoColarEndereco.addEventListener('click', () => colarEndereco());
+    const botaoCopiar = document.querySelector("#copy-btn");
+    botaoCopiar.insertAdjacentElement('beforebegin', botaoColarEndereco);
+}
+
+async function colarEndereco() {
+    const endereco = await lerAreaTransferencia();
+    if (!endereco) return;
+    if (!endereco.includes('-++-')) return;
+
+    const [logradouro, numero, bairro, latitude, longitude] = endereco.split('-++-');
+
+    //insere o logradouro
+    const opcaoLogradouro = new Option(logradouro, logradouro, true, true);
+    $('#factStreet').append(opcaoLogradouro);
+    $('#factStreet').addClass('active');
+    $('#factStreet').trigger('change');
+    $('#factStreet').closest('.form-outline, .form-outline-custom, .form-group').addClass('active');
+
+    //insere o número
+    $('#factNumber').val(numero).trigger('change').addClass('active');
+
+    //insere o bairro
+    const opcaoBairro = new Option(bairro, bairro, true, true);
+    $('#factNeighborhood').append(opcaoBairro);
+    $('#factNeighborhood').addClass('active');
+    $('#factNeighborhood').trigger('change');
+    $('#factNeighborhood').closest('.form-outline, .form-outline-custom, .form-group').addClass('active');
+
+    //latitude e longitude
+    $('#factLatitude').val(latitude).trigger('change').addClass('active');
+    $('#factLongitude').val(longitude).trigger('change').addClass('active');
+
+}
+
+async function lerAreaTransferencia() {
+    try {
+        return await navigator.clipboard.readText();
+    } catch (erro) {
+        console.error('Erro ao ler área de transferência:', erro);
+        return null;
+    }
+}
+
