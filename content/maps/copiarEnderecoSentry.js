@@ -14,27 +14,35 @@ function insereBotaoCopiarParaSentry() {
     }, 1000);
 }
 
-function copiarParaSentry() {
-    const streetViewContainer = document.querySelector('button[aria-label="Street View"]');
-    if (!streetViewContainer) return;
+async function copiarParaSentry() {
+    const url = window.location.href;
+    const endereco = document.querySelector('[jsaction*="info.copyText"],[data-item-id="address"]').innerText.substring(2);
+    const coordenadas = await buscarCoordenada(endereco);
+    const enderecoDividido = endereco.split(/,| - /);
+    let logradouro, numero, bairro;
+    if (enderecoDividido.length == 6) [logradouro, numero, bairro] = enderecoDividido;
+    if (enderecoDividido.length == 5) {
+        logradouro = enderecoDividido[0];
+        bairro = enderecoDividido[1];
+    }
+    const enderecoFinal = `${logradouro || ''}-++-${numero || ''}-++-${bairro || ''}-++-${coordenadas.latitude}-++-${coordenadas.longitude}`;
+    inserirNaAreaTransferencia(enderecoFinal);
+}
 
-    streetViewContainer.click();
-    setTimeout(() => {
-        const url = window.location.href;
-        const coordenadas = extrairCoordenadas(url);
-        const endereco = document.querySelector('[jsaction*="info.copyText"],[data-item-id="address"]').innerText.substring(2);
-        const enderecoDividido = endereco.split(/,| - /);
-        let logradouro, numero, bairro;
-        if (enderecoDividido.length == 6) [logradouro, numero, bairro] = enderecoDividido;
-        if (enderecoDividido.length == 5) {
-            logradouro = enderecoDividido[0];
-            bairro = enderecoDividido[1];
-        }
-        const enderecoFinal = `${logradouro || ''}-++-${numero || ''}-++-${bairro || ''}-++-${coordenadas.latitude}-++-${coordenadas.longitude}`;
-        inserirNaAreaTransferencia(enderecoFinal);
-    }, 5000);
+async function buscarCoordenada(endereco) {
+    const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(endereco)}&limit=1`;
 
+    const resposta = await fetch(url);
+    const dados = await resposta.json();
 
+    if (!dados.length) {
+        return null;
+    }
+
+    return {
+        latitude: Number(dados[0].lat),
+        longitude: Number(dados[0].lon),
+    };
 }
 
 function extrairCoordenadas(url) {

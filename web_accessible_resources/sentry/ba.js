@@ -6,6 +6,7 @@ async function main() {
         verificarEnvolvidos();
         inserirBotaoCopiarParaCad();
         verificarTermosDesconhecidos();
+        inserirBotaoEsconderCorrecao();
     }
 
 
@@ -55,7 +56,7 @@ async function gerarBotaoInserirOutraNatureza() {
     const linhaTituloNaturezas = Array.from(document.querySelectorAll('strong')).find(elemento => elemento.innerText == 'NATUREZAS');
     if (!linhaTituloNaturezas) return;
     const tabelaNaturezasLinhaTitulo = linhaTituloNaturezas.closest('tr');
-    tabelaNaturezasLinhaTitulo.insertAdjacentHTML('beforeEnd', '<td class="text-center" colspan="3"><select id="selectNaturezas" multiple></select></td>');
+    tabelaNaturezasLinhaTitulo.insertAdjacentHTML('beforeEnd', '<td class="text-center correcao" colspan="3"><select id="selectNaturezas" multiple></select></td>');
     const naturezasDoBA = Array.from(tabelaNaturezasLinhaTitulo.parentNode.querySelectorAll('td')).filter(td => td.innerText.includes('Natureza')).map(natureza => natureza.querySelector('span').innerText);
     const selectNaturezas = document.getElementById('selectNaturezas');
     const naturezas = await baixarNaturezas();
@@ -233,13 +234,13 @@ async function inserirHorariosDespacho() {
     const botaoSubstituirHorarioBA = '<button onclick="substituirHorarioBA(this)">⬇️</button>';
 
     const linhaHorariosDespacho = `
-        <tr id="horariosDespacho">
+        <tr id="horariosDespacho" class="correcao">
             <td class="bo-key" style="width: 33%">Despacho: <span class="bo-value">${horariosDespacho[0]}</span></td>
             <td class="bo-key" style="width: 33%">Início: <span class="bo-value">${horariosDespacho[2]}</span></td>
             <td class="bo-key" style="width: 33%">Término: <span class="bo-value">${horariosDespacho[3]}</span></td>
         </tr>`;
     const linhaBotoes = `
-        <tr id="linhasBotoesAjusteHorarios">
+        <tr id="linhasBotoesAjusteHorarios" class="correcao">
             <td horario="início">${horariosBA[0] != horariosDespacho[0] ? botaoSubstituirHorarioDespacho + botaoSubstituirHorarioBA : ''}</td>
             <td horario="chegada">${horariosBA[1] != horariosDespacho[2] ? botaoSubstituirHorarioDespacho + botaoSubstituirHorarioBA : ''}</td>
             <td horario="término">${horariosBA[2] != horariosDespacho[3] ? botaoSubstituirHorarioDespacho + botaoSubstituirHorarioBA : ''}</td>
@@ -357,7 +358,7 @@ async function verificarEnvolvidos() {
     }
     cpfsElements.forEach(cpfElement => {
         if (!resultados[cpfElement.innerText].encontrado) {
-            cpfElement.innerHTML += `<button onclick="consultar('${cpfElement.innerText}')">Consultar</button>`;
+            cpfElement.innerHTML += `<button class="correcao" onclick="consultar('${cpfElement.innerText}')">Consultar</button>`;
             return;
         }
         const idEnvolvidoBA = cpfElement.closest('tr.individual-component-print').querySelector('strong').innerText.replace(/[^0-9]/g, '');
@@ -369,10 +370,10 @@ async function verificarEnvolvidos() {
                 if (resultados[cpfElement.innerText][relacaoDadosBABD[chave]] && resultados[cpfElement.innerText][relacaoDadosBABD[chave]].trim() != valor.trim()) {
                     const botaoReinserirCPF = cpfElement.parentNode.querySelector('button');
                     if (!botaoReinserirCPF) cpfElement.parentNode.insertAdjacentHTML('beforeend', `
-                        <button onclick="reinserir(this)"><i class="fas fa-redo"></i></button>
-                        <button onclick="copiar(this)"><i class="fas fa-copy"></i></button>
+                        <button class="correcao" onclick="reinserir(this)"><i class="fas fa-redo"></i></button>
+                        <button class="correcao" onclick="copiar(this)"><i class="fas fa-copy"></i></button>
                     `)
-                    dado.innerHTML += `<span class="adicionar">${resultados[cpfElement.innerText][relacaoDadosBABD[chave]].trim()}</span>`;
+                    dado.innerHTML += `<span class="adicionar correcao">${resultados[cpfElement.innerText][relacaoDadosBABD[chave]].trim()}</span>`;
                 }
             });
     })
@@ -604,7 +605,7 @@ async function verificarTermosDesconhecidos() {
 
 function inserirBotaoTermosDesconhecidos() {
     const botaoTermosDesconhecidos = document.createElement('button');
-    botaoTermosDesconhecidos.setAttribute('class', 'btn btn-default btn-new float-end ms-1');
+    botaoTermosDesconhecidos.setAttribute('class', 'btn btn-default btn-new float-end ms-1 correcao');
     botaoTermosDesconhecidos.innerHTML = `<i class="fa fa-ban"></i>`;
     botaoTermosDesconhecidos.addEventListener('click', () => abrirModalTermosDesconhecidos());
     const tituloSecaoRelatorio = Array.from(document.querySelectorAll("h2.bo-title")).find(titulo => titulo.innerText == 'RELATÓRIO DO AGENTE');
@@ -678,7 +679,7 @@ async function ajustarTermosDesconhecidos() {
         const termoEscapado = termoDesconhecido.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         const regex = new RegExp(termoEscapado, 'gi');
         console.log(termoDesconhecido);
-        relato = relato.replace(regex, `<span style="background:red">${termoDesconhecido}</span>`);
+        relato = relato.replace(regex, `<span class="correcaoTermoDesconhecido" style="background:red">${termoDesconhecido}</span>`);
         textoCorrecao.push(`"${termoDesconhecido}" => "${termoConhecido}"`);
     }
     tituloSecaoRelatorio.closest('tr').nextElementSibling.querySelector('td').innerHTML = relato;
@@ -786,4 +787,46 @@ async function salvarTermos(termos, dados) {
     return texto;
 }
 
+function inserirBotaoEsconderCorrecao() {
+    const botaoImprimirOriginal = document.getElementById('print');
+    const botaoImprimirClone = botaoImprimirOriginal.cloneNode(true);
+    botaoImprimirOriginal.style.display = 'none';
+    botaoImprimirOriginal.insertAdjacentElement('beforebegin', botaoImprimirClone);
+    botaoImprimirClone.addEventListener('click', () => {
+        esconderCorrecao();
+        botaoImprimirOriginal.click();
+    });
 
+    const botaoOpcoesImpressaoOriginal = document.querySelector("#printOptionsBoModal button[onclick='printBOByModel()']");
+    const botaoOpcoesImpressaoClone = botaoOpcoesImpressaoOriginal.cloneNode(true);
+    botaoOpcoesImpressaoClone.removeAttribute('onclick');
+    botaoOpcoesImpressaoOriginal.style.display = 'none';
+    botaoOpcoesImpressaoOriginal.insertAdjacentElement('beforebegin', botaoOpcoesImpressaoClone);
+    botaoOpcoesImpressaoClone.addEventListener('click', () => {
+        esconderCorrecao();
+        botaoOpcoesImpressaoOriginal.click();
+    });
+}
+
+
+
+function esconderCorrecao() {
+    document.querySelectorAll('.correcao').forEach(elemento => {
+        elemento.style.display = 'none';
+    });
+    document.querySelectorAll('.correcaoTermoDesconhecido').forEach(termo => {
+        termo.style.background = 'white';
+    });
+    window.addEventListener('afterprint', () => {
+        mostrarCorrecao();
+    });
+}
+
+function mostrarCorrecao() {
+    document.querySelectorAll('.correcao').forEach(elemento => {
+        elemento.style.display = '';
+    });
+    document.querySelectorAll('.correcaoTermoDesconhecido').forEach(termo => {
+        termo.style.background = 'red';
+    });
+}
