@@ -7,6 +7,7 @@ async function main() {
         inserirBotaoCopiarParaCad();
         verificarTermosDesconhecidos();
         inserirBotaoEsconderCorrecao();
+        ajustarTituloDaPagina();
     }
 
 
@@ -829,4 +830,11 @@ function mostrarCorrecao() {
     document.querySelectorAll('.correcaoTermoDesconhecido').forEach(termo => {
         termo.style.background = 'red';
     });
+}
+
+function ajustarTituloDaPagina() {
+    const title = document.querySelector('title');
+    const numeroBAElement = document.querySelector('h2');
+    const numeroBA = numeroBAElement.innerText.split('(')[0].replace('/', '-').trim();
+    title.innerText = numeroBA;
 }
