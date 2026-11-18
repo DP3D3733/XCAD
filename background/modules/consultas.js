@@ -779,6 +779,379 @@ async function buscarBO(numeroBO, cpf) {
     }
 }
 
+/**
+ * 1. Acessa a página inicial do módulo e extrai o ViewState e o windowId dinamicamente.
+ */
+async function carregarPaginaVeiculo() {
+    const url = "https://www.consultasintegradas.rs.gov.br/csi/mod-veiculo/veiculo.xhtml";
+
+    const response = await fetch(url, {
+        method: "GET",
+        headers: {
+            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "accept-language": "pt-BR,pt;q=0.9",
+            "cache-control": "no-cache",
+            "pragma": "no-cache"
+        },
+        mode: "cors",
+        credentials: "include"
+    });
+
+    if (!response.ok) throw new Error(`Erro HTTP ao carregar a página: ${response.status}`);
+    const htmlText = await response.text();
+
+    const viewStateMatch = htmlText.match(/name="javax\.faces\.ViewState"[^>]*value="([^"]+)"/);
+    if (!viewStateMatch) throw new Error("ViewState não encontrado.");
+
+    const windowIdMatch = htmlText.match(/windowId=([^"&]+)/);
+
+    return {
+        viewState: viewStateMatch[1],
+        windowId: windowIdMatch ? windowIdMatch[1] : "201"
+    };
+}
+
+/**
+ * 2. Envia a requisição POST para consultar a placa.
+ */
+async function consultarVeiculoPorPlaca(placa, viewState, windowId) {
+    const url = `https://www.consultasintegradas.rs.gov.br/csi/mod-veiculo/veiculo.xhtml?windowId=${windowId}`;
+
+    const bodyData = new URLSearchParams({
+        "form": "form",
+        "form:ok": "",
+        "form:cboPesquisa_focus": "",
+        "form:cboPesquisa_input": "1",
+        "form:txtPlaca": placa,
+        "javax.faces.ViewState": viewState
+    });
+
+    const response = await fetch(url, {
+        method: "POST",
+        headers: {
+            "content-type": "application/x-www-form-urlencoded",
+            "cache-control": "no-cache"
+        },
+        body: bodyData.toString(),
+        mode: "cors",
+        credentials: "include"
+    });
+
+    if (!response.ok) throw new Error("Erro na consulta da placa.");
+    const htmlText = await response.text();
+
+    const viewStateMatch = htmlText.match(/name="javax\.faces\.ViewState"[^>]*value="([^"]+)"/);
+    return viewStateMatch ? viewStateMatch[1] : viewState;
+}
+
+/**
+ * 3. Seleciona o primeiro registro da lista de veículos.
+ */
+async function abrirDetalhesVeiculo(viewState, windowId) {
+    const url = `https://www.consultasintegradas.rs.gov.br/csi/mod-veiculo/veiculo.xhtml?windowId=${windowId}`;
+
+    const bodyData = new URLSearchParams({
+        "form": "form",
+        "form:lista_rppDD": "20",
+        "form:lista_scrollState": "0,0",
+        "javax.faces.ViewState": viewState,
+        "form:lista:0:j_idt118": "form:lista:0:j_idt118"
+    });
+
+    const response = await fetch(url, {
+        method: "POST",
+        headers: { "content-type": "application/x-www-form-urlencoded" },
+        body: bodyData.toString(),
+        mode: "cors",
+        credentials: "include"
+    });
+
+    if (!response.ok) throw new Error("Erro ao abrir os detalhes do veículo.");
+    const htmlText = await response.text();
+
+    const viewStateMatch = htmlText.match(/name="javax\.faces\.ViewState"[^>]*value="([^"]+)"/);
+    return viewStateMatch ? viewStateMatch[1] : viewState;
+}
+
+/**
+ * 4. Simula a troca de aba via AJAX para cada seção do veículo.
+ */
+async function carregarAba(viewState, windowId, tabIndex) {
+    const url = `https://www.consultasintegradas.rs.gov.br/csi/mod-veiculo/veiculo.xhtml?windowId=${windowId}`;
+
+    const abasIds = [
+        "form:tabs:abaDadosBasicos",     // 0
+        "form:tabs:abaProprietario",     // 1
+        "form:tabs:abaRestricoes",       // 2
+        "form:tabs:abaObrigacoes",       // 3
+        "form:tabs:abaInfracoes",        // 4
+        "form:tabs:abaOcorrencias"       // 5
+    ];
+
+    const abaAlvo = abasIds[tabIndex];
+
+    const bodyData = new URLSearchParams({
+        "javax.faces.partial.ajax": "true",
+        "javax.faces.source": "form:tabs",
+        "javax.faces.partial.execute": "form:tabs",
+        "javax.faces.partial.render": "form:tabs",
+        "javax.faces.behavior.event": "tabChange",
+        "javax.faces.partial.event": "tabChange",
+        "form:tabs_contentLoad": "true",
+        "form:tabs_newTab": abaAlvo,
+        "form:tabs_tabindex": tabIndex.toString(),
+        "form:tabs_activeIndex": tabIndex.toString(),
+        "form:tabs_scrollState": "0",
+        "javax.faces.ViewState": viewState
+    });
+
+    // Parâmetros específicos para paginação de tabelas do PrimeFaces
+    if (tabIndex === 4) {
+        bodyData.append("form:tabs:listaInfra_rppDD", "20");
+        bodyData.append("form:tabs:listaInfra_scrollState", "0,0");
+    } else if (tabIndex === 5) {
+        bodyData.append("form:tabs:listaOcor_rppDD", "20");
+        bodyData.append("form:tabs:listaOcor_scrollState", "0,0");
+    }
+
+    const response = await fetch(url, {
+        method: "POST",
+        headers: {
+            "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+            "faces-request": "partial/ajax",
+            "x-requested-with": "XMLHttpRequest"
+        },
+        body: bodyData.toString(),
+        mode: "cors",
+        credentials: "include"
+    });
+
+    if (!response.ok) throw new Error(`Erro ao carregar a aba ${tabIndex}`);
+    const xmlText = await response.text();
+
+    const viewStateMatch = xmlText.match(/<update id="j_id1:javax\.faces\.ViewState:\d+"><!\[CDATA\[([^\]]+)\]\]><\/update>/);
+    const novoViewState = viewStateMatch ? viewStateMatch[1] : viewState;
+
+    return { xml: xmlText, viewState: novoViewState };
+}
+
+/**
+ * 5. Extração de texto baseada em Regex (Independente de DOM/document).
+ */
+function extrairLinhasTexto(xmlContent) {
+    let limpo = xmlContent
+        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+        .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "")
+        .replace(/<\!\[CDATA\[|\]\]>/g, "")
+        .replace(/<[^>]+>/g, "\n");
+
+    return limpo
+        .split("\n")
+        .map(linha => linha.trim())
+        .filter(linha => linha.length > 0 && !linha.includes("SSP-CSI"));
+}
+
+/**
+ * Normaliza strings para chaves em snake_case limpas (sem acentos).
+ */
+function normalizarChave(texto) {
+    return texto
+        .slice(0, -1)
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "_");
+}
+
+/**
+ * Parser especializado para a aba de Infrações.
+ */
+function processarAbaInfracoes(linhas) {
+    const lixoIgnorar = [
+        "Dados Básicos", "Proprietário", "Restrições", "Obrigações", "Infrações",
+        "Características Especiais", "Ocorrências", "Rows Per Page", "20", "50", "100",
+        "F", "P", "1", "N", "E", "Data Hora / Descrição / Condutor", "órgão / Valor / CNH",
+        "Série / Local / Proprietário", "Infração / Situação / CPF CNPJ Propr"
+    ];
+
+    const linhasUteis = linhas.filter(l =>
+        l && !lixoIgnorar.includes(l) &&
+        !l.includes("Exibindo de") &&
+        !/^-?\d+:-?\d+$/.test(l)
+    );
+
+    if (linhasUteis.length === 0 || linhasUteis.some(l => l.includes("não possui"))) {
+        return { total_registros: 0, lista: [] };
+    }
+
+    const registros = [];
+    for (let i = 0; i < linhasUteis.length; i += 6) {
+        if (i + 5 < linhasUteis.length) {
+            registros.push({
+                data_hora: linhasUteis[i] || "",
+                descricao: linhasUteis[i + 1] || "",
+                condutor: linhasUteis[i + 2] || "",
+                orgao: linhasUteis[i + 3] || "",
+                valor: linhasUteis[i + 4] || "",
+                local_serie: linhasUteis[i + 5] || "",
+                situacao: linhasUteis[i + 6] || "Pendente"
+            });
+        }
+    }
+
+    return { total_registros: registros.length, lista: registros };
+}
+
+/**
+ * Parser especializado para a aba de Ocorrências.
+ */
+function processarAbaOcorrencias(linhas) {
+    const lixoIgnorar = [
+        "Dados Básicos", "Proprietário", "Restrições", "Obrigações", "Infrações",
+        "Características Especiais", "Ocorrências", "Rows Per Page", "20", "50", "100",
+        "F", "P", "1", "N", "E",
+        "Nro / Ano / órgão", "Data Comunicação", "Placa", "Local", "Data / Fato"
+    ];
+
+    const linhasUteis = linhas.filter(l => {
+        if (!l) return false;
+        if (lixoIgnorar.includes(l)) return false;
+        if (l.includes("Exibindo de")) return false;
+        if (/^-?\d+:-?\d+$/.test(l)) return false;
+        return true;
+    });
+
+    if (linhasUteis.length === 0 || linhasUteis.some(l => l.includes("não possui") || l.includes("Nenhuma ocorrência"))) {
+        return { total_registros: 0, lista: [] };
+    }
+
+    const ocorrencias = [];
+    let i = 0;
+    while (i < linhasUteis.length) {
+        if (linhasUteis[i].includes("/") && /\d+\s*\/\s*\d+/.test(linhasUteis[i])) {
+            ocorrencias.push({
+                nro_ano_orgao: linhasUteis[i] || "",
+                data_comunicacao: linhasUteis[i + 1] || "",
+                placa: linhasUteis[i + 2] || "",
+                local: linhasUteis[i + 3] || "",
+                data_fato: linhasUteis[i + 4] || "",
+                descricao_fato: linhasUteis[i + 5] || ""
+            });
+            i += 6;
+        } else {
+            i++;
+        }
+    }
+
+    return { total_registros: ocorrencias.length, lista: ocorrencias };
+}
+
+/**
+ * 6. Transforma os dados brutos de acordo com o tipo de aba.
+ */
+function transformarArrayEmObjetoLimpo(linhas, nomeAba) {
+    if (nomeAba === "infracoes") {
+        return processarAbaInfracoes(linhas);
+    }
+    if (nomeAba === "ocorrencias") {
+        return processarAbaOcorrencias(linhas);
+    }
+
+    const resultado = {};
+    const lixoParaDescartar = [
+        "Dados Básicos", "Proprietário", "Restrições", "Obrigações", "Infrações",
+        "Características Especiais", "Ocorrências", "Rows Per Page", "20", "50", "100",
+        "F", "P", "1", "N", "E"
+    ];
+
+    let i = 0;
+    while (i < linhas.length) {
+        let linhaAtual = linhas[i];
+
+        if (
+            !linhaAtual ||
+            lixoParaDescartar.includes(linhaAtual) ||
+            linhaAtual.includes("Dados BásicosProprietário") ||
+            /^-?\d+:-?\d+$/.test(linhaAtual)
+        ) {
+            i++;
+            continue;
+        }
+
+        if (linhaAtual.endsWith(":")) {
+            const chave = normalizarChave(linhaAtual);
+            const proximaLinha = linhas[i + 1];
+
+            if (proximaLinha && !proximaLinha.endsWith(":") && !lixoParaDescartar.includes(proximaLinha)) {
+                resultado[chave] = proximaLinha.trim();
+                i += 2;
+            } else {
+                resultado[chave] = "";
+                i++;
+            }
+        } else {
+            const chaveInfo = `info_${Object.keys(resultado).length + 1}`;
+            resultado[chaveInfo] = linhaAtual.trim();
+            i++;
+        }
+    }
+
+    return resultado;
+}
+
+/**
+ * 7. Execução Principal Orquestradora de Ponta a Ponta.
+ * @param {string} placa - A placa do veículo (ex: "imq2017")
+ * @returns {Promise<Object>} JSON estruturado final.
+ */
+async function executarAutomacaoCompletaJson(placa) {
+    try {
+        console.log("Iniciando consulta para a placa:", placa.toUpperCase());
+        let { viewState, windowId } = await carregarPaginaVeiculo();
+
+        viewState = await consultarVeiculoPorPlaca(placa, viewState, windowId);
+        viewState = await abrirDetalhesVeiculo(viewState, windowId);
+
+        const nomesAbas = ["dados_basicos", "proprietario", "restricoes", "obrigacoes", "infracoes", "ocorrencias"];
+        let relatorioJson = {
+            placa: placa.toUpperCase(),
+            data_consulta: new Date().toISOString(),
+            detalhes: {}
+        };
+
+        for (let i = 0; i < nomesAbas.length; i++) {
+            try {
+                console.log(`Coletando aba: ${nomesAbas[i]}...`);
+                const resAba = await carregarAba(viewState, windowId, i);
+                viewState = resAba.viewState;
+
+                const linhasBrutas = extrairLinhasTexto(resAba.xml);
+                relatorioJson.detalhes[nomesAbas[i]] = transformarArrayEmObjetoLimpo(linhasBrutas, nomesAbas[i]);
+            } catch (err) {
+                relatorioJson.detalhes[nomesAbas[i]] = { erro: err.message };
+            }
+        }
+
+        console.log("Fluxo concluído com sucesso!");
+        return relatorioJson;
+
+    } catch (error) {
+        console.error("Erro crítico na automação:", error.message);
+        throw error;
+    }
+}
+
+// ==========================================
+// Exemplo de uso:
+// executarAutomacaoCompletaJson("imq2017").then(json => {
+//   console.log(JSON.stringify(json, null, 2));
+// });
+
+executarAutomacaoCompletaJson("IMQ2017").then(jsonObj => {
+    console.log(JSON.stringify(jsonObj, null, 2));
+});
+
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === "consultarIndividuo") {
