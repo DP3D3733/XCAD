@@ -1100,11 +1100,6 @@ function transformarArrayEmObjetoLimpo(linhas, nomeAba) {
     return resultado;
 }
 
-/**
- * 7. Execução Principal Orquestradora de Ponta a Ponta.
- * @param {string} placa - A placa do veículo (ex: "imq2017")
- * @returns {Promise<Object>} JSON estruturado final.
- */
 async function executarAutomacaoCompletaJson(placa) {
     try {
         console.log("Iniciando consulta para a placa:", placa.toUpperCase());
@@ -1210,7 +1205,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             }
         );
         chrome.tabs.update(TABID, { active: true });
-
     }
 
     if (message.action === "verificarIndividuoSentry") {

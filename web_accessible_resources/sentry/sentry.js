@@ -397,6 +397,7 @@ setInterval(async () => {
     const temAtendimentoNovo = localStorage.getItem('atendimentoNovo');
     if (!temAtendimentoNovo) return;
     const atendimentos = await buscarAtendimentos();
+    if (!atendimentos) return;
     const atendimentoNovoId = atendimentos.find(atendimento => atendimento.attendance_start == temAtendimentoNovo)?.attendance_id;
     if (!atendimentoNovoId) return;
     const atendimentoNovo = await buscarAtendimento(atendimentoNovoId);

@@ -78,7 +78,7 @@ function inserirColunaEndereco(despachos) {
 function inserirColunaNarrativa(atendimentos) {
     const content = document.querySelector('#content');
     const head = content.querySelector('table thead');
-    const thEndereco = Array.from(head.querySelectorAll('th')).find(th => th.innerText == 'Bairro');
+    const thEndereco = Array.from(head.querySelectorAll('th')).find(th => th.innerText == 'Bairro' || th.innerText == 'Endereço');
     const index = Array.from(head.querySelectorAll('th')).indexOf(thEndereco);
     const thNarrativa = thEndereco.cloneNode(true);
     thNarrativa.innerText = 'Narrativa';
@@ -147,6 +147,32 @@ function inserirColunaRelatos(relatos) {
     })
 }
 
+function inserirColunaObservacoes(despachos) {
+    const content = document.querySelector('#content');
+    const head = content.querySelector('table thead');
+    const thDespacho = Array.from(head.querySelectorAll('th')).find(th => th.innerText == 'Despacho');
+    const index = Array.from(head.querySelectorAll('th')).indexOf(thDespacho);
+    const thNarrativa = Array.from(head.querySelectorAll('th')).find(th => th.innerText == 'Narrativa');
+    const indexNarrativa = Array.from(head.querySelectorAll('th')).indexOf(thNarrativa);
+    const thObservacoes = thNarrativa.cloneNode(true);
+    thObservacoes.innerText = 'Observações';
+    thNarrativa.insertAdjacentElement('afterend', thObservacoes);
+    const linhasTbody = content.querySelector('tbody').querySelectorAll('tr');
+    linhasTbody.forEach(linha => {
+        const protocolo = linha.querySelectorAll('td')[index].innerText;
+        const despacho = despachos.find(despacho => despacho.dadosIniciais.talao == protocolo);
+        console.log(despacho);
+        if (!despacho) return linha.querySelectorAll('td')[index].insertAdjacentHTML('afterend', `<td></td><td></td>`);
+        const observacaoInicial = despacho.dadosIniciais.observacaoInicial || '';
+        const observacaoFinal = despacho.encerramento?.observacaoFinal || '';
+        if (!`${observacaoInicial}${observacaoFinal}`.includes('GCM-POA')) return linha.querySelectorAll('td')[indexNarrativa].insertAdjacentHTML('afterend', `<td>${observacaoInicial}<p>${observacaoFinal} Sem CAD</td>`);
+        linha.querySelectorAll('td')[indexNarrativa].insertAdjacentHTML('afterend', `<td>${observacaoInicial}<p>${observacaoFinal}</td>`);
+
+    })
+}
+
+
+
 
 
 function removerColunas(colunas) {
@@ -208,23 +234,23 @@ async function ajustarTabelaPrometa() {
     const atendimentos = await buscarAtendimentos(idsProtocolo);
     const despachos = await buscarDespachos(idsDespachos);
 
+
     const temposDados = await buscarTempos(document.querySelector("#dtStart").value, document.querySelector("#dtEnd").value);
     const relatos = await buscarRelatos(idsBAs);
-    inserirColunaLocal(despachos);
-    inserirColunaTipoLocal(despachos);
-    inserirColunaEndereco(despachos);
-    ajustarColunaDataDespacho();
-    inserirColunaDataHoraAtendimento(atendimentos);
-    inserirColunasTempos(temposDados);
+
+    if (url.includes('prometa')) {
+        inserirColunaLocal(despachos);
+        inserirColunaTipoLocal(despachos);
+        inserirColunaEndereco(despachos);
+        ajustarColunaDataDespacho();
+        inserirColunaDataHoraAtendimento(atendimentos);
+        inserirColunasTempos(temposDados);
+    }
     inserirColunaNarrativa(atendimentos);
     inserirColunaRelatos(relatos);
-
     inserirColunaGuarnicao();
-    removerColunas(['Despacho', 'BA GCM', 'Origem', 'Providência', 'Endereço']);
-
-
-
-
+    inserirColunaObservacoes(despachos);
+    if (!url.includes('sinespcad')) removerColunas(['Despacho', 'BA GCM', 'Origem', 'Providência', 'Endereço']);
 }
 
 function ajustarColunaDataDespacho() {
@@ -441,7 +467,9 @@ function parsearDespacho(html) {
         const linhas = [...tabela.querySelectorAll("tr")];
 
         for (let i = 0; i < linhas.length; i++) {
-
+            if (linhas[i].querySelector('th')?.innerText == 'Observação Inicial' || linhas[i].querySelector('th')?.innerText == 'Observação final') {
+                objeto[chave(texto(linhas[i].querySelector('th')))] = linhas[i].querySelector('td').innerText;
+            }
             const ths = [...linhas[i].children]
                 .filter(el => el.tagName === "TH");
 
@@ -465,6 +493,7 @@ function parsearDespacho(html) {
 
             i++;
         }
+        console.log(objeto);
 
         return objeto;
     }

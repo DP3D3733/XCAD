@@ -258,7 +258,8 @@ setTimeout(() => {
     document.documentElement.appendChild(script);
   }
 
-  if (url.includes('sentry.procempa.com.br/web/reports/dispatch_sequence?prometa')) {
+  if (url.includes('sentry.procempa.com.br/web/reports/dispatch_sequence?prometa') ||
+    url.includes('sentry.procempa.com.br/web/reports/dispatch_sequence?sinespcad')) {
     const script = document.createElement("script");
     script.src = chrome.runtime.getURL("web_accessible_resources/sentry/relatorioPrometa.js");
     document.documentElement.appendChild(script);

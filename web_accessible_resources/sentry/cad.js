@@ -1411,7 +1411,7 @@ function inserirButtonDespachosSemCad() {
 }
 
 async function verificarDespachosSemCad() {
-    const dtStartObj = new Date(Date.now() - 12 * 60 * 60 * 1000);
+    const dtStartObj = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
     const dtStartFormatado =
         `${String(dtStartObj.getDate()).padStart(2, "0")}/` +
@@ -1488,6 +1488,7 @@ async function buscarNumeroBAsRecebidos(qtdDespachos) {
     });
 
     const dados = await response.json();
+    console.log(dados);
     return dados.data.data.map(ba => ba.id);
 }
 
