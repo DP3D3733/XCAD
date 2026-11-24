@@ -367,10 +367,13 @@ function criarTabela(colunas) {
             sorter: sorter,
             formatter: function (cell) {
 
-                if (!colunas[coluna].split('-++-')[0].includes('date') && colunas[coluna].split('-++-')[0] != 'dtBirth') return cell.getValue();
-                const date = cell.getValue();
-                if (!date) return "";
-                return date.toLocaleDateString("pt-BR");
+                if (!colunas[coluna].split('-++-')[0].includes('date') && colunas[coluna].split('-++-')[0] != 'dtBirth' && colunas[coluna].split('-++-')[0] != 'admission') return cell.getValue();
+                const value = cell.getValue();
+                if (!value) return "";
+                const date = value instanceof Date ? value : new Date(value);
+                if (isNaN(date.getTime())) return value;
+
+                return date.toLocaleDateString("pt-BR", { timeZone: "UTC" });
             }
         }
     });
