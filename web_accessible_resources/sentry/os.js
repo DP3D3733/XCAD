@@ -903,7 +903,7 @@ function conferirLinha(linha) {
     const qthsNomes = qths.data.data.map(qth => qth.name);
     const naturezas = ['PATRULHAMENTO PREVENTIVO', 'AÇÃO PRÓPRIA', 'AÇÃO INTEGRADA', 'AÇÃO CONJUNTA', 'FISCALIZAÇÃO E POLICIAMENTO - EVENTOS'];
     const guarnicoes = ['21', '31', '41', '51', '61', '71', '81', '91', '22', '32', '42', '52', '62', '72', '82', '92', 'C1', 'C2', 'C3', 'C4', 'C5'];
-    const areas = ['CRUZEIRO', 'PARTENON', 'LESTE', 'RESTINGA', 'NORTE', 'EIXO BALTAZAR', 'PINHEIRO', 'EIXO SUL', 'CENTRO', 'CHARLIE', 'ROMU', 'DAZ'];
+    const areas = ['CRUZEIRO', 'PARTENON', 'LESTE', 'RESTINGA', 'NORTE', 'EIXO BALTAZAR', 'PINHEIRO', 'EIXO SUL', 'CENTRO', 'CHARLIE', 'ROMU', 'DAZ', 'ALUNOS'];
     linha.classList.remove('errada');
     const celulas = linha.querySelectorAll('td');
     for (let index = 0; index < celulas.length; index++) {
@@ -1119,6 +1119,7 @@ function verificarQualArea(gu) {
         'P': { numeralArea: 1100, subintendencia: "Subintendência da Patam" },
         'C': { numeralArea: 1200, subintendencia: "Subintendência Regional Centro" },
         'D': { numeralArea: 1500, subintendencia: "Divisão de Ação Zoneada" },
+        'A': { numeralArea: '-', subintendencia: "Intendência de Monitoramento de Operações" },
     }
     const area = areas[gu.toUpperCase().replaceAll('\n', '').replaceAll('GU', '').replaceAll('GM', '').replaceAll('GCM', '').trim().charAt(0)];
     if (!area) return console.log(gu, 'não encontrado');

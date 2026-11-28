@@ -1488,7 +1488,6 @@ async function buscarNumeroBAsRecebidos(qtdDespachos) {
     });
 
     const dados = await response.json();
-    console.log(dados);
     return dados.data.data.map(ba => ba.id);
 }
 
